@@ -45,7 +45,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* App Wrapper */
         .app-container {
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
@@ -67,10 +66,10 @@
             cursor: pointer;
         }
 
-        /* Main Content Area */
+        /* Main Content */
         main {
             flex: 1; overflow-y: auto; padding: 15px;
-            padding-bottom: 100px; /* Chừa chỗ cho tab bar */
+            padding-bottom: 120px;
         }
 
         /* Mood Overlay */
@@ -114,7 +113,50 @@
         .task-meta { display: flex; gap: 10px; align-items: center; }
         .msg-count { font-size: 12px; background: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 10px; }
 
-        /* Bottom Tab Bar */
+        /* Form & Modals */
+        .modal {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.4); display: none;
+            justify-content: center; align-items: flex-end;
+        }
+        .modal-content {
+            background: white; width: 100%; max-height: 90%;
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            padding: 20px; display: flex; flex-direction: column;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 5px; }
+        .form-input {
+            width: 100%; padding: 12px; border-radius: 12px;
+            border: 1px solid #eee; background: #f9f9f9; font-size: 15px; outline: none;
+        }
+        .segmented-control {
+            display: flex; background: #f0f0f0; border-radius: 10px; padding: 2px;
+        }
+        .segmented-control button {
+            flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .segmented-control button.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--ios-blue); }
+
+        .btn-main {
+            width: 100%; background: var(--ios-blue); color: white; border: none;
+            padding: 15px; border-radius: 15px; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+
+        /* Floating Button */
+        .fab {
+            position: fixed; bottom: 100px; right: 20px;
+            width: 56px; height: 56px; border-radius: 28px;
+            background: var(--ios-blue); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.3);
+            cursor: pointer; z-index: 100; border: none;
+        }
+
+        /* Tab Bar */
         .tab-bar {
             position: fixed; bottom: 0; width: 100%; height: 85px;
             background: rgba(255, 255, 255, 0.4);
@@ -129,47 +171,12 @@
         .tab-item.active { color: var(--ios-blue); }
         .tab-icon { font-size: 24px; margin-bottom: 4px; }
 
-        /* Task Modal (Chat) */
-        .modal {
-            position: fixed; inset: 0; z-index: 500;
-            background: rgba(0,0,0,0.2); display: none;
-            justify-content: center; align-items: flex-end;
-        }
-        .modal-content {
-            background: white; width: 100%; max-height: 85%;
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-            padding: 20px; display: flex; flex-direction: column;
-            animation: slideUp 0.3s ease-out;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; padding-right: 5px; }
-        .msg { margin-bottom: 10px; font-size: 14px; max-width: 80%; padding: 8px 12px; border-radius: 15px; }
+        /* Chat styles */
+        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; }
+        .msg { margin-bottom: 8px; font-size: 14px; max-width: 80%; padding: 8px 12px; border-radius: 15px; position: relative; }
         .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; margin-left: auto; }
         .msg.received { background: #e9e9eb; color: black; }
-        
-        .chat-input-area { display: flex; gap: 10px; padding-bottom: 20px; }
-        .chat-input { 
-            flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ddd;
-            font-size: 14px; outline: none;
-        }
 
-        /* Floating Button */
-        .fab {
-            position: fixed; bottom: 100px; right: 20px;
-            width: 56px; height: 56px; border-radius: 28px;
-            background: var(--ios-blue); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.3);
-            cursor: pointer; z-index: 100; border: none;
-        }
-
-        .btn-done {
-            background: var(--ios-green); color: white; border: none;
-            padding: 10px; border-radius: 12px; font-weight: 600; cursor: pointer;
-        }
-
-        /* Responsive */
         @media (min-width: 500px) {
             body { display: flex; justify-content: center; background: #000; }
             .app-container { width: 375px; height: 812px; margin-top: 50px; border-radius: 40px; overflow: hidden; position: relative; border: 8px solid #333; }
@@ -180,15 +187,15 @@
 
     <div class="mesh-bg"></div>
 
-    <!-- MOOD CHECK-IN OVERLAY -->
+    <!-- MÀN HÌNH CHÀO MỪNG / CẢM XÚC -->
     <div id="mood-overlay">
         <div class="mood-card">
             <h2 id="mood-user-name">Chào bạn ❤️</h2>
             <p style="color: #666; font-size: 14px;">Cảm xúc của bạn lúc này?</p>
             <div class="mood-options">
-                <button class="mood-btn" onclick="saveMood('happy')">😊</button>
-                <button class="mood-btn" onclick="saveMood('neutral')">😐</button>
-                <button class="mood-btn" onclick="saveMood('stress')">😠</button>
+                <button class="mood-btn" onclick="saveMood('😊')">😊</button>
+                <button class="mood-btn" onclick="saveMood('😐')">😐</button>
+                <button class="mood-btn" onclick="saveMood('😠')">😠</button>
             </div>
             <button onclick="closeMood()" style="margin-top: 20px; background: none; border: none; color: #999; font-size: 12px;">Bỏ qua</button>
         </div>
@@ -197,14 +204,14 @@
     <div class="app-container">
         <header>
             <div>
-                <h1 id="page-title">Nếu là Task</h1>
-                <div id="sync-indicator" style="font-size: 10px; color: var(--ios-green);">● Live Sync</div>
+                <h1 id="page-title">Công việc</h1>
+                <div id="sync-indicator" style="font-size: 10px; color: var(--ios-green);">● Đồng bộ trực tiếp</div>
             </div>
             <div class="user-badge" id="role-toggle" onclick="switchUser()">Chồng</div>
         </header>
 
         <main id="main-content">
-            <!-- Eisenhower Matrix sẽ render ở đây -->
+            <!-- Render Eisenhower Matrix -->
         </main>
 
         <button class="fab" onclick="showAddTask()">+</button>
@@ -220,76 +227,128 @@
                 <span class="tab-icon">💰</span> Tài chính
             </div>
             <div class="tab-item" onclick="nav('vault')">
-                <span class="tab-icon">👤</span> Vault
+                <span class="tab-icon">👤</span> Tủ mật
             </div>
         </div>
     </div>
 
-    <!-- TASK DETAIL / CHAT MODAL -->
-    <div id="task-modal" class="modal" onclick="closeModal(event)">
+    <!-- MODAL THÊM CÔNG VIỆC MỚI -->
+    <div id="add-task-modal" class="modal" onclick="closeAddTask(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <h2 id="modal-task-title" style="margin: 0; font-size: 20px;"></h2>
-                    <p id="modal-task-desc" style="font-size: 13px; color: #666; margin: 5px 0;"></p>
-                </div>
-                <button class="btn-done" id="complete-btn">Xong</button>
-            </div>
+            <h2 style="margin-top: 0; font-size: 20px;">Thêm việc mới</h2>
             
-            <div id="chat-limit-warning" style="display:none; color: var(--ios-red); font-size: 11px; text-align: center; padding: 10px; background: #fff1f0; border-radius: 10px; margin-top: 10px;">
-                ⚠️ Đã đạt 10 tin nhắn. Hai bạn nên nói chuyện trực tiếp!
+            <div class="form-group">
+                <label>Tiêu đề việc cần làm ★</label>
+                <input type="text" id="task-title-input" class="form-input" placeholder="Ví dụ: Đóng tiền điện">
             </div>
 
-            <div class="chat-box" id="task-chat-box">
-                <!-- Tin nhắn render ở đây -->
+            <div class="form-group">
+                <label>Ghi chú chi tiết</label>
+                <textarea id="task-desc-input" class="form-input" rows="2" placeholder="Thêm mô tả nếu cần..."></textarea>
             </div>
 
-            <div class="chat-input-area" id="chat-input-container">
-                <input type="text" id="chat-input-msg" class="chat-input" placeholder="Viết phản hồi...">
-                <button onclick="sendChatMessage()" style="background: var(--ios-blue); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 18px;">↑</button>
+            <div class="form-group">
+                <label>Mức độ ưu tiên</label>
+                <div class="segmented-control" id="zone-selector">
+                    <button class="active" data-val="red">Làm Ngay</button>
+                    <button data-val="green">Lên Lịch</button>
+                    <button data-val="grey">Để Sau</button>
+                </div>
             </div>
+
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex:1">
+                    <label>Người phụ trách</label>
+                    <div class="segmented-control" id="assignee-selector">
+                        <button class="active" data-val="Chồng">Chồng</button>
+                        <button data-val="Vợ">Vợ</button>
+                    </div>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Hạn hoàn thành</label>
+                    <input type="date" id="task-deadline-input" class="form-input" style="padding: 9px;">
+                </div>
+            </div>
+
+            <button class="btn-main" onclick="saveNewTask()">Lưu công việc ✓</button>
+            <button onclick="closeAddTask(null)" style="background:none; border:none; margin-top:10px; color:#999; font-size:14px; cursor:pointer;">Để sau</button>
+        </div>
+    </div>
+
+    <!-- MODAL CHI TIẾT & CHAT -->
+    <div id="task-detail-modal" class="modal" onclick="closeDetail(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom:10px; border-bottom:1px solid #f0f0f0;">
+                <div>
+                    <h2 id="dt-title" style="margin: 0; font-size: 20px;"></h2>
+                    <p id="dt-info" style="font-size: 12px; color: #666; margin-top: 5px;"></p>
+                </div>
+                <button class="btn-main" style="width:auto; padding:8px 15px; font-size:14px;" id="dt-done-btn">Xong</button>
+            </div>
+
+            <div id="chat-limit-warning" style="display:none; color: var(--ios-red); font-size: 11px; text-align: center; padding: 8px; background: #fff1f0; border-radius: 10px; margin-top: 10px;">
+                ⚠️ Đã chat 10 câu. Hai bạn nên nói chuyện trực tiếp nhé!
+            </div>
+
+            <div class="chat-box" id="chat-box"></div>
+
+            <div class="chat-input-area" id="chat-input-area" style="display:flex; gap:10px;">
+                <input type="text" id="chat-msg-input" class="form-input" placeholder="Viết phản hồi..." style="flex:1">
+                <button onclick="sendChat()" style="background: var(--ios-blue); border: none; color: white; width: 42px; height: 42px; border-radius: 50%; font-size: 20px;">↑</button>
+            </div>
+            <div style="height: 10px;"></div>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION
+        // CẤU HÌNH
         const SB_URL = "https://zxvlthyrahpfzmrnfbib.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss";
-        const TG_CHAT_ID = "-1002587798916";
-        const TG_TOKEN = ""; // Bạn sẽ điền sau
-
+        
         let _sbClient = supabase.createClient(SB_URL, SB_KEY);
         let currentUser = localStorage.getItem('jika_user') || 'Chồng';
         let tasks = [];
-        let currentOpenTaskId = null;
+        let currentDetailId = null;
 
-        // INITIALIZE
+        // KHỞI TẠO
         async function init() {
             document.getElementById('role-toggle').innerText = currentUser;
             document.getElementById('mood-user-name').innerText = `Chào ${currentUser} ❤️`;
+            
+            // Xử lý nút chọn Segmented Control
+            setupSegmentedControls();
+            
             await loadTasks();
             setupRealtime();
         }
 
-        // DATABASE LOGIC
+        function setupSegmentedControls() {
+            document.querySelectorAll('.segmented-control button').forEach(btn => {
+                btn.onclick = function() {
+                    this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                };
+            });
+        }
+
         async function loadTasks() {
-            const { data, error } = await _sbClient.from('jika_data').select('*').eq('key', 'jika_tasks').single();
+            const { data } = await _sbClient.from('jika_data').select('*').eq('key', 'jika_tasks').single();
             if (data) {
                 tasks = JSON.parse(data.value);
                 renderTasks();
             }
         }
 
-        async function saveTasksToCloud() {
+        async function syncTasks() {
             await _sbClient.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
         }
 
         function setupRealtime() {
-            _sbClient.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
+            _sbClient.channel('jika_realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
                 if (payload.new && payload.new.key === 'jika_tasks') {
                     tasks = JSON.parse(payload.new.value);
                     renderTasks();
-                    if(currentOpenTaskId) renderChat(currentOpenTaskId);
+                    if(currentDetailId) renderChat(currentDetailId);
                 }
             }).subscribe();
         }
@@ -309,9 +368,8 @@
             setTimeout(() => document.getElementById('mood-overlay').style.display = 'none', 500);
         }
 
-        async function saveMood(moodType) {
-            // Logic lưu mood sẽ được cập nhật ở Module tài chính & báo cáo
-            console.log(`${currentUser} feeling ${moodType}`);
+        function saveMood(mood) {
+            console.log("Mood: ", mood);
             closeMood();
         }
 
@@ -330,19 +388,20 @@
                 let html = `<div class="section-label"><div class="dot" style="background:${zone.color}"></div>${zone.label}</div>`;
                 
                 if(zoneTasks.length === 0) {
-                    html += `<div style="font-size:12px; color:#999; margin-left:15px; padding:10px;">Chưa có việc nào...</div>`;
+                    html += `<div style="font-size:12px; color:#aaa; margin-left:10px; padding:10px;">(Trống)</div>`;
                 }
 
-                zoneTasks.forEach(task => {
-                    const chatCount = task.chat ? task.chat.length : 0;
+                zoneTasks.forEach(t => {
+                    const count = t.chat ? t.chat.length : 0;
+                    const dateInfo = t.deadline ? formatDate(t.deadline) : 'Không hạn';
                     html += `
-                        <div class="task-card" onclick="openTask('${task.id}')">
+                        <div class="task-card" onclick="openDetail('${t.id}')">
                             <div class="task-info">
-                                <h3>${task.title}</h3>
-                                <p>👤 ${task.assignee} | ⏳ Hạn: ${task.deadline || 'Không'}</p>
+                                <h3>${t.title}</h3>
+                                <p>👤 ${t.assignee} | ⏳ Hạn: ${dateInfo}</p>
                             </div>
                             <div class="task-meta">
-                                <span class="msg-count">💬 ${chatCount}</span>
+                                <span class="msg-count">💬 ${count}</span>
                             </div>
                         </div>
                     `;
@@ -351,103 +410,119 @@
             });
         }
 
-        function openTask(id) {
-            currentOpenTaskId = id;
-            const task = tasks.find(t => t.id === id);
-            document.getElementById('modal-task-title').innerText = task.title;
-            document.getElementById('modal-task-desc').innerText = task.desc || "Không có mô tả";
-            
-            document.getElementById('complete-btn').onclick = () => completeTask(id);
-            document.getElementById('task-modal').style.display = 'flex';
-            renderChat(id);
-        }
-
-        function renderChat(id) {
-            const task = tasks.find(t => t.id === id);
-            const chatBox = document.getElementById('task-chat-box');
-            const inputArea = document.getElementById('chat-input-container');
-            const warning = document.getElementById('chat-limit-warning');
-            
-            chatBox.innerHTML = '';
-            const messages = task.chat || [];
-            
-            messages.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `msg ${msg.user === currentUser ? 'sent' : 'received'}`;
-                div.innerText = msg.text;
-                chatBox.appendChild(div);
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Giới hạn 10 tin nhắn
-            if(messages.length >= 10) {
-                inputArea.style.display = 'none';
-                warning.style.display = 'block';
-            } else {
-                inputArea.style.display = 'flex';
-                warning.style.display = 'none';
-            }
-        }
-
-        async function sendChatMessage() {
-            const input = document.getElementById('chat-input-msg');
-            const text = input.value.trim();
-            if(!text) return;
-
-            const task = tasks.find(t => t.id === currentOpenTaskId);
-            if(!task.chat) task.chat = [];
-            
-            task.chat.push({
-                user: currentUser,
-                text: text,
-                time: new Date().toISOString()
-            });
-
-            input.value = '';
-            renderChat(currentOpenTaskId);
-            await saveTasksToCloud();
-        }
-
-        async function completeTask(id) {
-            const idx = tasks.findIndex(t => t.id === id);
-            tasks[idx].completed = true;
-            closeModal();
-            renderTasks();
-            await saveTasksToCloud();
-        }
-
         function showAddTask() {
-            const title = prompt("Tên công việc:");
-            if(!title) return;
-            const zone = prompt("Góc phần tư (red/green/grey):", "red");
-            const assignee = prompt("Ai làm (Vợ/Chồng):", currentUser);
-            
+            document.getElementById('add-task-modal').style.display = 'flex';
+        }
+
+        function closeAddTask(e) {
+            if(e && e.target.id !== 'add-task-modal') return;
+            document.getElementById('add-task-modal').style.display = 'none';
+        }
+
+        async function saveNewTask() {
+            const title = document.getElementById('task-title-input').value.trim();
+            if(!title) { alert("Nhập tiêu đề nhé!"); return; }
+
+            const zone = document.querySelector('#zone-selector button.active').dataset.val;
+            const assignee = document.querySelector('#assignee-selector button.active').dataset.val;
+            const deadline = document.getElementById('task-deadline-input').value;
+            const desc = document.getElementById('task-desc-input').value.trim();
+
             const newTask = {
                 id: 't' + Date.now(),
                 title: title,
-                desc: "",
+                desc: desc,
                 zone: zone,
                 assignee: assignee,
+                deadline: deadline,
                 completed: false,
                 chat: []
             };
-            
+
             tasks.push(newTask);
+            document.getElementById('task-title-input').value = '';
+            document.getElementById('task-desc-input').value = '';
+            closeAddTask(null);
             renderTasks();
-            saveTasksToCloud();
+            await syncTasks();
         }
 
-        function closeModal(e) {
-            if(e && e.target.id !== 'task-modal') return;
-            document.getElementById('task-modal').style.display = 'none';
-            currentOpenTaskId = null;
+        function openDetail(id) {
+            currentDetailId = id;
+            const t = tasks.find(x => x.id === id);
+            document.getElementById('dt-title').innerText = t.title;
+            document.getElementById('dt-info').innerText = `Phụ trách: ${t.assignee} | Hạn: ${t.deadline || 'Chưa set'}`;
+            document.getElementById('dt-done-btn').onclick = () => finishTask(id);
+            document.getElementById('task-detail-modal').style.display = 'flex';
+            renderChat(id);
+        }
+
+        function closeDetail(e) {
+            if(e && e.target.id !== 'task-detail-modal') return;
+            document.getElementById('task-detail-modal').style.display = 'none';
+            currentDetailId = null;
+        }
+
+        function renderChat(id) {
+            const t = tasks.find(x => x.id === id);
+            const box = document.getElementById('chat-box');
+            box.innerHTML = '';
+            
+            const msgs = t.chat || [];
+            msgs.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `msg ${m.user === currentUser ? 'sent' : 'received'}`;
+                div.innerText = m.text;
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+
+            // Giới hạn 10 câu
+            const inputArea = document.getElementById('chat-input-area');
+            const warn = document.getElementById('chat-limit-warning');
+            if(msgs.length >= 10) {
+                inputArea.style.display = 'none';
+                warn.style.display = 'block';
+            } else {
+                inputArea.style.display = 'flex';
+                warn.style.display = 'none';
+            }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-msg-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const t = tasks.find(x => x.id === currentDetailId);
+            if(!t.chat) t.chat = [];
+            t.chat.push({ user: currentUser, text: text });
+            
+            input.value = '';
+            renderChat(currentDetailId);
+            await syncTasks();
+        }
+
+        async function finishTask(id) {
+            const idx = tasks.findIndex(x => x.id === id);
+            tasks[idx].completed = true;
+            closeDetail(null);
+            renderTasks();
+            await syncTasks();
+        }
+
+        function formatDate(d) {
+            const parts = d.split('-');
+            return `${parts[2]}/${parts[1]}`;
         }
 
         function nav(page) {
-            // Sẽ bổ sung logic các page khác ở Module tiếp theo
             document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            document.getElementById('page-title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+            document.getElementById('page-title').innerText = 
+                page === 'tasks' ? 'Công việc' : 
+                page === 'events' ? 'Sự kiện' : 
+                page === 'finance' ? 'Tài chính' : 'Tủ mật';
         }
 
         window.onload = init;
