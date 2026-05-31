@@ -4,271 +4,366 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jika Family — Digital Brain</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         :root {
-            --ios-red: #ff3b30;
-            --ios-blue: #007aff;
-            --ios-green: #34c759;
-            --ios-grey: #8e8e93;
-            --glass: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.3);
+            --ios-red: #ff3b30; --ios-blue: #007aff; --ios-green: #34c759; --ios-grey: #8e8e93;
+            --glass: rgba(255, 255, 255, 0.25); --glass-border: rgba(255, 255, 255, 0.3);
             --text-main: #1c1c1e;
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            background: #f5f7fa; color: var(--text-main);
-            overflow: hidden;
-        }
-
-        .mesh-bg {
-            position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(45deg, #ee9ca7, #ffdde1, #2193b0, #6dd5ed);
-            background-size: 400% 400%; animation: gradientBG 15s ease infinite; filter: blur(50px);
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: #f5f7fa; color: var(--text-main); overflow: hidden; }
+        .mesh-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, #ee9ca7, #ffdde1, #2193b0, #6dd5ed); background-size: 400% 400%; animation: gradientBG 15s ease infinite; filter: blur(50px); }
         @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
-
         .app-container { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
-
-        /* Header nâng cấp với Avatar */
-        header {
-            padding: 50px 20px 10px;
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        header { padding: 50px 20px 10px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         header h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
-        
         .user-section { display: flex; align-items: center; gap: 8px; background: var(--glass); padding: 4px 10px; border-radius: 25px; border: 1px solid var(--glass-border); }
-        .avatar-frame { width: 32px; height: 32px; border-radius: 50%; background: #eee; overflow: hidden; border: 2px solid white; cursor: pointer; position: relative; }
+        .avatar-frame { width: 34px; height: 34px; border-radius: 50%; background: #fff; overflow: hidden; border: 1.5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
         .user-name { font-size: 13px; font-weight: 700; color: #333; }
-        .sync-btn { font-size: 18px; cursor: pointer; padding: 0 4px; color: var(--ios-blue); transition: transform 0.3s; }
-        .sync-btn:active { transform: rotate(180deg); }
-
-        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; }
-
-        /* Eisenhower Sections */
+        .sync-btn { font-size: 18px; cursor: pointer; color: var(--ios-blue); transition: 0.3s; }
+        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; scroll-behavior: smooth; }
         .section-label { font-size: 13px; font-weight: 700; color: #555; margin: 20px 0 10px 10px; display: flex; align-items: center; gap: 8px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
-
-        .task-card {
-            background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; margin-bottom: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
-        }
+        .card { background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 22px; padding: 16px; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .task-info h3 { margin: 0; font-size: 16px; font-weight: 700; }
         .task-info p { margin: 4px 0 0; font-size: 11px; color: #555; }
         .msg-count { font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.08); padding: 3px 10px; border-radius: 12px; }
-
-        /* Form & Modals */
         .modal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; max-height: 92%; border-radius: 30px 30px 0 0; padding: 25px; display: flex; flex-direction: column; animation: slideUp 0.3s ease; }
+        .modal-content { background: white; width: 100%; max-height: 92%; border-radius: 30px 30px 0 0; padding: 25px; display: flex; flex-direction: column; animation: slideUp 0.3s ease; overflow-y: auto; }
         @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
-
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #888; margin-bottom: 8px; text-transform: uppercase; }
         .form-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #f0f0f0; background: #f8f8f8; font-size: 15px; outline: none; }
-        
-        /* Segmented Control màu sắc */
         .segmented-control { display: flex; background: #eee; border-radius: 14px; padding: 3px; gap: 2px; }
-        .segmented-control button { flex: 1; border: none; padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; color: #666; }
-        
-        .zone-btn[data-val="red"].active { background: var(--ios-red); color: white; box-shadow: 0 4px 10px rgba(255,59,48,0.3); }
-        .zone-btn[data-val="green"].active { background: var(--ios-green); color: white; box-shadow: 0 4px 10px rgba(52,199,89,0.3); }
-        .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .segmented-control button { flex: 1; border: none; padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; color: #666; }
+        .zone-btn[data-val="red"].active { background: var(--ios-red); color: white; }
+        .zone-btn[data-val="green"].active { background: var(--ios-green); color: white; }
+        .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; }
         .assign-btn.active { background: white; color: var(--ios-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
         .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 16px; border-radius: 18px; font-size: 16px; font-weight: 700; cursor: pointer; }
-
-        .fab { position: fixed; bottom: 100px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 20px rgba(0,122,255,0.4); cursor: pointer; z-index: 100; border: none; }
-
-        /* Bottom Tab Bar */
-        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; padding-top: 10px; }
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 20px rgba(0,122,255,0.4); z-index: 100; border: none; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; padding-top: 10px; z-index: 10; }
         .tab-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; font-weight: 600; cursor: pointer; flex: 1; }
         .tab-item.active { color: var(--ios-blue); }
         .tab-icon { font-size: 24px; margin-bottom: 4px; }
-
-        /* Mood Overlay */
-        #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.1); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
+        #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.1); backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
         .mood-card { background: white; padding: 35px; border-radius: 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); width: 85%; max-width: 320px; }
-        
         .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 10px; font-size: 14px; max-width: 80%; padding: 10px 14px; border-radius: 18px; }
-        .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; }
-        .msg.received { background: #f1f0f0; color: black; align-self: flex-start; }
-
-        @media (min-width: 500px) {
-            body { display: flex; justify-content: center; background: #000; }
-            .app-container { width: 375px; height: 812px; margin-top: 50px; border-radius: 40px; overflow: hidden; position: relative; border: 8px solid #333; }
-        }
+        .msg { margin-bottom: 10px; font-size: 14px; max-width: 85%; padding: 10px 14px; border-radius: 18px; line-height: 1.4; }
+        .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.received { background: #f1f0f0; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .event-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; }
+        .event-name { font-weight: 700; font-size: 15px; }
+        .event-countdown { font-size: 12px; color: var(--ios-red); font-weight: 600; }
+        .finance-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .finance-label { font-size: 14px; font-weight: 600; }
+        .finance-val { font-weight: 700; }
+        .income { color: var(--ios-green); }
+        .expense { color: var(--ios-red); }
+        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .pin-btn { background: var(--glass); border: 1px solid var(--glass-border); padding: 20px; border-radius: 50%; font-size: 20px; font-weight: 600; cursor: pointer; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+        .pin-display { font-size: 30px; letter-spacing: 10px; text-align: center; margin: 20px 0; min-height: 40px; }
     </style>
 </head>
 <body>
-
     <div class="mesh-bg"></div>
-
-    <!-- MOOD OVERLAY -->
     <div id="mood-overlay">
         <div class="mood-card">
-            <h2 id="mood-user-name">Chào bạn ❤️</h2>
+            <h2 id="mood-user-name">Chào ❤️</h2>
             <p style="color: #666; font-size: 14px;">Cảm xúc của bạn lúc này?</p>
             <div style="display: flex; justify-content: space-around; margin-top: 25px;">
                 <button onclick="saveMood('😊')" style="font-size: 45px; border:none; background:none; cursor:pointer;">😊</button>
                 <button onclick="saveMood('😐')" style="font-size: 45px; border:none; background:none; cursor:pointer;">😐</button>
                 <button onclick="saveMood('😠')" style="font-size: 45px; border:none; background:none; cursor:pointer;">😠</button>
             </div>
-            <button onclick="closeMood()" style="margin-top: 25px; background: none; border: none; color: #ccc; font-size: 12px;">Bỏ qua</button>
         </div>
     </div>
-
     <div class="app-container">
         <header>
             <div>
                 <h1 id="page-title">Task</h1>
-                <div style="font-size: 10px; color: var(--ios-green); font-weight: 600;">● Đang trực tuyến</div>
+                <div style="font-size: 10px; color: var(--ios-green); font-weight: 700; margin-top:2px;">● LIVE SYNC</div>
             </div>
             <div class="user-section">
-                <div class="sync-btn" onclick="refreshData()" title="Đồng bộ ngay">↻</div>
-                <span class="user-name" id="display-name">Chồng</span>
-                <div class="avatar-frame" onclick="triggerAvatarUpload()">
-                    <img id="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Chồng" alt="Avatar">
-                    <input type="file" id="avatar-input" style="display:none" accept="image/*" onchange="uploadAvatar(this)">
-                </div>
+                <div class="sync-btn" onclick="location.reload()">↻</div>
+                <span class="user-name" id="display-name" onclick="switchUserPrompt()">---</span>
+                <div class="avatar-frame"><img id="user-avatar" src="" alt="Avatar"></div>
             </div>
         </header>
-
-        <main id="main-content">
-            <!-- Eisenhower Tasks -->
-        </main>
-
-        <button class="fab" onclick="showAddTask()">+</button>
-
+        <main id="main-content"></main>
+        <button id="add-fab" class="fab" onclick="showAddModal()">+</button>
         <div class="tab-bar">
-            <div class="tab-item active" onclick="nav('tasks', this)">
-                <span class="tab-icon">📋</span> Task
-            </div>
-            <div class="tab-item" onclick="nav('events', this)">
-                <span class="tab-icon">⏳</span> Sự kiện
-            </div>
-            <div class="tab-item" onclick="nav('finance', this)">
-                <span class="tab-icon">💰</span> Tài chính
-            </div>
-            <div class="tab-item" onclick="nav('vault', this)">
-                <span class="tab-icon">🗄️</span> Ngăn Kéo
-            </div>
+            <div class="tab-item active" onclick="nav('tasks', this)"><span class="tab-icon">📋</span>Task</div>
+            <div class="tab-item" onclick="nav('events', this)"><span class="tab-icon">⏳</span>Sự kiện</div>
+            <div class="tab-item" onclick="nav('finance', this)"><span class="tab-icon">💰</span>Tài chính</div>
+            <div class="tab-item" onclick="nav('vault', this)"><span class="tab-icon">🗄️</span>Ngăn Kéo</div>
         </div>
     </div>
 
     <!-- MODAL THÊM TASK -->
-    <div id="add-task-modal" class="modal" onclick="closeAddTask(event)">
+    <div id="add-task-modal" class="modal" onclick="closeModal('add-task-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin-top: 0; font-size: 22px; letter-spacing: -0.5px;">Việc mới</h2>
-            
-            <div class="form-group">
-                <label>Tiêu đề việc cần làm ★</label>
-                <input type="text" id="task-title-input" class="form-input" placeholder="Ví dụ: Đóng tiền nước">
-            </div>
-
-            <div class="form-group">
-                <label>Ưu tiên & Màu sắc</label>
-                <div class="segmented-control" id="zone-selector">
-                    <button class="zone-btn active" data-val="red">Làm Ngay</button>
-                    <button class="zone-btn" data-val="green">Lên Lịch</button>
-                    <button class="zone-btn" data-val="grey">Để Sau</button>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 12px;">
-                <div class="form-group" style="flex:1">
-                    <label>Ai đảm nhận</label>
-                    <div class="segmented-control" id="assignee-selector">
-                        <button class="assign-btn" data-val="Chồng">Chồng</button>
-                        <button class="assign-btn" data-val="Vợ">Vợ</button>
-                    </div>
-                </div>
-                <div class="form-group" style="flex:1">
-                    <label>Hạn chót</label>
-                    <input type="date" id="task-deadline-input" class="form-input" style="padding: 11px;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Ghi chú / Chi tiết</label>
-                <textarea id="task-desc-input" class="form-input" rows="2" placeholder="Ghi chú thêm nếu cần..."></textarea>
-            </div>
-
-            <button class="btn-main" onclick="saveNewTask()">Tạo Task này ✓</button>
-            <button onclick="closeAddTask(null)" style="background:none; border:none; margin-top:15px; color:#aaa; font-size:14px; cursor:pointer;">Hủy bỏ</button>
+            <h2 style="margin-top: 0; font-size: 22px;">Việc mới</h2>
+            <div class="form-group"><label>Tiêu đề ★</label><input type="text" id="task-title-input" class="form-input" placeholder="Ví dụ: Đóng tiền nước"></div>
+            <div class="form-group"><label>Mức độ ưu tiên</label><div class="segmented-control" id="zone-selector"><button class="zone-btn active" data-val="red">Làm Ngay</button><button class="zone-btn" data-val="green">Lên Lịch</button><button class="zone-btn" data-val="grey">Để Sau</button></div></div>
+            <div style="display: flex; gap: 12px;"><div class="form-group" style="flex:1"><label>Đảm nhận</label><div class="segmented-control" id="assignee-selector"><button class="assign-btn" data-val="Chồng">Chồng</button><button class="assign-btn" data-val="Vợ">Vợ</button></div></div><div class="form-group" style="flex:1"><label>Hạn chót</label><input type="date" id="task-deadline-input" class="form-input"></div></div>
+            <div class="form-group"><label>Mô tả</label><textarea id="task-desc-input" class="form-input" rows="2" placeholder="Ghi chú thêm..."></textarea></div>
+            <button class="btn-main" onclick="saveNewTask()">Lưu công việc ✓</button>
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT & CHAT -->
-    <div id="task-detail-modal" class="modal" onclick="closeDetail(event)">
+    <!-- MODAL CHI TIẾT TASK -->
+    <div id="task-detail-modal" class="modal" onclick="closeModal('task-detail-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom:15px; border-bottom:1px solid #f5f5f5;">
-                <div>
-                    <h2 id="dt-title" style="margin: 0; font-size: 22px;"></h2>
-                    <p id="dt-info" style="font-size: 12px; color: #888; margin-top: 6px;"></p>
-                </div>
-                <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px;" id="dt-done-btn">Hoàn thành</button>
+                <div><h2 id="dt-title" style="margin: 0; font-size: 20px;"></h2><p id="dt-info" style="font-size: 11px; color: #888; margin-top: 5px;"></p></div>
+                <button class="btn-main" style="width:auto; padding:8px 15px; font-size:14px;" id="dt-done-btn">Xong</button>
             </div>
-
-            <div id="chat-limit-warning" style="display:none; color: var(--ios-red); font-size: 11px; text-align: center; padding: 10px; background: #fff1f0; border-radius: 12px; margin-top: 15px; font-weight: 600;">
-                ⚠️ Đã chat 10 câu. Hai bạn nên nói chuyện trực tiếp!
-            </div>
-
+            <div id="chat-limit-warning" style="display:none; color: var(--ios-red); font-size: 11px; text-align: center; padding: 10px; background: #fff1f0; border-radius: 12px; margin-top: 10px;">⚠️ Giới hạn 10 tin nhắn. Hãy nói chuyện trực tiếp!</div>
             <div class="chat-box" id="chat-box"></div>
-
-            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;">
-                <input type="text" id="chat-msg-input" class="form-input" placeholder="Góp ý hoặc thảo luận..." style="flex:1">
-                <button onclick="sendChat()" style="background: var(--ios-blue); border: none; color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; display:flex; align-items:center; justify-content:center;">↑</button>
-            </div>
-            <div style="height: 15px;"></div>
+            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;"><input type="text" id="chat-msg-input" class="form-input" placeholder="Thảo luận..." style="flex:1"><button onclick="sendChat()" style="background: var(--ios-blue); border: none; color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 22px;">↑</button></div>
         </div>
     </div>
 
     <script>
-        const SB_URL = "https://zxvlthyrahpfzmrnfbib.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss";
-        
-        let _sbClient = supabase.createClient(SB_URL, SB_KEY);
+        const CONFIG = {
+            SB_URL: "https://zxvlthyrahpfzmrnfbib.supabase.co",
+            SB_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss",
+            VAULT_PIN: "0561000963557",
+            SWITCH_PIN: "0000",
+            AVATARS: {
+                "Chồng": "https://lh3.googleusercontent.com/d/1Uv_l3p40A2M_wU0L8Z3W_E_E_f_G_L_8=w1000", 
+                "Vợ": "https://lh3.googleusercontent.com/d/1_S_t4r3_v5_p_q_W_I_y_L_v_o_v_W_X=w1000"
+            }
+        };
+
+        const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let currentUser = localStorage.getItem('jika_user') || 'Chồng';
-        let tasks = [];
-        let profiles = { "Chồng": "", "Vợ": "" };
-        let currentDetailId = null;
+        let tasks = [], finances = [], events = [], moods = [];
+        let currentDetailId = null, currentTab = 'tasks';
 
         async function init() {
-            // Check nếu lần đầu dùng
-            if (!localStorage.getItem('jika_user')) {
-                const role = prompt("Bạn là Chồng hay Vợ?");
-                currentUser = (role && role.includes("Vợ")) ? "Vợ" : "Chồng";
-                localStorage.setItem('jika_user', currentUser);
-            }
-
             document.getElementById('display-name').innerText = currentUser;
+            document.getElementById('user-avatar').src = CONFIG.AVATARS[currentUser];
             document.getElementById('mood-user-name').innerText = `Chào ${currentUser} ❤️`;
-            
-            // Cài đặt vai trò mặc định cho form
-            const assignBtns = document.querySelectorAll('#assignee-selector button');
-            assignBtns.forEach(b => {
-                if(b.dataset.val === currentUser) b.classList.add('active');
-            });
-
             setupSegmentedControls();
-            await loadProfiles();
-            await loadTasks();
+            await loadAll();
+            checkMoodCheckin();
             setupRealtime();
-            
-            // Show mood check-in mỗi lần mở app
-            document.getElementById('mood-overlay').style.display = 'flex';
         }
 
+        async function loadAll() {
+            const { data } = await _sb.from('jika_data').select('*');
+            if (data) {
+                data.forEach(item => {
+                    if (item.key === 'jika_tasks') tasks = JSON.parse(item.value);
+                    if (item.key === 'jika_finances') finances = JSON.parse(item.value);
+                    if (item.key === 'jika_events') events = JSON.parse(item.value);
+                });
+            }
+            renderCurrentTab();
+        }
+
+        function checkMoodCheckin() {
+            const lastCheck = localStorage.getItem('jika_mood_time');
+            const now = Date.now();
+            if (!lastCheck || now - lastCheck > 1800000) { // 30 phút
+                document.getElementById('mood-overlay').style.display = 'flex';
+            }
+        }
+
+        async function saveMood(mood) {
+            const now = new Date().toISOString();
+            moods.push({ user: currentUser, mood, time: now });
+            localStorage.setItem('jika_mood_time', Date.now());
+            document.getElementById('mood-overlay').style.display = 'none';
+            await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) });
+        }
+
+        function setupRealtime() {
+            _sb.channel('jika_all').on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
+                const k = payload.new.key;
+                const v = JSON.parse(payload.new.value);
+                if (k === 'jika_tasks') { tasks = v; if(currentTab === 'tasks') renderTasks(); if(currentDetailId) renderChat(currentDetailId); }
+                if (k === 'jika_finances') { finances = v; if(currentTab === 'finance') renderFinance(); }
+                if (k === 'jika_events') { events = v; if(currentTab === 'events') renderEvents(); }
+            }).subscribe();
+        }
+
+        function renderCurrentTab() {
+            if (currentTab === 'tasks') renderTasks();
+            if (currentTab === 'events') renderEvents();
+            if (currentTab === 'finance') renderFinance();
+            if (currentTab === 'vault') renderVault();
+        }
+
+        // --- TAB TASKS ---
+        function renderTasks() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = '';
+            document.getElementById('add-fab').style.display = 'flex';
+            const zones = [
+                { id: 'red', label: 'LÀM NGAY', color: 'var(--ios-red)' },
+                { id: 'green', label: 'LÊN LỊCH', color: 'var(--ios-green)' },
+                { id: 'grey', label: 'ĐỂ SAU', color: 'var(--ios-grey)' }
+            ];
+            zones.forEach(z => {
+                const zt = tasks.filter(t => t.zone === z.id && !t.completed);
+                main.innerHTML += `<div class="section-label"><div class="dot" style="background:${z.color}"></div>${z.label}</div>`;
+                if(!zt.length) main.innerHTML += `<div style="font-size:12px; color:#aaa; padding:10px 20px;">(Trống)</div>`;
+                zt.forEach(t => {
+                    main.innerHTML += `<div class="card task-card" onclick="openDetail('${t.id}')">
+                        <div class="task-info"><h3>${t.title}</h3><p>👤 ${t.assignee} | ⏳ ${t.deadline||'Không hạn'}</p></div>
+                        <div class="task-meta"><span class="msg-count">💬 ${t.chat?t.chat.length:0}</span></div>
+                    </div>`;
+                });
+            });
+        }
+
+        function openDetail(id) {
+            currentDetailId = id;
+            const t = tasks.find(x => x.id === id);
+            document.getElementById('dt-title').innerText = t.title;
+            document.getElementById('dt-info').innerText = `Phụ trách: ${t.assignee} | Hạn: ${t.deadline||'Không'}`;
+            document.getElementById('dt-done-btn').onclick = () => finishTask(id);
+            document.getElementById('task-detail-modal').style.display = 'flex';
+            renderChat(id);
+        }
+
+        async function saveNewTask() {
+            const title = document.getElementById('task-title-input').value.trim();
+            if(!title) return;
+            const zone = document.querySelector('#zone-selector .active').dataset.val;
+            const assignee = document.querySelector('#assignee-selector .active').dataset.val;
+            const deadline = document.getElementById('task-deadline-input').value;
+            const desc = document.getElementById('task-desc-input').value;
+            tasks.push({ id: 't'+Date.now(), title, desc, zone, assignee, deadline, completed: false, chat: [] });
+            document.getElementById('task-title-input').value = ''; closeModal('add-task-modal');
+            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+        }
+
+        // --- TAB EVENTS ---
+        function renderEvents() {
+            const main = document.getElementById('main-content');
+            document.getElementById('add-fab').style.display = 'none';
+            main.innerHTML = `<div class="section-label">Sự kiện quan trọng</div>`;
+            const fixedEvents = [
+                { name: "Sinh nhật Vợ ❤️", date: "12-27" },
+                { name: "Sinh nhật Simba 🦁", date: "11-25" },
+                { name: "Sinh nhật Lisa 🌸", date: "08-28" },
+                { name: "Bảo trì Máy Giặt 🛠️", date: "2026-06-01" }
+            ];
+            let h = `<div class="card">`;
+            fixedEvents.forEach(e => {
+                const days = getCountdown(e.date);
+                h += `<div class="event-item">
+                    <div class="event-name">${e.name}</div>
+                    <div class="event-countdown">Còn ${days} ngày</div>
+                </div>`;
+            });
+            h += `</div><button class="btn-main" onclick="alert('Tính năng tự thêm đang phát triển')">+ Thêm sự kiện khác</button>`;
+            main.innerHTML += h;
+        }
+
+        function getCountdown(dateStr) {
+            const now = new Date();
+            let target;
+            if(dateStr.length === 5) { // MM-DD
+                target = new Date(now.getFullYear(), dateStr.split('-')[0]-1, dateStr.split('-')[1]);
+                if(target < now) target.setFullYear(now.getFullYear() + 1);
+            } else { // YYYY-MM-DD
+                target = new Date(dateStr);
+            }
+            return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+        }
+
+        // --- TAB FINANCE ---
+        function renderFinance() {
+            const main = document.getElementById('main-content');
+            document.getElementById('add-fab').style.display = 'none';
+            main.innerHTML = `<div class="section-label">Chi phí cố định</div>
+            <div class="card">
+                <div class="finance-row"><div class="finance-label">Lãi Sacombank (Ngày 25)</div><div class="finance-val expense">28.000.000đ</div></div>
+            </div>
+            <div class="section-label">Nhập thu chi hôm nay</div>
+            <div class="card">
+                <input type="text" id="fin-name" class="form-input" placeholder="Nội dung chi..." style="margin-bottom:10px">
+                <input type="number" id="fin-amount" class="form-input" placeholder="Số tiền (VND)">
+                <div style="display:flex; gap:10px; margin-top:10px">
+                    <button class="btn-main" style="background:var(--ios-green)" onclick="addFinance('in')">Thu +</button>
+                    <button class="btn-main" style="background:var(--ios-red)" onclick="addFinance('out')">Chi -</button>
+                </div>
+            </div>`;
+        }
+
+        async function addFinance(type) {
+            const name = document.getElementById('fin-name').value;
+            const amount = document.getElementById('fin-amount').value;
+            if(!name || !amount) return;
+            finances.push({ name, amount, type, user: currentUser, date: new Date().toISOString() });
+            alert("Đã lưu!"); renderFinance();
+            await _sb.from('jika_data').upsert({ key: 'jika_finances', value: JSON.stringify(finances) });
+        }
+
+        // --- TAB VAULT ---
+        function renderVault() {
+            const main = document.getElementById('main-content');
+            document.getElementById('add-fab').style.display = 'none';
+            main.innerHTML = `<div style="text-align:center; padding-top:50px">
+                <span style="font-size:60px">🗄️</span>
+                <h2>Ngăn Kéo Bảo Mật</h2>
+                <p style="color:#666">Vui lòng nhập mã PIN để vào tủ hồ sơ</p>
+                <div class="pin-display" id="pin-dots"></div>
+                <div class="pin-keypad" id="keypad"></div>
+            </div>`;
+            renderKeypad();
+        }
+
+        let enteredPin = "";
+        function renderKeypad() {
+            const pad = document.getElementById('keypad');
+            for(let i=1; i<=9; i++) pad.innerHTML += `<div class="pin-btn" onclick="pressPin('${i}')">${i}</div>`;
+            pad.innerHTML += `<div class="pin-btn" onclick="enteredPin=''">C</div>`;
+            pad.innerHTML += `<div class="pin-btn" onclick="pressPin('0')">0</div>`;
+            pad.innerHTML += `<div class="pin-btn" onclick="pressPin('del')">⌫</div>`;
+        }
+
+        function pressPin(val) {
+            if(val === 'del') enteredPin = enteredPin.slice(0, -1);
+            else enteredPin += val;
+            document.getElementById('pin-dots').innerText = "•".repeat(enteredPin.length);
+            if(enteredPin === CONFIG.VAULT_PIN) {
+                document.getElementById('main-content').innerHTML = `<div class="section-label">Hồ sơ gia đình</div>
+                <div class="card"><h3>Wifi Nhà: Jika_5G / pass: 88888888</h3></div>
+                <div class="card"><h3>Két sắt: 25-11-28</h3></div>
+                <button class="btn-main" onclick="renderVault()">Khóa tủ</button>`;
+            }
+        }
+
+        // --- HỆ THỐNG CHUNG ---
+        function nav(page, el) {
+            currentTab = page;
+            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('page-title').innerText = el.innerText.trim();
+            renderCurrentTab();
+        }
+
+        function switchUserPrompt() {
+            const p = prompt("Nhập PIN 0000 để đổi máy:");
+            if(p === CONFIG.SWITCH_PIN) {
+                currentUser = currentUser === 'Chồng' ? 'Vợ' : 'Chồng';
+                localStorage.setItem('jika_user', currentUser);
+                location.reload();
+            }
+        }
+
+        function showAddModal() { document.getElementById('add-task-modal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; if(id==='task-detail-modal') currentDetailId=null; }
+        
         function setupSegmentedControls() {
             document.querySelectorAll('.segmented-control button').forEach(btn => {
                 btn.onclick = function() {
@@ -278,185 +373,33 @@
             });
         }
 
-        // Tải ảnh đại diện
-        async function loadProfiles() {
-            const { data } = await _sbClient.from('jika_data').select('*').eq('key', 'jika_profiles').single();
-            if (data) {
-                profiles = JSON.parse(data.value);
-                if(profiles[currentUser]) {
-                    document.getElementById('user-avatar').src = profiles[currentUser];
-                }
-            }
-        }
-
-        async function loadTasks() {
-            const { data } = await _sbClient.from('jika_data').select('*').eq('key', 'jika_tasks').single();
-            if (data) {
-                tasks = JSON.parse(data.value);
-                renderTasks();
-            }
-        }
-
-        async function syncTasks() {
-            await _sbClient.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-        }
-
-        function setupRealtime() {
-            _sbClient.channel('jika_realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
-                if (payload.new && payload.new.key === 'jika_tasks') {
-                    tasks = JSON.parse(payload.new.value);
-                    renderTasks();
-                    if(currentDetailId) renderChat(currentDetailId);
-                }
-                if (payload.new && payload.new.key === 'jika_profiles') {
-                    profiles = JSON.parse(payload.new.value);
-                    if(profiles[currentUser]) document.getElementById('user-avatar').src = profiles[currentUser];
-                }
-            }).subscribe();
-        }
-
-        function refreshData() {
-            location.reload();
-        }
-
-        // Logic đổi vai trò bảo mật
-        function triggerAvatarUpload() {
-            document.getElementById('avatar-input').click();
-        }
-
-        async function uploadAvatar(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64 = e.target.result;
-                profiles[currentUser] = base64;
-                document.getElementById('user-avatar').src = base64;
-                await _sbClient.from('jika_data').upsert({ key: 'jika_profiles', value: JSON.stringify(profiles) });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Chỉ Admin (nhập PIN 0000) mới được đổi máy
-        function switchUser() {
-            const pin = prompt("Nhập mã PIN bảo mật để đổi vai trò (0000):");
-            if(pin === "0000") {
-                currentUser = (currentUser === 'Chồng') ? 'Vợ' : 'Chồng';
-                localStorage.setItem('jika_user', currentUser);
-                refreshData();
-            } else {
-                alert("Mã PIN không đúng!");
-            }
-        }
-
-        function closeMood() {
-            document.getElementById('mood-overlay').style.opacity = '0';
-            setTimeout(() => document.getElementById('mood-overlay').style.display = 'none', 500);
-        }
-
-        function saveMood(mood) {
-            console.log("Mood check-in:", mood);
-            closeMood();
-        }
-
-        function renderTasks() {
-            const container = document.getElementById('main-content');
-            container.innerHTML = '';
-            const zones = [
-                { id: 'red', label: 'LÀM NGAY', color: 'var(--ios-red)' },
-                { id: 'green', label: 'LÊN LỊCH', color: 'var(--ios-green)' },
-                { id: 'grey', label: 'ĐỂ SAU', color: 'var(--ios-grey)' }
-            ];
-            zones.forEach(zone => {
-                const zoneTasks = tasks.filter(t => t.zone === zone.id && !t.completed);
-                let html = `<div class="section-label"><div class="dot" style="background:${zone.color}"></div>${zone.label}</div>`;
-                if(zoneTasks.length === 0) html += `<div style="font-size:12px; color:#ccc; margin-left:10px; padding:10px;">(Trống)</div>`;
-                zoneTasks.forEach(t => {
-                    const count = t.chat ? t.chat.length : 0;
-                    const dateInfo = t.deadline ? formatDate(t.deadline) : 'Không hạn';
-                    html += `
-                        <div class="task-card" onclick="openDetail('${t.id}')">
-                            <div class="task-info">
-                                <h3>${t.title}</h3>
-                                <p>👤 ${t.assignee} | ⏳ Hạn: ${dateInfo}</p>
-                            </div>
-                            <div class="task-meta"><span class="msg-count">💬 ${count}</span></div>
-                        </div>`;
-                });
-                container.innerHTML += html;
-            });
-        }
-
-        function showAddTask() { document.getElementById('add-task-modal').style.display = 'flex'; }
-        function closeAddTask(e) { if(e && e.target.id !== 'add-task-modal') return; document.getElementById('add-task-modal').style.display = 'none'; }
-
-        async function saveNewTask() {
-            const title = document.getElementById('task-title-input').value.trim();
-            if(!title) return;
-            const zone = document.querySelector('#zone-selector button.active').dataset.val;
-            const assignee = document.querySelector('#assignee-selector button.active').dataset.val;
-            const deadline = document.getElementById('task-deadline-input').value;
-            const desc = document.getElementById('task-desc-input').value;
-            tasks.push({ id: 't' + Date.now(), title, desc, zone, assignee, deadline, completed: false, chat: [] });
-            document.getElementById('task-title-input').value = '';
-            closeAddTask(null); renderTasks(); await syncTasks();
-        }
-
-        function openDetail(id) {
-            currentDetailId = id;
-            const t = tasks.find(x => x.id === id);
-            document.getElementById('dt-title').innerText = t.title;
-            document.getElementById('dt-info').innerText = `Người làm: ${t.assignee} | Hạn: ${t.deadline || 'Không'}`;
-            document.getElementById('dt-done-btn').onclick = () => finishTask(id);
-            document.getElementById('task-detail-modal').style.display = 'flex';
-            renderChat(id);
-        }
-
-        function closeDetail(e) { if(e && e.target.id !== 'task-detail-modal') return; document.getElementById('task-detail-modal').style.display = 'none'; currentDetailId = null; }
-
         function renderChat(id) {
             const t = tasks.find(x => x.id === id);
-            const box = document.getElementById('chat-box');
-            box.innerHTML = '';
-            const msgs = t.chat || [];
-            msgs.forEach(m => {
+            const box = document.getElementById('chat-box'); box.innerHTML = '';
+            (t.chat || []).forEach(m => {
                 const div = document.createElement('div');
                 div.className = `msg ${m.user === currentUser ? 'sent' : 'received'}`;
                 div.innerText = m.text;
                 box.appendChild(div);
             });
             box.scrollTop = box.scrollHeight;
-            const inputArea = document.getElementById('chat-input-area');
-            const warn = document.getElementById('chat-limit-warning');
-            if(msgs.length >= 10) { inputArea.style.display = 'none'; warn.style.display = 'block'; }
-            else { inputArea.style.display = 'flex'; warn.style.display = 'none'; }
+            document.getElementById('chat-limit-warning').style.display = (t.chat && t.chat.length >= 10) ? 'block' : 'none';
         }
 
         async function sendChat() {
             const input = document.getElementById('chat-msg-input');
-            const text = input.value.trim();
-            if(!text) return;
+            if(!input.value.trim()) return;
             const t = tasks.find(x => x.id === currentDetailId);
             if(!t.chat) t.chat = [];
-            t.chat.push({ user: currentUser, text: text });
-            input.value = ''; renderChat(currentDetailId); await syncTasks();
+            t.chat.push({ user: currentUser, text: input.value.trim() });
+            input.value = ''; renderChat(currentDetailId);
+            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
         }
 
         async function finishTask(id) {
-            const idx = tasks.findIndex(x => x.id === id);
-            tasks[idx].completed = true;
-            closeDetail(null); renderTasks(); await syncTasks();
-        }
-
-        function formatDate(d) { const p = d.split('-'); return `${parts[2]}/${parts[1]}`; }
-
-        function nav(page, el) {
-            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('page-title').innerText = 
-                page === 'tasks' ? 'Task' : 
-                page === 'events' ? 'Sự kiện' : 
-                page === 'finance' ? 'Tài chính' : 'Ngăn Kéo';
+            tasks.find(x => x.id === id).completed = true;
+            closeModal('task-detail-modal'); renderTasks();
+            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
         }
 
         window.onload = init;
