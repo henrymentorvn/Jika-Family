@@ -1028,7 +1028,10 @@ async function saveNewTask() {
   const ok = await saveTasks();
   if (ok) {
     toast('✅ Đã lưu: ' + title, 'rgba(52,199,89,0.9)');
-    sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
+    const assigneeIcon = newTask.assignee === 'Chồng' ? '👨' : '👩';
+    const zoneLabel = newTask.zone === 'red' ? '🔴 Làm Ngay' : newTask.zone === 'green' ? '🟢 Lên Lịch' : '⚪ Để Sau';
+    const dlStr = newTask.deadline ? (() => { const d = new Date(newTask.deadline); return d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear() + ' lúc ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0'); })() : 'Không hạn';
+    sendTelegram(`📋 TASK MỚI ĐƯỢC TẠO\n\n📌 ${title}\n${assigneeIcon} Người đảm nhận: ${newTask.assignee}\n${zoneLabel}\n📅 Deadline: ${dlStr}\n\n👉 Mở app Jika Family để xem!`);
   }
 }
 
@@ -1131,7 +1134,7 @@ async function sendChat() {
   input.value = '';
   renderChat(currentDetailId);
   const ok = await saveTasks();
-  if (ok) sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
+  if (ok) sendTelegram(`💬 TIN NHẮN MỚI TRONG TASK\n\n📌 ${t.title}\n${currentUser === 'Chồng' ? '👨' : '👩'} ${currentUser}: "${text}"`);
 }
 
 async function finishTask(id) {
