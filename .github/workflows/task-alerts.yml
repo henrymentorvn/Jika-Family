@@ -75,7 +75,11 @@ jobs:
                 else if (diffH < 24) timeStr = 'Còn ' + diffH + ' giờ';
                 else timeStr = 'Còn ' + diffD + ' ngày';
 
-                const msg = '🚨 NHẮC VIỆC CHƯA XONG\n📌 ' + t.title + '\n👤 ' + t.assignee + '\n⏰ ' + timeStr + '\n📅 Hạn: ' + t.deadline.replace('T', ' ').substring(0, 16);
+                const deadlineFormatted = t.deadline.replace('T', ' ').substring(0, 16).split('-').reverse().join('/').replace('/', '/').replace('2026/', '2026 lúc ').replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$1/$2/$3');
+                const dl2 = new Date(t.deadline);
+                const dlStr = dl2.getDate().toString().padStart(2,'0') + '/' + (dl2.getMonth()+1).toString().padStart(2,'0') + '/' + dl2.getFullYear() + ' lúc ' + dl2.getHours().toString().padStart(2,'0') + ':' + dl2.getMinutes().toString().padStart(2,'0');
+                const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
+                const msg = '🚨 VIỆC CHƯA XONG — CẦN LÀM NGAY!\n\n📌 ' + t.title + '\n' + assigneeIcon + ' Người đảm nhận: ' + t.assignee + '\n📅 Deadline: ' + dlStr + '\n⏳ Thời gian còn lại: ' + timeStr + '\n\n👉 Mở app Jika Family để xử lý!';
                 
                 // Gửi Telegram
                 const tgRes = await fetch(
