@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Jika Family — Digital Brain</title>
-<!-- Supabase SDK removed — dùng REST API thuần để tránh Safari iOS block CDN -->
+<!-- Supabase SDK từ unpkg — Safari iOS compatible -->
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 /* ===== LIQUID GLASS LIGHT — iOS 26 ===== */
 :root {
@@ -755,65 +756,44 @@ const CONFIG = {
   MOOD_INTERVAL_MS: 3 * 60 * 60 * 1000
 };
 
-/* ===== SUPABASE REST API THUẦN (không dùng SDK — tránh Safari iOS block CDN) ===== */
-const SB_HEADERS = {
-  'apikey': CONFIG.SB_KEY,
-  'Authorization': 'Bearer ' + CONFIG.SB_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=minimal'
-};
+/* ===== SUPABASE SDK ===== */
+const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-async function sbSelect() {
-  const res = await fetch(`${CONFIG.SB_URL}/rest/v1/jika_data?select=*`, {
-    headers: { 'apikey': CONFIG.SB_KEY, 'Authorization': 'Bearer ' + CONFIG.SB_KEY }
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
-}
-
-async function sbUpsert(key, value) {
-  const res = await fetch(`${CONFIG.SB_URL}/rest/v1/jika_data`, {
-    method: 'POST',
-    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    body: JSON.stringify({ key, value: JSON.stringify(value) })
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
+/* ===== SAVE TASKS ===== */
+async function saveTasks() {
+  try {
+    const { error } = await _sb
+      .from('jika_data')
+      .upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
+    if (error) throw error;
+    return true;
+  } catch(e) {
+    toast('❌ Lưu thất bại: ' + e.message, 'rgba(255,59,48,0.9)');
+    return false;
   }
-  return true;
 }
 
-// Realtime qua SSE (Server-Sent Events) thay vì WebSocket SDK
+/* ===== REALTIME WebSocket ===== */
 function setupRealtime() {
-  const url = `${CONFIG.SB_URL}/realtime/v1/api/broadcast`;
-  // Dùng polling nhẹ mỗi 10 giây thay vì WebSocket để tránh bị block
-  setInterval(async () => {
-    try {
-      const data = await sbSelect();
-      data.forEach(row => {
-        try {
-          let val = row.value;
-          if (typeof val === 'string') val = JSON.parse(val);
-          if (row.key === 'jika_tasks' && Array.isArray(val)) {
-            // Chỉ update nếu dữ liệu thật sự thay đổi
-            if (JSON.stringify(val) !== JSON.stringify(tasks)) {
-              tasks = val;
-              if (currentTab === 'tasks') renderTasks();
-              if (currentDetailId) renderChat(currentDetailId);
-              updateTaskBadge();
-            }
-          }
-          if (row.key === 'jika_finances' && Array.isArray(val)) {
-            if (JSON.stringify(val) !== JSON.stringify(finances)) {
-              finances = val;
-              if (currentTab === 'finance') renderFinance();
-            }
-          }
-        } catch(e) {}
-      });
-    } catch(e) {}
-  }, 10000);
+  _sb.channel('jika_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
+      if (!payload.new || !payload.new.key) return;
+      try {
+        const k = payload.new.key;
+        let v = payload.new.value;
+        if (typeof v === 'string') v = JSON.parse(v);
+        if (k === 'jika_tasks' && Array.isArray(v)) {
+          tasks = v;
+          if (currentTab === 'tasks') renderTasks();
+          if (currentDetailId) renderChat(currentDetailId);
+          updateTaskBadge();
+        }
+        if (k === 'jika_finances' && Array.isArray(v)) {
+          finances = v;
+          if (currentTab === 'finance') renderFinance();
+        }
+      } catch(e) {}
+    }).subscribe();
 }
 let currentUser = localStorage.getItem('jika_user') || 'Chồng';
 let tasks = [], finances = [], events = [], vault = [], moods = [];
@@ -881,7 +861,8 @@ function toast(msg, color) {
 /* ===== LOAD DATA ===== */
 async function loadAll() {
   try {
-    const data = await sbSelect();
+    const { data, error } = await _sb.from('jika_data').select('*');
+    if (error) throw error;
     if (data && data.length > 0) {
       data.forEach(row => {
         try {
@@ -892,11 +873,11 @@ async function loadAll() {
           if (row.key === 'jika_events'   && Array.isArray(val)) events   = val;
           if (row.key === 'jika_vault'    && Array.isArray(val)) vault    = val;
           if (row.key === 'jika_moods'    && Array.isArray(val)) moods    = val;
-        } catch(e) { console.warn('Parse error key=' + row.key, e); }
+        } catch(e) { console.warn('Parse error:', row.key, e); }
       });
     }
   } catch(e) {
-    toast('❌ Mạng lỗi: ' + e.message, 'rgba(255,59,48,0.9)');
+    toast('❌ ' + (e.message || String(e)), 'rgba(255,59,48,0.9)');
     console.error('loadAll error:', e);
   }
   renderCurrentTab();
@@ -906,7 +887,7 @@ async function loadAll() {
 /* ===== SAVE TASKS ===== */
 async function saveTasks() {
   try {
-    await sbUpsert('jika_tasks', tasks);
+    await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
     return true;
   } catch(e) {
     toast('❌ Lưu thất bại: ' + e.message, 'rgba(255,59,48,0.9)');
@@ -1075,7 +1056,7 @@ async function markRead(id) {
   const lastIdx = t.chat.length - 1;
   if (t.readBy[currentUser] === lastIdx) return;
   t.readBy[currentUser] = lastIdx;
-  try { await sbUpsert('jika_tasks', tasks); } catch(e) {}
+  try { await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' }); } catch(e) {}
 }
 
 /* ===== RENDER CHAT (có thời gian + dấu đã đọc) ===== */
@@ -1269,7 +1250,7 @@ async function addFin(type) {
   if (!n || !a) return;
   finances.push({ name: n, amount: parseInt(a), type, date: new Date().toISOString() });
   try {
-    await sbUpsert('jika_finances', finances);
+    await _sb.from('jika_data').upsert({ key: 'jika_finances', value: JSON.stringify(finances) }, { onConflict: 'key' });
   } catch(e) { toast('❌ Lưu thất bại: ' + e.message, 'rgba(255,59,48,0.9)'); }
   renderFinance();
 }
@@ -1315,7 +1296,7 @@ function renderVaultOpen() {
 async function delVault(idx) {
   if (!confirm('Xoá mục này?')) return;
   vault.splice(idx, 1);
-  try { await sbUpsert('jika_vault', vault); } catch(e) {}
+  try { await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' }); } catch(e) {}
   renderVaultOpen();
 }
 
@@ -1336,7 +1317,7 @@ async function saveMood(emoji) {
   moods.push({ u: currentUser, m: emoji, t: new Date().toISOString() });
   localStorage.setItem('jika_mood_time', Date.now().toString());
   document.getElementById('mood-overlay').style.display = 'none';
-  try { await sbUpsert('jika_moods', moods); } catch(e) {}
+  try { await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) }, { onConflict: 'key' }); } catch(e) {}
 }
 
 /* ===== ALERTS ===== */
@@ -1352,7 +1333,7 @@ async function checkAlerts() {
       t.lastAlert = now; changed = true;
     }
   });
-  if (changed) { try { await sbUpsert('jika_tasks', tasks); } catch(e) {} }
+  if (changed) { try { await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' }); } catch(e) {} }
 }
 
 /* ===== TELEGRAM ===== */
