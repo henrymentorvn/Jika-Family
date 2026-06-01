@@ -807,16 +807,31 @@ function setupSegmentedControls() {
   });
 }
 
+/* ===== TOAST DEBUG ===== */
+function toast(msg, color) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+    background:${color||'rgba(0,0,0,0.75)'};color:white;padding:10px 18px;
+    border-radius:20px;font-size:13px;font-weight:600;z-index:9999;
+    max-width:85%;text-align:center;word-break:break-all;`;
+  el.innerText = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
 /* ===== LOAD DATA ===== */
 async function loadAll() {
   try {
     const { data, error } = await _sb.from('jika_data').select('*');
-    if (error) { console.error('Supabase error:', error); }
+    if (error) {
+      toast('❌ Load lỗi: ' + error.message, 'rgba(255,59,48,0.9)');
+      console.error('loadAll error:', error);
+    }
     if (data && data.length > 0) {
       data.forEach(row => {
         try {
-          // Supabase JSONB có thể trả về object trực tiếp hoặc string — xử lý cả hai
           let val = row.value;
+          // Supabase JSONB trả về object JS, text trả về string — xử lý cả hai
           if (typeof val === 'string') val = JSON.parse(val);
           if (row.key === 'jika_tasks'    && Array.isArray(val)) tasks    = val;
           if (row.key === 'jika_finances' && Array.isArray(val)) finances = val;
@@ -825,10 +840,29 @@ async function loadAll() {
           if (row.key === 'jika_moods'    && Array.isArray(val)) moods    = val;
         } catch(e) { console.warn('Parse error key=' + row.key, e); }
       });
+    } else if (data && data.length === 0) {
+      console.log('Supabase trả về mảng rỗng — bảng chưa có dữ liệu');
     }
-  } catch(e) { console.warn('loadAll network error:', e); }
+  } catch(e) {
+    toast('❌ Mạng lỗi: ' + e.message, 'rgba(255,59,48,0.9)');
+    console.error('loadAll network error:', e);
+  }
   renderCurrentTab();
   updateTaskBadge();
+}
+
+/* ===== SAVE TO SUPABASE (helper dùng chung) ===== */
+async function saveTasks() {
+  const payload = JSON.stringify(tasks);
+  const { error } = await _sb
+    .from('jika_data')
+    .upsert({ key: 'jika_tasks', value: payload }, { onConflict: 'key' });
+  if (error) {
+    toast('❌ Lưu thất bại: ' + error.message, 'rgba(255,59,48,0.9)');
+    console.error('saveTasks error:', error);
+    return false;
+  }
+  return true;
 }
 
 /* ===== MANUAL SYNC (nút đồng bộ thủ công) ===== */
@@ -974,15 +1008,15 @@ async function saveNewTask() {
     completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0
   };
   tasks.push(newTask);
-  // Reset form
   document.getElementById('task-title-input').value = '';
   document.getElementById('task-deadline-input').value = '';
   closeSheet('add-task-modal');
   renderTasks(); updateTaskBadge();
-  // Lưu lên Supabase — dùng JSON.stringify tường minh
-  const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
-  if (error) console.error('Save task error:', error);
-  else sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
+  const ok = await saveTasks();
+  if (ok) {
+    toast('✅ Đã lưu: ' + title, 'rgba(52,199,89,0.9)');
+    sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
+  }
 }
 
 /* ===== TASK DETAIL ===== */
@@ -1084,8 +1118,8 @@ async function sendChat() {
   t.readBy[currentUser] = t.chat.length - 1;
   input.value = '';
   renderChat(currentDetailId);
-  const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
-  if (!error) sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
+  const ok = await saveTasks();
+  if (ok) sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
 }
 
 async function finishTask(id) {
@@ -1094,7 +1128,7 @@ async function finishTask(id) {
   t.completed = true; t.completedAt = new Date().toISOString();
   closeSheet('task-detail-modal');
   renderTasks(); updateTaskBadge();
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
+  await saveTasks();
 }
 
 /* ===== ARCHIVE ===== */
@@ -1120,7 +1154,7 @@ async function restoreTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
   t.completed = false; t.completedAt = null;
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
+  await saveTasks();
   closeSheet('archive-modal');
   renderTasks(); updateTaskBadge(); openArchive();
 }
