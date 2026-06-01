@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Jika Family — Digital Brain</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase SDK removed — dùng REST API thuần để tránh Safari iOS block CDN -->
 <style>
 /* ===== LIQUID GLASS LIGHT — iOS 26 ===== */
 :root {
@@ -755,7 +755,66 @@ const CONFIG = {
   MOOD_INTERVAL_MS: 3 * 60 * 60 * 1000
 };
 
-const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+/* ===== SUPABASE REST API THUẦN (không dùng SDK — tránh Safari iOS block CDN) ===== */
+const SB_HEADERS = {
+  'apikey': CONFIG.SB_KEY,
+  'Authorization': 'Bearer ' + CONFIG.SB_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=minimal'
+};
+
+async function sbSelect() {
+  const res = await fetch(`${CONFIG.SB_URL}/rest/v1/jika_data?select=*`, {
+    headers: { 'apikey': CONFIG.SB_KEY, 'Authorization': 'Bearer ' + CONFIG.SB_KEY }
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+async function sbUpsert(key, value) {
+  const res = await fetch(`${CONFIG.SB_URL}/rest/v1/jika_data`, {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ key, value: JSON.stringify(value) })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  return true;
+}
+
+// Realtime qua SSE (Server-Sent Events) thay vì WebSocket SDK
+function setupRealtime() {
+  const url = `${CONFIG.SB_URL}/realtime/v1/api/broadcast`;
+  // Dùng polling nhẹ mỗi 10 giây thay vì WebSocket để tránh bị block
+  setInterval(async () => {
+    try {
+      const data = await sbSelect();
+      data.forEach(row => {
+        try {
+          let val = row.value;
+          if (typeof val === 'string') val = JSON.parse(val);
+          if (row.key === 'jika_tasks' && Array.isArray(val)) {
+            // Chỉ update nếu dữ liệu thật sự thay đổi
+            if (JSON.stringify(val) !== JSON.stringify(tasks)) {
+              tasks = val;
+              if (currentTab === 'tasks') renderTasks();
+              if (currentDetailId) renderChat(currentDetailId);
+              updateTaskBadge();
+            }
+          }
+          if (row.key === 'jika_finances' && Array.isArray(val)) {
+            if (JSON.stringify(val) !== JSON.stringify(finances)) {
+              finances = val;
+              if (currentTab === 'finance') renderFinance();
+            }
+          }
+        } catch(e) {}
+      });
+    } catch(e) {}
+  }, 10000);
+}
 let currentUser = localStorage.getItem('jika_user') || 'Chồng';
 let tasks = [], finances = [], events = [], vault = [], moods = [];
 let currentDetailId = null, currentTab = 'tasks', enteredPin = "";
@@ -822,16 +881,11 @@ function toast(msg, color) {
 /* ===== LOAD DATA ===== */
 async function loadAll() {
   try {
-    const { data, error } = await _sb.from('jika_data').select('*');
-    if (error) {
-      toast('❌ Load lỗi: ' + error.message, 'rgba(255,59,48,0.9)');
-      console.error('loadAll error:', error);
-    }
+    const data = await sbSelect();
     if (data && data.length > 0) {
       data.forEach(row => {
         try {
           let val = row.value;
-          // Supabase JSONB trả về object JS, text trả về string — xử lý cả hai
           if (typeof val === 'string') val = JSON.parse(val);
           if (row.key === 'jika_tasks'    && Array.isArray(val)) tasks    = val;
           if (row.key === 'jika_finances' && Array.isArray(val)) finances = val;
@@ -840,29 +894,25 @@ async function loadAll() {
           if (row.key === 'jika_moods'    && Array.isArray(val)) moods    = val;
         } catch(e) { console.warn('Parse error key=' + row.key, e); }
       });
-    } else if (data && data.length === 0) {
-      console.log('Supabase trả về mảng rỗng — bảng chưa có dữ liệu');
     }
   } catch(e) {
     toast('❌ Mạng lỗi: ' + e.message, 'rgba(255,59,48,0.9)');
-    console.error('loadAll network error:', e);
+    console.error('loadAll error:', e);
   }
   renderCurrentTab();
   updateTaskBadge();
 }
 
-/* ===== SAVE TO SUPABASE (helper dùng chung) ===== */
+/* ===== SAVE TASKS ===== */
 async function saveTasks() {
-  const payload = JSON.stringify(tasks);
-  const { error } = await _sb
-    .from('jika_data')
-    .upsert({ key: 'jika_tasks', value: payload }, { onConflict: 'key' });
-  if (error) {
-    toast('❌ Lưu thất bại: ' + error.message, 'rgba(255,59,48,0.9)');
-    console.error('saveTasks error:', error);
+  try {
+    await sbUpsert('jika_tasks', tasks);
+    return true;
+  } catch(e) {
+    toast('❌ Lưu thất bại: ' + e.message, 'rgba(255,59,48,0.9)');
+    console.error('saveTasks error:', e);
     return false;
   }
-  return true;
 }
 
 /* ===== MANUAL SYNC (nút đồng bộ thủ công) ===== */
@@ -875,25 +925,7 @@ async function manualSync() {
   setTimeout(() => btn.classList.remove('spinning'), 700);
 }
 
-/* ===== REALTIME ===== */
-function setupRealtime() {
-  _sb.channel('jika_realtime_v3')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
-      if (!payload.new || !payload.new.key) return;
-      try {
-        const k = payload.new.key;
-        const v = typeof payload.new.value === 'string' ? JSON.parse(payload.new.value) : payload.new.value;
-        if (k === 'jika_tasks') {
-          tasks = Array.isArray(v) ? v : tasks;
-          if (currentTab === 'tasks') renderTasks();
-          if (currentDetailId) renderChat(currentDetailId);
-          updateTaskBadge();
-        }
-        if (k === 'jika_finances') { finances = Array.isArray(v) ? v : finances; if (currentTab === 'finance') renderFinance(); }
-        if (k === 'jika_vault')    { vault    = Array.isArray(v) ? v : vault; }
-      } catch(e) {}
-    }).subscribe();
-}
+/* ===== REALTIME: đã được tích hợp vào setupRealtime() ở trên dạng polling ===== */
 
 /* ===== NAVIGATION ===== */
 function nav(page, el) {
@@ -1036,15 +1068,14 @@ function openDetail(id) {
   renderChat(id);
 }
 
-/* Đánh dấu user đã đọc chat mới nhất trong task */
 async function markRead(id) {
   const t = tasks.find(x => x.id === id);
   if (!t || !(t.chat || []).length) return;
   if (!t.readBy) t.readBy = {};
   const lastIdx = t.chat.length - 1;
-  if (t.readBy[currentUser] === lastIdx) return; // đã đọc rồi, không cần save
+  if (t.readBy[currentUser] === lastIdx) return;
   t.readBy[currentUser] = lastIdx;
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  try { await sbUpsert('jika_tasks', tasks); } catch(e) {}
 }
 
 /* ===== RENDER CHAT (có thời gian + dấu đã đọc) ===== */
@@ -1237,7 +1268,9 @@ async function addFin(type) {
   const a = document.getElementById('fa').value;
   if (!n || !a) return;
   finances.push({ name: n, amount: parseInt(a), type, date: new Date().toISOString() });
-  await _sb.from('jika_data').upsert({ key: 'jika_finances', value: JSON.stringify(finances) });
+  try {
+    await sbUpsert('jika_finances', finances);
+  } catch(e) { toast('❌ Lưu thất bại: ' + e.message, 'rgba(255,59,48,0.9)'); }
   renderFinance();
 }
 
@@ -1282,7 +1315,7 @@ function renderVaultOpen() {
 async function delVault(idx) {
   if (!confirm('Xoá mục này?')) return;
   vault.splice(idx, 1);
-  await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) });
+  try { await sbUpsert('jika_vault', vault); } catch(e) {}
   renderVaultOpen();
 }
 
@@ -1303,7 +1336,7 @@ async function saveMood(emoji) {
   moods.push({ u: currentUser, m: emoji, t: new Date().toISOString() });
   localStorage.setItem('jika_mood_time', Date.now().toString());
   document.getElementById('mood-overlay').style.display = 'none';
-  await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) });
+  try { await sbUpsert('jika_moods', moods); } catch(e) {}
 }
 
 /* ===== ALERTS ===== */
@@ -1319,7 +1352,7 @@ async function checkAlerts() {
       t.lastAlert = now; changed = true;
     }
   });
-  if (changed) await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  if (changed) { try { await sbUpsert('jika_tasks', tasks); } catch(e) {} }
 }
 
 /* ===== TELEGRAM ===== */
