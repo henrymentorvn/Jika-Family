@@ -15,13 +15,13 @@
   --amber: #ff9500;
   --grey: #8e8e93;
 
-  /* Light glass tokens — true iOS 26 translucent */
-  --glass-bg: rgba(255,255,255,0.28);
-  --glass-bg-strong: rgba(255,255,255,0.42);
-  --glass-bg-light: rgba(255,255,255,0.18);
-  --glass-border: rgba(255,255,255,0.55);
-  --glass-border-bright: rgba(255,255,255,0.85);
-  --glass-shine: rgba(255,255,255,0.50);
+  /* Light glass tokens */
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-bg-strong: rgba(255,255,255,0.72);
+  --glass-bg-light: rgba(255,255,255,0.40);
+  --glass-border: rgba(0,0,0,0.07);
+  --glass-border-bright: rgba(255,255,255,0.90);
+  --glass-shine: rgba(255,255,255,0.60);
 
   --text-primary: rgba(0,0,0,0.88);
   --text-secondary: rgba(0,0,0,0.45);
@@ -46,27 +46,27 @@
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   font-family: -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, sans-serif;
-  background: #c8d8f0;
+  background: #e8edf5;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== MESH BACKGROUND — iOS 26 TRUE GLASS ===== */
+/* ===== MESH BACKGROUND — LIGHT ===== */
 .mesh-bg {
   position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 90% 70% at 10% 0%,   rgba(160,210,255,0.75) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 60% at 90% 10%,  rgba(190,160,255,0.60) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 55% at 50% 95%,  rgba(120,200,255,0.55) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 50% at 0%  65%,  rgba(150,190,240,0.50) 0%, transparent 50%),
-    radial-gradient(ellipse 65% 70% at 95% 75%,  rgba(200,170,255,0.45) 0%, transparent 55%),
-    linear-gradient(160deg, #b8d4f0 0%, #c8c0f0 45%, #b0d4f4 100%);
-  animation: meshShift 20s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 55% at 15% 5%,  rgba(180,210,255,0.60) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 85% 15%,  rgba(200,180,255,0.45) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 55% 90%,  rgba(160,220,255,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 5%  75%,  rgba(180,200,240,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 90% 70%,  rgba(210,190,255,0.30) 0%, transparent 55%),
+    linear-gradient(155deg, #dce8f8 0%, #e4dff8 40%, #d8eaf8 100%);
+  animation: meshShift 25s ease-in-out infinite alternate;
 }
 @keyframes meshShift {
-  0%   { filter: hue-rotate(0deg)   brightness(1.02); }
-  50%  { filter: hue-rotate(18deg)  brightness(1.06); }
-  100% { filter: hue-rotate(-12deg) brightness(0.99); }
+  0%   { filter: hue-rotate(0deg)   brightness(1);    }
+  50%  { filter: hue-rotate(12deg)  brightness(1.03); }
+  100% { filter: hue-rotate(-8deg)  brightness(0.98); }
 }
 
 /* ===== APP SHELL ===== */
@@ -76,11 +76,11 @@ html, body {
 header {
   flex-shrink: 0;
   padding: env(safe-area-inset-top, 48px) 20px 14px;
-  background: rgba(255,255,255,0.35);
+  background: var(--glass-bg-strong);
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
-  border-bottom: 0.5px solid rgba(255,255,255,0.6);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.7);
+  border-bottom: 0.5px solid var(--glass-border);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8), var(--shadow-card);
   display: flex; justify-content: space-between; align-items: flex-end;
   z-index: 50;
 }
@@ -164,23 +164,23 @@ main::-webkit-scrollbar { display: none; }
 
 /* ===== LIQUID GLASS CARD ===== */
 .glass-card {
-  background: rgba(255,255,255,0.30);
+  background: var(--glass-bg);
   -webkit-backdrop-filter: var(--blur-main);
   backdrop-filter: var(--blur-main);
-  border: 0.5px solid rgba(255,255,255,0.65);
+  border: 0.5px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 2px 16px rgba(100,120,200,0.10), 0 0 0 0.5px rgba(255,255,255,0.4);
+  box-shadow: var(--shadow-card);
   position: relative; overflow: hidden;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .glass-card::before {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.10) 60%, transparent 100%);
+  background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, transparent 55%);
   pointer-events: none; border-radius: inherit;
   z-index: 0;
 }
 .glass-card > * { position: relative; z-index: 1; }
-.glass-card:active { transform: scale(0.985); }
+.glass-card:active { transform: scale(0.985); box-shadow: var(--shadow-card); }
 
 /* ===== TASK CARD ===== */
 .task-card {
@@ -228,28 +228,22 @@ main::-webkit-scrollbar { display: none; }
 .task-deadline-text.overdue { color: var(--red); font-weight: 700; }
 .task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
 
-/* Chat badge: đỏ = chưa đọc, xanh = đã đọc, xám = chưa có tin */
+/* Chat badge — chỉ hiện số tin nhắn */
 .chat-badge {
-  font-size: 10px; font-weight: 800;
+  font-size: 10px; font-weight: 700;
+  background: rgba(0,0,0,0.05);
+  border: 0.5px solid rgba(0,0,0,0.08);
   border-radius: var(--radius-full);
   padding: 3px 10px;
+  color: var(--text-secondary);
   display: flex; align-items: center; gap: 4px;
   min-width: 36px; justify-content: center;
 }
-.chat-badge.no-msg {
-  background: rgba(0,0,0,0.05);
-  border: 0.5px solid rgba(0,0,0,0.07);
-  color: var(--text-tertiary);
-}
-.chat-badge.unread {
-  background: rgba(255,59,48,0.12);
-  border: 0.5px solid rgba(255,59,48,0.3);
-  color: var(--red);
-}
-.chat-badge.read {
-  background: rgba(52,199,89,0.12);
-  border: 0.5px solid rgba(52,199,89,0.3);
-  color: var(--green);
+.chat-badge.has-msg {
+  background: rgba(0,122,255,0.10);
+  border-color: rgba(0,122,255,0.20);
+  color: var(--accent);
+  font-weight: 800;
 }
 
 /* Overdue card */
@@ -265,11 +259,11 @@ main::-webkit-scrollbar { display: none; }
 .tab-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: calc(70px + env(safe-area-inset-bottom, 16px));
-  background: rgba(255,255,255,0.32);
+  background: var(--glass-bg-strong);
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
-  border-top: 0.5px solid rgba(255,255,255,0.65);
-  box-shadow: 0 -1px 0 rgba(255,255,255,0.5);
+  border-top: 0.5px solid var(--glass-border);
+  box-shadow: 0 -1px 0 rgba(255,255,255,0.9);
   display: flex; justify-content: space-around; align-items: flex-start;
   padding-top: 10px; z-index: 50;
 }
@@ -813,22 +807,26 @@ function setupSegmentedControls() {
   });
 }
 
-/* ===== LOAD DATA (từ Supabase — tasks không bị mất sau reload) ===== */
+/* ===== LOAD DATA ===== */
 async function loadAll() {
   try {
     const { data, error } = await _sb.from('jika_data').select('*');
-    if (error) throw error;
-    if (data) data.forEach(row => {
-      try {
-        const val = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
-        if (row.key === 'jika_tasks')    tasks    = Array.isArray(val) ? val : [];
-        if (row.key === 'jika_finances') finances = Array.isArray(val) ? val : [];
-        if (row.key === 'jika_events')   events   = Array.isArray(val) ? val : [];
-        if (row.key === 'jika_vault')    vault    = Array.isArray(val) ? val : [];
-        if (row.key === 'jika_moods')    moods    = Array.isArray(val) ? val : [];
-      } catch(e) { console.warn('Parse error:', row.key, e); }
-    });
-  } catch(e) { console.warn('loadAll failed:', e); }
+    if (error) { console.error('Supabase error:', error); }
+    if (data && data.length > 0) {
+      data.forEach(row => {
+        try {
+          // Supabase JSONB có thể trả về object trực tiếp hoặc string — xử lý cả hai
+          let val = row.value;
+          if (typeof val === 'string') val = JSON.parse(val);
+          if (row.key === 'jika_tasks'    && Array.isArray(val)) tasks    = val;
+          if (row.key === 'jika_finances' && Array.isArray(val)) finances = val;
+          if (row.key === 'jika_events'   && Array.isArray(val)) events   = val;
+          if (row.key === 'jika_vault'    && Array.isArray(val)) vault    = val;
+          if (row.key === 'jika_moods'    && Array.isArray(val)) moods    = val;
+        } catch(e) { console.warn('Parse error key=' + row.key, e); }
+      });
+    }
+  } catch(e) { console.warn('loadAll network error:', e); }
   renderCurrentTab();
   updateTaskBadge();
 }
@@ -892,7 +890,6 @@ function renderTasks() {
   const m = document.getElementById('main-content');
   const now = Date.now();
   const activeTasks = tasks.filter(t => !t.completed);
-  const other = currentUser === 'Chồng' ? 'Vợ' : 'Chồng';
   const zones = [
     { id: 'red',   label: 'Làm Ngay', color: 'var(--red)' },
     { id: 'green', label: 'Lên Lịch', color: 'var(--green)' },
@@ -901,7 +898,6 @@ function renderTasks() {
   let html = '';
   zones.forEach((z, zIdx) => {
     const zt = activeTasks.filter(t => t.zone === z.id);
-    // Chỉ hiện nút Lịch sử ngang hàng với label đầu tiên (Làm Ngay)
     const historyBtn = (zIdx === 0)
       ? `<button class="inline-history-btn" onclick="openArchive()">🕒 Lịch sử</button>`
       : '';
@@ -917,19 +913,8 @@ function renderTasks() {
         const isOverdue = t.deadline && new Date(t.deadline).getTime() < now;
         const deadlineText = t.deadline ? formatDeadline(t.deadline, isOverdue) : 'Không hạn';
         const chatCount = (t.chat || []).length;
-        const readBy = t.readBy || {};
-
-        // Icon giới tính rõ ràng
         const assigneeIcon = (t.assignee === 'Chồng') ? '👨' : (t.assignee === 'Vợ') ? '👩' : '👤';
-
-        // Chat badge: xám=0 tin, đỏ=có tin chưa đọc, xanh=đã đọc hết
-        let badgeClass = 'no-msg';
-        if (chatCount > 0) {
-          const myReadIdx = readBy[currentUser] !== undefined ? readBy[currentUser] : -1;
-          const hasUnread = myReadIdx < chatCount - 1;
-          badgeClass = hasUnread ? 'unread' : 'read';
-        }
-        const badgeIcon = chatCount > 0 ? (badgeClass === 'unread' ? '🔴' : '✅') : '💬';
+        const badgeClass = chatCount > 0 ? 'has-msg' : '';
 
         html += `
           <div class="glass-card task-card zone-${z.id} ${isOverdue ? 'overdue-card' : ''}" onclick="openDetail('${t.id}')">
@@ -942,7 +927,7 @@ function renderTasks() {
               </div>
             </div>
             <div class="task-right">
-              <div class="chat-badge ${badgeClass}">${badgeIcon} ${chatCount}</div>
+              <div class="chat-badge ${badgeClass}">💬 ${chatCount}</div>
             </div>
           </div>`;
       });
@@ -986,15 +971,18 @@ async function saveNewTask() {
       h: parseInt(document.getElementById('alert-h').value) || 0,
       m: parseInt(document.getElementById('alert-m').value) || 0
     },
-    completed: false, completedAt: null, chat: [], lastAlert: 0
+    completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0
   };
   tasks.push(newTask);
+  // Reset form
   document.getElementById('task-title-input').value = '';
   document.getElementById('task-deadline-input').value = '';
   closeSheet('add-task-modal');
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-  sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
   renderTasks(); updateTaskBadge();
+  // Lưu lên Supabase — dùng JSON.stringify tường minh
+  const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
+  if (error) console.error('Save task error:', error);
+  else sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
 }
 
 /* ===== TASK DETAIL ===== */
@@ -1093,12 +1081,11 @@ async function sendChat() {
   if (!t.chat) t.chat = [];
   if (!t.readBy) t.readBy = {};
   t.chat.push({ user: currentUser, text, time: new Date().toISOString() });
-  // Người gửi tự đọc tin nhắn của mình ngay
   t.readBy[currentUser] = t.chat.length - 1;
   input.value = '';
   renderChat(currentDetailId);
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-  sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
+  const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
+  if (!error) sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
 }
 
 async function finishTask(id) {
@@ -1106,8 +1093,8 @@ async function finishTask(id) {
   if (!t) return;
   t.completed = true; t.completedAt = new Date().toISOString();
   closeSheet('task-detail-modal');
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
   renderTasks(); updateTaskBadge();
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
 }
 
 /* ===== ARCHIVE ===== */
@@ -1133,7 +1120,7 @@ async function restoreTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
   t.completed = false; t.completedAt = null;
-  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' });
   closeSheet('archive-modal');
   renderTasks(); updateTaskBadge(); openArchive();
 }
