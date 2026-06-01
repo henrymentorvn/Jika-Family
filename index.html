@@ -605,16 +605,42 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 <body>
 <div class="mesh-bg"></div>
 
+<!-- ROLE SELECT OVERLAY (lần đầu mở app) -->
+<div id="role-overlay" style="position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.45);-webkit-backdrop-filter:blur(60px) saturate(200%);backdrop-filter:blur(60px) saturate(200%);">
+  <div style="background:rgba(255,255,255,0.88);-webkit-backdrop-filter:blur(52px);backdrop-filter:blur(52px);
+    border:0.5px solid rgba(255,255,255,0.95);border-radius:34px;padding:40px 28px 36px;
+    text-align:center;width:88%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.14);">
+    <div style="font-size:48px;margin-bottom:12px">👨‍👩‍👧</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:8px;color:var(--text-primary)">Xin chào!</div>
+    <div style="font-size:14px;color:var(--text-secondary);margin-bottom:32px">Bạn là ai trong gia đình Jika?</div>
+    <div style="display:flex;gap:12px">
+      <button onclick="selectRole('Chồng')" style="flex:1;padding:18px 8px;background:rgba(0,122,255,0.10);
+        border:0.5px solid rgba(0,122,255,0.3);border-radius:20px;cursor:pointer;
+        font-size:15px;font-weight:700;color:var(--accent);font-family:inherit;transition:transform 0.1s">
+        👨<br><span style="font-size:13px">Chồng</span>
+      </button>
+      <button onclick="selectRole('Vợ')" style="flex:1;padding:18px 8px;background:rgba(255,45,146,0.08);
+        border:0.5px solid rgba(255,45,146,0.3);border-radius:20px;cursor:pointer;
+        font-size:15px;font-weight:700;color:#ff2d92;font-family:inherit;transition:transform 0.1s">
+        👩<br><span style="font-size:13px">Vợ</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MOOD OVERLAY -->
-<div id="mood-overlay">
+<div id="mood-overlay" style="position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.18);-webkit-backdrop-filter:blur(60px) saturate(200%);backdrop-filter:blur(60px) saturate(200%);">
   <div class="mood-card">
     <div class="mood-greeting" id="mood-greeting">Chào ❤️</div>
-    <div class="mood-sub">Cảm xúc của bạn lúc này?</div>
+    <div class="mood-sub" id="mood-sub">Cảm xúc của bạn lúc này?</div>
     <div class="mood-btns">
       <button class="mood-btn" onclick="saveMood('😊')">😊</button>
       <button class="mood-btn" onclick="saveMood('😐')">😐</button>
       <button class="mood-btn" onclick="saveMood('😠')">😠</button>
     </div>
+    <div style="margin-top:18px;font-size:11px;color:var(--text-tertiary)">Chọn để tiếp tục dùng app</div>
   </div>
 </div>
 
@@ -753,7 +779,7 @@ const CONFIG = {
   SWITCH_PIN: "0000",
   AVATARS: { "Chồng": "", "Vợ": "" },
   // Mood check-in: chỉ hiện sau lần đầu MỞ APP nếu đã qua 3 giờ kể từ lần check-in cuối
-  MOOD_INTERVAL_MS: 3 * 60 * 60 * 1000
+  MOOD_INTERVAL_MS: 30 * 60 * 1000  // 30 phút
 };
 
 /* ===== SUPABASE SDK ===== */
@@ -1303,24 +1329,132 @@ async function delVault(idx) {
   renderVaultOpen();
 }
 
-/* ===== MOOD — chỉ hiện 1 lần khi mở app, nếu đã > 3h kể từ lần cuối ===== */
+/* ===== ROLE SELECT — lần đầu mở app ===== */
+function checkRoleSelect() {
+  const user = localStorage.getItem('jika_user');
+  if (!user) {
+    // Chưa chọn vai trò → hiện overlay chọn
+    document.getElementById('role-overlay').style.display = 'flex';
+    return true; // chặn mood check
+  }
+  return false;
+}
+
+function selectRole(role) {
+  localStorage.setItem('jika_user', role);
+  currentUser = role;
+  document.getElementById('role-overlay').style.display = 'none';
+  setUserUI();
+  // Sau khi chọn vai trò, hỏi mood luôn
+  setTimeout(() => showMoodOverlay(), 500);
+}
+
+/* ===== MOOD — hiện mỗi 30 phút khi mở app ===== */
 function checkMoodCheckin() {
-  const last = parseInt(localStorage.getItem('jika_mood_time') || '0');
+  if (checkRoleSelect()) return; // đang chọn vai trò thì chờ
+  const key = 'jika_mood_time_' + currentUser; // riêng cho từng người
+  const last = parseInt(localStorage.getItem(key) || '0');
   const now = Date.now();
-  // Chỉ hỏi nếu đã qua đủ interval (3 giờ) — KHÔNG dùng setInterval để tránh popup liên tục
   if (now - last > CONFIG.MOOD_INTERVAL_MS) {
-    // Delay 1.2s để app load xong rồi mới hiện overlay, tránh bật ngay khi mở
-    setTimeout(() => {
-      document.getElementById('mood-overlay').style.display = 'flex';
-    }, 1200);
+    setTimeout(() => showMoodOverlay(), 1200);
   }
 }
 
+function showMoodOverlay() {
+  const hour = new Date().getHours();
+  let greeting = '';
+  if (hour < 12) greeting = `Chào buổi sáng, ${currentUser} ☀️`;
+  else if (hour < 18) greeting = `Chào buổi chiều, ${currentUser} 🌤️`;
+  else greeting = `Chào buổi tối, ${currentUser} 🌙`;
+  document.getElementById('mood-greeting').innerText = greeting;
+  document.getElementById('mood-overlay').style.display = 'flex';
+}
+
 async function saveMood(emoji) {
-  moods.push({ u: currentUser, m: emoji, t: new Date().toISOString() });
-  localStorage.setItem('jika_mood_time', Date.now().toString());
+  const now = new Date();
+  const entry = {
+    u: currentUser,
+    m: emoji,
+    t: now.toISOString(),
+    date: now.toISOString().substring(0, 10) // YYYY-MM-DD
+  };
+  moods.push(entry);
+
+  // Lưu timestamp riêng cho từng người
+  localStorage.setItem('jika_mood_time_' + currentUser, Date.now().toString());
   document.getElementById('mood-overlay').style.display = 'none';
-  try { await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) }, { onConflict: 'key' }); } catch(e) {}
+
+  try {
+    await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) }, { onConflict: 'key' });
+  } catch(e) {}
+
+  // Kiểm tra gửi báo cáo nếu cả 2 đã check-in hôm nay
+  checkAndSendMoodReport();
+}
+
+/* ===== THỐNG KÊ & BÁO CÁO MOOD ===== */
+function getMoodScore(emoji) {
+  if (emoji === '😊') return 3;
+  if (emoji === '😐') return 2;
+  if (emoji === '😠') return 1;
+  return 0;
+}
+
+function getMoodLabel(avg) {
+  if (avg >= 2.7) return '😊 Vui vẻ, hạnh phúc';
+  if (avg >= 2.0) return '😐 Bình thường, ổn định';
+  return '😠 Căng thẳng, cần quan tâm';
+}
+
+function checkAndSendMoodReport() {
+  const today = new Date().toISOString().substring(0, 10);
+  const todayMoods = moods.filter(m => m.date === today);
+  const chongToday = todayMoods.filter(m => m.u === 'Chồng');
+  const voToday = todayMoods.filter(m => m.u === 'Vợ');
+
+  // Gửi báo cáo ngày khi cả 2 đã check-in ít nhất 1 lần hôm nay
+  if (chongToday.length > 0 && voToday.length > 0) {
+    const lastChong = chongToday[chongToday.length - 1].m;
+    const lastVo = voToday[voToday.length - 1].m;
+    const avgChong = chongToday.reduce((s, m) => s + getMoodScore(m.m), 0) / chongToday.length;
+    const avgVo = voToday.reduce((s, m) => s + getMoodScore(m.m), 0) / voToday.length;
+    const familyAvg = (avgChong + avgVo) / 2;
+
+    // Chỉ gửi báo cáo 1 lần / ngày (kiểm tra localStorage)
+    const reportKey = 'jika_mood_report_' + today;
+    if (!localStorage.getItem(reportKey)) {
+      localStorage.setItem(reportKey, '1');
+      const msg = `📊 BÁO CÁO CẢM XÚC HÔM NAY\n📅 ${today.split('-').reverse().join('/')}\n\n👨 Chồng: ${lastChong} (${chongToday.length} lần check-in)\n👩 Vợ: ${lastVo} (${voToday.length} lần check-in)\n\n💑 Gia đình hôm nay: ${getMoodLabel(familyAvg)}${familyAvg < 2 ? '\n\n💝 Cả hai đang căng thẳng — hãy dành thời gian cho nhau nhé!' : ''}`;
+      sendTelegram(msg);
+    }
+  }
+}
+
+function sendWeeklyMoodReport() {
+  // Lấy 7 ngày gần nhất
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().substring(0, 10));
+  }
+
+  let chongScores = [], voScores = [];
+  days.forEach(day => {
+    const dayMoods = moods.filter(m => m.date === day);
+    const c = dayMoods.filter(m => m.u === 'Chồng');
+    const v = dayMoods.filter(m => m.u === 'Vợ');
+    if (c.length) chongScores.push(c.reduce((s, m) => s + getMoodScore(m.m), 0) / c.length);
+    if (v.length) voScores.push(v.reduce((s, m) => s + getMoodScore(m.m), 0) / v.length);
+  });
+
+  if (!chongScores.length && !voScores.length) return;
+
+  const avgChong = chongScores.length ? (chongScores.reduce((a, b) => a + b) / chongScores.length).toFixed(1) : 'N/A';
+  const avgVo = voScores.length ? (voScores.reduce((a, b) => a + b) / voScores.length).toFixed(1) : 'N/A';
+
+  const msg = `📊 BÁO CÁO CẢM XÚC TUẦN NÀY\n\n👨 Chồng trung bình: ${avgChong}/3 ${parseFloat(avgChong) >= 2.5 ? '😊' : parseFloat(avgChong) >= 2 ? '😐' : '😠'}\n👩 Vợ trung bình: ${avgVo}/3 ${parseFloat(avgVo) >= 2.5 ? '😊' : parseFloat(avgVo) >= 2 ? '😐' : '😠'}\n\n💡 Check-in đều đặn giúp cả hai hiểu nhau hơn mỗi ngày 💑`;
+  sendTelegram(msg);
 }
 
 /* ===== ALERTS ===== */
