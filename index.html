@@ -1,113 +1,36 @@
-<!DOCTYPE html>
-<html lang="vi-VN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jika Family — Brain</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --ios-blue: #007aff; --ios-red: #ff3b30; --ios-green: #34c759; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; color: #1c1c1e; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 15px; }
-        .status { font-size: 12px; font-weight: bold; margin-bottom: 20px; padding: 10px; border-radius: 10px; text-align: center; }
-        .status.ok { background: #eaffea; color: var(--ios-green); }
-        .status.err { background: #ffeaea; color: var(--ios-red); }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-blue { background: var(--ios-blue); color: white; }
-        .task-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 16px; box-sizing: border-box; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Jika Family App</h2>
-        <div id="connection-status" class="status">Đang kiểm tra kết nối...</div>
+async function saveTask() {
+    const input = document.getElementById('task-title');
+    const btn = document.getElementById('save-btn');
+    const title = input.value.trim();
+    if (!title) return;
 
-        <div class="card">
-            <h3>Thêm công việc mới</h3>
-            <input type="text" id="task-title" placeholder="Ví dụ: Mua tã cho Simba...">
-            <button class="btn btn-blue" id="save-btn" onclick="saveTask()">LƯU LẠI</button>
-        </div>
+    btn.disabled = true; btn.innerText = "ĐANG LƯU...";
 
-        <div class="card">
-            <h3>Danh sách việc cần làm</h3>
-            <div id="task-list">Đang tải...</div>
-        </div>
-    </div>
+    // Chuẩn bị dữ liệu
+    const updatedTasks = [...tasks, { id: Date.now(), title: title }];
 
-    <script>
-        // THÔNG TIN BẠN VỪA CUNG CẤP
-        const SB_URL = "https://zxvlthyrahpfzmrnfbib.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss";
-        
-        const _sb = supabase.createClient(SB_URL, SB_KEY);
-        let tasks = [];
-
-        // 1. KIỂM TRA KẾT NỐI NGAY KHI MỞ APP
-        async function checkConnection() {
-            const statusDiv = document.getElementById('connection-status');
-            try {
-                const { data, error } = await _sb.from('jika_data').select('key').limit(1);
-                if (error && error.message.includes("failed to fetch")) {
-                    throw new Error("ERR_NAME_NOT_RESOLVED");
-                }
-                statusDiv.innerText = "✅ KẾT NỐI DATABASE THÀNH CÔNG";
-                statusDiv.className = "status ok";
-                loadTasks();
-            } catch (err) {
-                statusDiv.innerText = "❌ LỖI: DATABASE ĐANG TẮT HOẶC BỊ CHẶN";
-                statusDiv.className = "status err";
-                console.error("Lỗi chi tiết:", err);
-                alert("Dự án của bạn có thể đang bị PAUSED.\n\nHãy vào trang quản trị Supabase bấm RESTORE PROJECT.");
-            }
-        }
-
-        // 2. TẢI DỮ LIỆU
-        async function loadTasks() {
-            const { data } = await _sb.from('jika_data').select('*').eq('key', 'jika_tasks').single();
-            if (data) {
-                tasks = JSON.parse(data.value);
-                renderTasks();
-            } else {
-                document.getElementById('task-list').innerText = "Chưa có công việc nào.";
-            }
-        }
-
-        function renderTasks() {
-            const list = document.getElementById('task-list');
-            list.innerHTML = tasks.length ? "" : "Trống.";
-            tasks.forEach(t => {
-                list.innerHTML += `<div class="task-item"><span>${t.title}</span></div>`;
-            });
-        }
-
-        // 3. LƯU DỮ LIỆU
-        async function saveTask() {
-            const input = document.getElementById('task-title');
-            const btn = document.getElementById('save-btn');
-            if (!input.value.trim()) return;
-
-            btn.disabled = true; btn.innerText = "ĐANG LƯU...";
-            const updatedTasks = [...tasks, { id: Date.now(), title: input.value.trim() }];
-
-            const { error } = await _sb.from('jika_data').upsert({
+    try {
+        // Sử dụng lệnh trực tiếp thay vì qua thư viện để tránh lỗi Fetch
+        const { error } = await _sb
+            .from('jika_data')
+            .upsert({ 
                 key: 'jika_tasks', 
-                value: JSON.stringify(updatedTasks)
+                value: JSON.stringify(updatedTasks) 
             });
 
-            if (error) {
-                alert("Lỗi: " + error.message + "\n\nBạn đã chạy lệnh SQL tắt RLS chưa?");
-                console.error(error);
-            } else {
-                tasks = updatedTasks;
-                renderTasks();
-                input.value = "";
-            }
-            btn.disabled = false; btn.innerText = "LƯU LẠI";
+        if (error) {
+            console.error("Lỗi từ Supabase:", error);
+            alert("Database từ chối lưu! Mã lỗi: " + error.message);
+        } else {
+            tasks = updatedTasks;
+            renderTasks();
+            input.value = "";
+            alert("Đã lưu thành công!");
         }
-
-        window.onload = checkConnection;
-    </script>
-</body>
-</html>
+    } catch (err) {
+        console.error("Lỗi hệ thống:", err);
+        alert("TRÌNH DUYỆT CHẶN KẾT NỐI!\n\nCách sửa:\n1. Tắt các phần mềm chặn quảng cáo (AdBlock).\n2. Đổi sang dùng mạng 4G.");
+    } finally {
+        btn.disabled = false; btn.innerText = "LƯU LẠI";
+    }
+}
