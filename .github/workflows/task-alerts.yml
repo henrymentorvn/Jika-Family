@@ -15,7 +15,7 @@ jobs:
           node -e "
           const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
           const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
-          const TG_TOKEN = '8188166581:AAFCm486x9i1v_t7rNOf9P9uHq68S4yG6tU';
+          const TG_TOKEN = '8914722655:AAHdKjzyLLQiOfA1zOQEWBFJTqLlJ1uEltc';
           const TG_CHAT_ID = '-1002587798916';
 
           async function main() {
