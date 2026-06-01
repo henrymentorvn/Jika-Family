@@ -117,3 +117,66 @@ jobs:
 
           main().catch(e => { console.error('Error:', e.message); process.exit(1); });
           "
+
+  weekly-mood-report:
+    runs-on: ubuntu-latest
+    # Chạy thứ 2 hàng tuần lúc 8h sáng (UTC+7 = 1h UTC)
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule')
+    steps:
+      - name: Send weekly mood report
+        run: |
+          node -e "
+          const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
+          const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
+          const TG_TOKEN = '8914722655:AAHdKjzyLLQiOfA1zOQEWBFJTqLlJ1uEltc';
+          const TG_CHAT_ID = '-1002587798916';
+
+          // Chỉ chạy vào thứ 2 (day = 1)
+          const now = new Date();
+          const dayOfWeek = now.getUTCDay();
+          const hourUTC = now.getUTCHours();
+          if (dayOfWeek !== 1 || hourUTC !== 1) { console.log('Không phải thứ 2 8h sáng, bỏ qua'); process.exit(0); }
+
+          async function main() {
+            const res = await fetch(SB_URL + '/rest/v1/jika_data?key=eq.jika_moods&select=value', {
+              headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+            });
+            const data = await res.json();
+            if (!data || !data.length) { console.log('Không có dữ liệu mood'); return; }
+
+            let moods = [];
+            let val = data[0].value;
+            if (typeof val === 'string') val = JSON.parse(val);
+            if (Array.isArray(val)) moods = val;
+
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date();
+              d.setDate(d.getDate() - i);
+              days.push(d.toISOString().substring(0, 10));
+            }
+
+            function score(m) { return m === '😊' ? 3 : m === '😐' ? 2 : 1; }
+
+            let chongScores = [], voScores = [];
+            days.forEach(day => {
+              const c = moods.filter(m => m.date === day && m.u === 'Chồng');
+              const v = moods.filter(m => m.date === day && m.u === 'Vợ');
+              if (c.length) chongScores.push(c.reduce((s, m) => s + score(m.m), 0) / c.length);
+              if (v.length) voScores.push(v.reduce((s, m) => s + score(m.m), 0) / v.length);
+            });
+
+            if (!chongScores.length && !voScores.length) { console.log('Chưa có dữ liệu mood tuần này'); return; }
+
+            const ac = chongScores.length ? (chongScores.reduce((a,b)=>a+b)/chongScores.length).toFixed(1) : 'N/A';
+            const av = voScores.length ? (voScores.reduce((a,b)=>a+b)/voScores.length).toFixed(1) : 'N/A';
+            const emoji = v => parseFloat(v) >= 2.5 ? '😊' : parseFloat(v) >= 2 ? '😐' : '😠';
+
+            const msg = '📊 BÁO CÁO CẢM XÚC TUẦN NÀY\n\n👨 Chồng trung bình: ' + ac + '/3 ' + emoji(ac) + '\n👩 Vợ trung bình: ' + av + '/3 ' + emoji(av) + '\n\n💡 Check-in đều đặn giúp cả hai hiểu nhau hơn 💑';
+
+            const tgRes = await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg));
+            const tgData = await tgRes.json();
+            console.log(tgData.ok ? '✅ Đã gửi báo cáo tuần' : '❌ Lỗi: ' + tgData.description);
+          }
+          main().catch(e => console.error(e.message));
+          "
