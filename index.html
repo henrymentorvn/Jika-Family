@@ -1,335 +1,1304 @@
 <!DOCTYPE html>
 <html lang="vi-VN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jika Family — Digital Brain</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --ios-red: #ff3b30; --ios-blue: #007aff; --ios-green: #34c759; --ios-grey: #8e8e93;
-            --glass: rgba(255, 255, 255, 0.4); --glass-border: rgba(255, 255, 255, 0.6);
-            --text-main: #1c1c1e;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: #f5f7fa; color: var(--text-main); overflow: hidden; }
-        
-        .mesh-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, #ee9ca7, #ffdde1, #2193b0, #6dd5ed); background-size: 400% 400%; animation: gradientBG 15s ease infinite; filter: blur(60px); }
-        @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jika Family — Digital Brain</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ===== LIQUID GLASS DARK — iOS 26 ===== */
+:root {
+  --accent: #007aff;
+  --accent-glow: rgba(0,122,255,0.35);
+  --red: #ff453a;
+  --green: #30d158;
+  --amber: #ffd60a;
+  --grey: #636366;
 
-        .app-container { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
-        
-        header { padding: 50px 20px 15px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        header h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
-        .sync-status { font-size: 10px; color: var(--ios-green); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
+  --glass-bg: rgba(28,28,32,0.72);
+  --glass-bg-strong: rgba(36,36,42,0.88);
+  --glass-bg-light: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.10);
+  --glass-border-bright: rgba(255,255,255,0.18);
+  --glass-shine: rgba(255,255,255,0.04);
 
-        .user-section { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.5); padding: 6px 14px; border-radius: 25px; border: 1px solid var(--glass-border); cursor: pointer; }
-        .avatar-frame { width: 34px; height: 34px; border-radius: 50%; background: #fff; overflow: hidden; border: 1.5px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
-        .user-name { font-size: 13px; font-weight: 700; color: #333; }
+  --text-primary: rgba(255,255,255,0.95);
+  --text-secondary: rgba(255,255,255,0.55);
+  --text-tertiary: rgba(255,255,255,0.30);
 
-        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; scroll-behavior: smooth; }
-        
-        .section-label { font-size: 12px; font-weight: 800; color: #444; margin: 25px 0 12px 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.8px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
+  --surface-0: #0a0a0f;
+  --surface-1: rgba(18,18,24,0.95);
+  --surface-2: rgba(28,28,36,0.80);
+  --surface-3: rgba(44,44,56,0.60);
 
-        .card { background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); transition: 0.2s; }
-        .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid transparent; }
-        .task-card:active { transform: scale(0.97); }
-        .task-info h3 { margin: 0; font-size: 17px; font-weight: 700; color: #1c1c1e; }
-        .task-info p { margin: 5px 0 0; font-size: 11px; color: #555; font-weight: 600; }
-        .msg-count { font-size: 11px; font-weight: 800; background: rgba(0,0,0,0.08); padding: 3px 10px; border-radius: 12px; }
+  --blur-main: blur(28px) saturate(180%);
+  --blur-heavy: blur(48px) saturate(200%);
+  --blur-overlay: blur(60px) saturate(180%);
 
-        .modal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.3); display: none; justify-content: center; align-items: flex-end; }
-        .modal-content { background: #fff; width: 100%; max-height: 94%; border-radius: 32px 32px 0 0; padding: 25px; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0, 0.5, 0.5, 1); overflow-y: auto; }
-        @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --radius-full: 999px;
+}
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 11px; font-weight: 800; color: #999; margin-bottom: 8px; text-transform: uppercase; }
-        .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; outline: none; font-family: inherit; }
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
-        .segmented-control { display: flex; background: #efeff4; border-radius: 16px; padding: 3px; gap: 3px; }
-        .segmented-control button { flex: 1; border: none; padding: 10px 5px; border-radius: 13px; font-size: 12px; font-weight: 700; cursor: pointer; color: #666; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
-        .segmented-control button span { font-size: 8px; font-weight: 500; opacity: 0.7; margin-top: 2px; }
-        .zone-btn[data-val="red"].active { background: var(--ios-red); color: white; }
-        .zone-btn[data-val="green"].active { background: var(--ios-green); color: white; }
-        .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; }
-        .assign-btn.active { background: white; color: var(--ios-blue); box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, sans-serif;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
 
-        .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 18px; border-radius: 22px; font-size: 17px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.96); }
+/* ===== MESH BACKGROUND ===== */
+.mesh-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(60,80,180,0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(100,40,180,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 60% 85%, rgba(20,80,160,0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 70%, rgba(80,20,120,0.18) 0%, transparent 55%),
+    linear-gradient(160deg, #0d0d18 0%, #0a0812 50%, #070710 100%);
+  animation: meshShift 20s ease-in-out infinite alternate;
+}
+@keyframes meshShift {
+  0%   { filter: hue-rotate(0deg) brightness(1); }
+  50%  { filter: hue-rotate(15deg) brightness(1.05); }
+  100% { filter: hue-rotate(-10deg) brightness(0.98); }
+}
 
-        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-top: 12px; z-index: 100; }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 600; cursor: pointer; flex: 1; transition: 0.2s; }
-        .tab-item.active { color: var(--ios-blue); }
-        .tab-icon { font-size: 24px; margin-bottom: 5px; }
+/* ===== APP SHELL ===== */
+.app-container { position: relative; z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; }
 
-        .fab { position: fixed; bottom: 105px; right: 20px; width: 64px; height: 64px; border-radius: 32px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 10px 25px rgba(0,122,255,0.4); z-index: 90; border: none; cursor: pointer; }
+/* ===== HEADER ===== */
+header {
+  flex-shrink: 0;
+  padding: env(safe-area-inset-top, 48px) 20px 14px;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  backdrop-filter: var(--blur-heavy);
+  border-bottom: 0.5px solid var(--glass-border);
+  display: flex; justify-content: space-between; align-items: flex-end;
+  z-index: 50;
+}
+.header-title { font-size: 30px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; }
+.header-sub { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: 0.3px; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
 
-        /* CHAT UI */
-        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; padding: 5px; }
-        .msg { font-size: 14px; max-width: 85%; padding: 12px 16px; border-radius: 20px; line-height: 1.4; }
-        .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg.received { background: #e9e9eb; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
-        
-        #chat-limit-warning { display: none; color: var(--ios-red); font-size: 11px; text-align: center; padding: 12px; background: #fff1f0; border-radius: 12px; margin: 10px 0; font-weight: 700; line-height: 1.4; }
-        
-        #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.1); backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .mood-card { background: white; padding: 40px 30px; border-radius: 45px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); width: 88%; max-width: 340px; }
-    </style>
+.user-pill {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-full);
+  padding: 5px 14px 5px 6px;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: background 0.2s;
+}
+.user-pill:active { background: rgba(255,255,255,0.10); }
+.avatar-ring {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--glass-border-bright);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(0,122,255,0.5), rgba(100,40,200,0.5));
+  font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.avatar-ring img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.avatar-ring img.loaded { display: block; }
+.avatar-ring .initials { font-size: 13px; font-weight: 700; }
+.user-name-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+/* ===== MAIN SCROLL ===== */
+main {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 16px 16px 120px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+main::-webkit-scrollbar { display: none; }
+
+/* ===== SECTION LABEL ===== */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 24px 0 10px 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.zone-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ===== LIQUID GLASS CARD ===== */
+.glass-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--blur-main);
+  backdrop-filter: var(--blur-main);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  position: relative; overflow: hidden;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.glass-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(145deg, var(--glass-shine) 0%, transparent 50%);
+  pointer-events: none; border-radius: inherit;
+}
+.glass-card:active { transform: scale(0.98); }
+
+/* ===== TASK CARD ===== */
+.task-card {
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 14px;
+}
+.task-zone-bar {
+  width: 3px; height: 100%; border-radius: 2px;
+  position: absolute; left: 0; top: 0; bottom: 0;
+}
+.task-card-inner { flex: 1; min-width: 0; padding-left: 4px; }
+.task-title { font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+.task-assignee-pill {
+  font-size: 10px; font-weight: 700;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  color: var(--text-secondary);
+}
+.task-deadline-text { font-size: 10px; color: var(--text-tertiary); }
+.task-deadline-text.overdue { color: var(--red); font-weight: 600; }
+.task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.chat-badge {
+  font-size: 10px; font-weight: 700;
+  background: rgba(255,255,255,0.08);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  padding: 3px 9px;
+  color: var(--text-secondary);
+  display: flex; align-items: center; gap: 4px;
+}
+.zone-badge {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
+/* Zone colours */
+.zone-red  .task-zone-bar { background: var(--red); }
+.zone-green .task-zone-bar { background: var(--green); }
+.zone-grey  .task-zone-bar { background: var(--grey); }
+.zone-red  .task-title { color: rgba(255,255,255,0.97); }
+
+/* Overdue card */
+.task-card.overdue-card {
+  border-color: rgba(255,69,58,0.35);
+  box-shadow: inset 0 0 0 0.5px rgba(255,69,58,0.2), 0 0 20px rgba(255,69,58,0.08);
+}
+
+/* Empty state */
+.empty-state { padding: 16px 20px; font-size: 12px; color: var(--text-tertiary); text-align: center; }
+
+/* ===== TAB BAR ===== */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(72px + env(safe-area-inset-bottom, 16px));
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  backdrop-filter: var(--blur-heavy);
+  border-top: 0.5px solid var(--glass-border);
+  display: flex; justify-content: space-around; align-items: flex-start;
+  padding-top: 10px;
+  z-index: 50;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; color: var(--text-tertiary);
+  font-size: 10px; font-weight: 500;
+  padding: 0 4px;
+  transition: color 0.2s;
+  user-select: none;
+}
+.tab-item.active { color: var(--accent); }
+.tab-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s, transform 0.15s;
+}
+.tab-item.active .tab-icon {
+  background: rgba(0,122,255,0.15);
+  transform: scale(1.08);
+}
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 16px));
+  right: 18px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-size: 28px; font-weight: 300;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.4);
+  z-index: 40; cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.fab:active { transform: scale(0.93); box-shadow: 0 3px 12px var(--accent-glow); }
+
+/* ===== MODAL / SHEET ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: none; align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+
+.sheet {
+  width: 100%;
+  max-height: 96dvh;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  backdrop-filter: var(--blur-heavy);
+  border-top: 0.5px solid var(--glass-border-bright);
+  border-radius: 32px 32px 0 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: sheetUp 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes sheetUp { from { transform: translateY(100%); opacity:0.6; } to { transform: translateY(0); opacity:1; } }
+
+.sheet-handle-bar {
+  display: flex; justify-content: center; padding: 12px 0 4px;
+  flex-shrink: 0;
+}
+.sheet-handle { width: 36px; height: 5px; border-radius: 3px; background: var(--glass-border-bright); }
+
+.sheet-header {
+  padding: 0 20px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 0.5px solid var(--glass-border);
+  flex-shrink: 0;
+}
+.sheet-title { font-size: 18px; font-weight: 700; }
+.sheet-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--glass-bg-light); border: 0.5px solid var(--glass-border);
+  color: var(--text-secondary); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+
+.sheet-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+.sheet-scroll::-webkit-scrollbar { display: none; }
+
+/* ===== FORM ELEMENTS ===== */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--text-secondary); letter-spacing: 0.6px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.form-input {
+  width: 100%; padding: 14px 16px;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-md);
+  color: var(--text-primary); font-size: 15px; font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus { border-color: rgba(0,122,255,0.6); background: rgba(0,122,255,0.05); }
+.form-input::placeholder { color: var(--text-tertiary); }
+input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
+
+/* Segmented */
+.seg-control {
+  display: flex;
+  background: rgba(0,0,0,0.25);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 3px; gap: 2px;
+}
+.seg-btn {
+  flex: 1; border: none; background: transparent;
+  color: var(--text-secondary); font-size: 12px; font-weight: 600;
+  padding: 9px 6px; border-radius: calc(var(--radius-md) - 4px);
+  cursor: pointer; transition: background 0.18s, color 0.18s;
+  font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.seg-btn .seg-sub { font-size: 8.5px; font-weight: 400; opacity: 0; transition: opacity 0.18s; }
+.seg-btn.active .seg-sub { opacity: 0.75; }
+.seg-btn.active { color: white; }
+.zone-seg .seg-btn[data-val="red"].active  { background: var(--red); }
+.zone-seg .seg-btn[data-val="green"].active{ background: var(--green); color: #000; }
+.zone-seg .seg-btn[data-val="grey"].active { background: var(--grey); }
+.assign-seg .seg-btn.active { background: var(--accent); }
+
+/* Picker */
+.picker-row { display: flex; gap: 8px; }
+.picker-cell {
+  flex: 1; background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-md); padding: 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.picker-select {
+  background: none; border: none; color: var(--accent);
+  font-size: 17px; font-weight: 700; font-family: inherit;
+  text-align: center; width: 100%; outline: none;
+  -webkit-appearance: none; padding: 2px 0;
+}
+.picker-lbl { font-size: 9px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Buttons */
+.btn-primary {
+  width: 100%; padding: 17px;
+  background: var(--accent); color: white;
+  border: none; border-radius: var(--radius-md);
+  font-size: 16px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+.btn-secondary {
+  padding: 10px 18px;
+  background: var(--glass-bg-light); color: var(--text-secondary);
+  border: 0.5px solid var(--glass-border); border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: background 0.15s;
+}
+.btn-secondary:active { background: rgba(255,255,255,0.10); }
+.btn-danger {
+  padding: 10px 18px;
+  background: rgba(255,69,58,0.12); color: var(--red);
+  border: 0.5px solid rgba(255,69,58,0.3); border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===== CHAT SHEET ===== */
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-task-title { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-task-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+.chat-zone-badge {
+  flex-shrink: 0; padding: 5px 12px;
+  border-radius: var(--radius-full); border: none;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.zone-badge-red   { background: rgba(255,69,58,0.15); color: var(--red); border: 0.5px solid rgba(255,69,58,0.3); }
+.zone-badge-green { background: rgba(48,209,88,0.15); color: var(--green); border: 0.5px solid rgba(48,209,88,0.3); }
+.zone-badge-grey  { background: rgba(99,99,102,0.20); color: #aeaeb2; border: 0.5px solid rgba(99,99,102,0.3); }
+
+.chat-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.chat-body::-webkit-scrollbar { display: none; }
+
+.msg-bubble {
+  max-width: 82%; padding: 10px 14px;
+  border-radius: 20px; font-size: 14px; line-height: 1.45;
+  animation: bubblePop 0.2s ease;
+}
+@keyframes bubblePop { from {opacity:0;transform:scale(0.94)} to {opacity:1;transform:scale(1)} }
+.msg-bubble.sent {
+  background: var(--accent);
+  color: white; align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+.msg-bubble.recv {
+  background: rgba(58,58,66,0.85);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  color: var(--text-primary); align-self: flex-start;
+  border-bottom-left-radius: 5px;
+  border: 0.5px solid var(--glass-border);
+}
+.msg-name { font-size: 10px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 3px; }
+
+.chat-limit-banner {
+  margin: 8px 16px;
+  padding: 10px 14px;
+  background: rgba(255,69,58,0.10);
+  border: 0.5px solid rgba(255,69,58,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; color: var(--red);
+  text-align: center;
+  display: none;
+}
+.chat-limit-warn {
+  margin: 8px 16px;
+  padding: 10px 14px;
+  background: rgba(255,214,10,0.08);
+  border: 0.5px solid rgba(255,214,10,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600; color: var(--amber);
+  text-align: center;
+  display: none;
+}
+
+.chat-input-row {
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 8px;
+  border-top: 0.5px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-main);
+  backdrop-filter: var(--blur-main);
+  flex-shrink: 0;
+}
+.chat-text-input {
+  flex: 1; padding: 11px 16px;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-full);
+  color: var(--text-primary); font-size: 15px; font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-text-input:focus { border-color: rgba(0,122,255,0.5); }
+.chat-text-input::placeholder { color: var(--text-tertiary); }
+.chat-send-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); border: none;
+  color: white; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.chat-send-btn:active { opacity: 0.8; transform: scale(0.93); }
+.chat-send-btn:disabled { background: var(--grey); opacity: 0.5; cursor: default; }
+
+.chat-action-row {
+  padding: 10px 16px 2px;
+  display: flex; gap: 8px; flex-shrink: 0;
+}
+
+/* ===== ARCHIVE SHEET ===== */
+.archive-task-row {
+  padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.archive-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: line-through; }
+.archive-meta { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
+
+/* ===== MOOD OVERLAY ===== */
+#mood-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  -webkit-backdrop-filter: var(--blur-overlay);
+  backdrop-filter: var(--blur-overlay);
+  background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center;
+}
+.mood-card {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  backdrop-filter: var(--blur-heavy);
+  border: 0.5px solid var(--glass-border-bright);
+  border-radius: var(--radius-xl);
+  padding: 36px 28px 32px;
+  text-align: center; width: 88%; max-width: 320px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+}
+.mood-greeting { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.mood-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
+.mood-btns { display: flex; justify-content: space-around; }
+.mood-btn { font-size: 48px; background: none; border: none; cursor: pointer; transition: transform 0.15s; padding: 8px; border-radius: 16px; }
+.mood-btn:active { transform: scale(0.88); }
+
+/* ===== PLACEHOLDER TABS ===== */
+.placeholder-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 12px; }
+.placeholder-icon { font-size: 52px; opacity: 0.25; }
+.placeholder-text { font-size: 15px; color: var(--text-tertiary); }
+.placeholder-sub { font-size: 12px; color: var(--text-tertiary); opacity: 0.6; }
+
+/* ===== EVENT ITEMS ===== */
+.event-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.event-row:last-child { border-bottom: none; }
+.event-name { font-size: 14px; font-weight: 600; }
+.event-countdown { font-size: 13px; font-weight: 700; color: var(--accent); }
+.event-countdown.soon { color: var(--amber); }
+.event-countdown.today { color: var(--green); }
+
+/* ===== FINANCE ===== */
+.finance-summary { padding: 20px; text-align: center; }
+.finance-balance { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.finance-balance.positive { color: var(--green); }
+.finance-balance.negative { color: var(--red); }
+.finance-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.finance-row:last-child { border-bottom: none; }
+.finance-label { font-size: 14px; font-weight: 500; }
+.finance-val { font-size: 14px; font-weight: 700; }
+.finance-val.income { color: var(--green); }
+.finance-val.expense { color: var(--red); }
+.finance-entry-type { display: flex; gap: 8px; }
+.type-btn { flex: 1; padding: 13px; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
+.type-btn.income-btn { background: rgba(48,209,88,0.2); color: var(--green); border: 0.5px solid rgba(48,209,88,0.3); }
+.type-btn.expense-btn { background: rgba(255,69,58,0.2); color: var(--red); border: 0.5px solid rgba(255,69,58,0.3); }
+
+/* ===== VAULT ===== */
+.pin-display { display: flex; justify-content: center; gap: 12px; margin: 24px 0 28px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--glass-border-bright); transition: background 0.15s, transform 0.15s; }
+.pin-dot.filled { background: var(--accent); transform: scale(1.15); box-shadow: 0 0 8px var(--accent-glow); }
+.pin-keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; max-width: 260px; margin: 0 auto; }
+.pin-key {
+  aspect-ratio: 1; border-radius: 50%;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border-bright);
+  color: var(--text-primary); font-size: 24px; font-weight: 400;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.1s, transform 0.1s;
+  font-family: inherit;
+}
+.pin-key:active { background: rgba(255,255,255,0.15); transform: scale(0.92); }
+.vault-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.vault-item:last-child { border-bottom: none; }
+.vault-item-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+.vault-item-val { font-size: 15px; font-weight: 600; color: var(--accent); margin-top: 2px; }
+
+/* ===== HISTORY btn in header ===== */
+.history-btn {
+  padding: 6px 12px;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary); font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===== TASK COUNT BADGE ===== */
+.tab-badge {
+  position: absolute; top: -2px; right: -4px;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  background: var(--red); color: white;
+  font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
+.tab-icon-wrap { position: relative; display: inline-flex; }
+</style>
 </head>
 <body>
-    <div class="mesh-bg"></div>
+<div class="mesh-bg"></div>
 
-    <!-- MOOD CHECK-IN -->
-    <div id="mood-overlay"><div class="mood-card">
-        <h2 id="mood-user-name">Chào ❤️</h2><p style="color: #666; font-size: 14px;">Cảm xúc của bạn lúc này?</p>
-        <div style="display: flex; justify-content: space-around; margin-top: 30px;">
-            <button onclick="saveMood('😊')" style="font-size: 55px; border:none; background:none; cursor:pointer;">😊</button>
-            <button onclick="saveMood('😐')" style="font-size: 55px; border:none; background:none; cursor:pointer;">😐</button>
-            <button onclick="saveMood('😠')" style="font-size: 55px; border:none; background:none; cursor:pointer;">😠</button>
+<!-- MOOD OVERLAY -->
+<div id="mood-overlay">
+  <div class="mood-card">
+    <div class="mood-greeting" id="mood-greeting">Chào ❤️</div>
+    <div class="mood-sub">Cảm xúc của bạn lúc này?</div>
+    <div class="mood-btns">
+      <button class="mood-btn" onclick="saveMood('😊')">😊</button>
+      <button class="mood-btn" onclick="saveMood('😐')">😐</button>
+      <button class="mood-btn" onclick="saveMood('😠')">😠</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-container">
+  <header>
+    <div>
+      <div class="header-title" id="page-title">Task</div>
+      <div class="header-sub">
+        <span class="live-dot"></span> LIVE SYNC
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="history-btn" id="history-btn" onclick="openArchive()" style="display:none">🕒 Lịch sử</button>
+      <div class="user-pill" onclick="switchUserPrompt()">
+        <div class="avatar-ring" id="avatar-ring">
+          <img id="user-avatar" src="" alt="">
+          <span class="initials" id="user-initials">C</span>
         </div>
-    </div></div>
+        <span class="user-name-label" id="display-name">---</span>
+      </div>
+    </div>
+  </header>
 
-    <div class="app-container">
-        <header>
-            <div><h1 id="page-title">Task</h1><div id="sync-status" class="sync-status">● LIVE SYNC</div></div>
-            <div class="user-section" onclick="switchUserPrompt()">
-                <div class="avatar-frame"><img id="user-avatar" src=""></div>
-                <span class="user-name" id="display-name">---</span>
+  <main id="main-content"></main>
+
+  <button class="fab" id="fab-btn" onclick="onFabClick()">+</button>
+
+  <div class="tab-bar">
+    <div class="tab-item active" onclick="nav('tasks',this)" id="tab-tasks">
+      <div class="tab-icon-wrap">
+        <div class="tab-icon">📋</div>
+        <div class="tab-badge" id="task-badge" style="display:none">0</div>
+      </div>
+      <span>Task</span>
+    </div>
+    <div class="tab-item" onclick="nav('events',this)">
+      <div class="tab-icon">⏳</div>
+      <span>Sự kiện</span>
+    </div>
+    <div class="tab-item" onclick="nav('finance',this)">
+      <div class="tab-icon">💰</div>
+      <span>Tài chính</span>
+    </div>
+    <div class="tab-item" onclick="nav('vault',this)">
+      <div class="tab-icon">🗄️</div>
+      <span>Ngăn Kéo</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHEET: ADD TASK ===== -->
+<div class="modal-overlay" id="add-task-modal" onclick="closeSheet('add-task-modal')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header">
+      <span class="sheet-title">Việc mới</span>
+      <div class="sheet-close" onclick="closeSheet('add-task-modal')">✕</div>
+    </div>
+    <div class="sheet-scroll">
+      <div class="form-group">
+        <label class="form-label">Tiêu đề ★</label>
+        <input type="text" id="task-title-input" class="form-input" placeholder="Ví dụ: Đóng tiền điện">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mức độ ưu tiên</label>
+        <div class="seg-control zone-seg" id="zone-selector">
+          <button class="seg-btn active" data-val="red">Làm Ngay<span class="seg-sub">Quan trọng·Khẩn</span></button>
+          <button class="seg-btn" data-val="green">Lên Lịch<span class="seg-sub">Quan trọng·Ko gấp</span></button>
+          <button class="seg-btn" data-val="grey">Để Sau<span class="seg-sub">Ko quan trọng</span></button>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Đảm nhận</label>
+          <div class="seg-control assign-seg" id="assignee-selector">
+            <button class="seg-btn active" data-val="Chồng">Chồng</button>
+            <button class="seg-btn" data-val="Vợ">Vợ</button>
+          </div>
+        </div>
+        <div class="form-group" style="flex:1.2">
+          <label class="form-label">Hạn chót</label>
+          <input type="datetime-local" id="task-deadline-input" class="form-input" style="padding:11px 14px">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cảnh báo trước hạn</label>
+        <div class="picker-row">
+          <div class="picker-cell"><select class="picker-select" id="alert-d"></select><div class="picker-lbl">Ngày</div></div>
+          <div class="picker-cell"><select class="picker-select" id="alert-h"></select><div class="picker-lbl">Giờ</div></div>
+          <div class="picker-cell"><select class="picker-select" id="alert-m"></select><div class="picker-lbl">Phút</div></div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveNewTask()">Lưu công việc ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHEET: TASK DETAIL / CHAT ===== -->
+<div class="modal-overlay" id="task-detail-modal" onclick="closeSheet('task-detail-modal')">
+  <div class="sheet" style="max-height:98dvh;height:92dvh" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header">
+      <div class="chat-header-info">
+        <div class="chat-task-title" id="dt-title"></div>
+        <div class="chat-task-sub" id="dt-info"></div>
+      </div>
+      <button class="chat-zone-badge" id="dt-done-btn">Hoàn thành</button>
+    </div>
+    <div class="chat-action-row">
+      <button class="btn-secondary" onclick="closeSheet('task-detail-modal')">← Quay lại</button>
+    </div>
+    <div id="chat-limit-warn" class="chat-limit-warn">⚠️ Còn 1 câu cuối — nên gọi điện để trao đổi trực tiếp!</div>
+    <div id="chat-limit-banner" class="chat-limit-banner">🔒 Đã đủ 10 câu thảo luận. Hãy gọi điện cho nhau!</div>
+    <div class="chat-body" id="chat-box"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-msg-input" class="chat-text-input" placeholder="Thảo luận…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHEET: ARCHIVE ===== -->
+<div class="modal-overlay" id="archive-modal" onclick="closeSheet('archive-modal')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header">
+      <span class="sheet-title">🕒 Lịch sử</span>
+      <div class="sheet-close" onclick="closeSheet('archive-modal')">✕</div>
+    </div>
+    <div class="sheet-scroll" id="archive-list"></div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  SB_URL: "https://zxvlthyrahpfzmrnfbib.supabase.co",
+  SB_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss",
+  TG_TOKEN: "8188166581:AAFCm486x9i1v_t7rNOf9P9uHq68S4yG6tU",
+  TG_CHAT_ID: "-1002587798916",
+  VAULT_PIN: "0561000963557",
+  SWITCH_PIN: "0000",
+  // Thay thế bằng link ảnh thật khi có
+  AVATARS: { "Chồng": "", "Vợ": "" }
+};
+
+const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+let currentUser = localStorage.getItem('jika_user') || 'Chồng';
+let tasks = [], finances = [], events = [], vault = [], moods = [];
+let currentDetailId = null, currentTab = 'tasks', enteredPin = "";
+
+/* ===== INIT ===== */
+async function init() {
+  setUserUI();
+  fillPickers();
+  setupSegmentedControls();
+  await loadAll();
+  checkMoodCheckin();
+  setupRealtime();
+  setInterval(checkAlerts, 60000);
+}
+
+function setUserUI() {
+  document.getElementById('display-name').innerText = currentUser;
+  document.getElementById('mood-greeting').innerText = `Chào ${currentUser} ❤️`;
+  document.getElementById('user-initials').innerText = currentUser === 'Chồng' ? 'C' : 'V';
+
+  // Set default assignee to currentUser
+  document.querySelectorAll('#assignee-selector .seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === currentUser);
+  });
+
+  const img = document.getElementById('user-avatar');
+  const avatarUrl = CONFIG.AVATARS[currentUser];
+  if (avatarUrl) {
+    img.onload = () => { img.classList.add('loaded'); document.getElementById('user-initials').style.display = 'none'; };
+    img.onerror = () => {};
+    img.src = avatarUrl;
+  }
+}
+
+function fillPickers() {
+  const d = document.getElementById('alert-d');
+  const h = document.getElementById('alert-h');
+  const m = document.getElementById('alert-m');
+  for (let i = 0; i <= 30; i++) d.innerHTML += `<option value="${i}">${i}</option>`;
+  for (let i = 0; i <= 23; i++) h.innerHTML += `<option value="${i}">${i}</option>`;
+  for (let i = 0; i <= 59; i += 5) m.innerHTML += `<option value="${i}">${i}</option>`;
+}
+
+function setupSegmentedControls() {
+  document.querySelectorAll('.seg-control').forEach(ctrl => {
+    ctrl.querySelectorAll('.seg-btn').forEach(btn => {
+      btn.onclick = function() {
+        ctrl.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      };
+    });
+  });
+}
+
+/* ===== LOAD DATA ===== */
+async function loadAll() {
+  try {
+    const { data } = await _sb.from('jika_data').select('*');
+    if (data) data.forEach(row => {
+      try {
+        const val = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+        if (row.key === 'jika_tasks')    tasks    = Array.isArray(val) ? val : [];
+        if (row.key === 'jika_finances') finances = Array.isArray(val) ? val : [];
+        if (row.key === 'jika_events')   events   = Array.isArray(val) ? val : [];
+        if (row.key === 'jika_vault')    vault    = Array.isArray(val) ? val : [];
+        if (row.key === 'jika_moods')    moods    = Array.isArray(val) ? val : [];
+      } catch(e) {}
+    });
+  } catch(e) { console.warn('Load failed:', e); }
+  renderCurrentTab();
+  updateTaskBadge();
+}
+
+/* ===== REALTIME ===== */
+function setupRealtime() {
+  _sb.channel('jika_all')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
+      if (!payload.new || !payload.new.key) return;
+      try {
+        const k = payload.new.key;
+        const v = typeof payload.new.value === 'string' ? JSON.parse(payload.new.value) : payload.new.value;
+        if (k === 'jika_tasks') {
+          tasks = Array.isArray(v) ? v : tasks;
+          if (currentTab === 'tasks') renderTasks();
+          if (currentDetailId) renderChat(currentDetailId);
+          updateTaskBadge();
+        }
+        if (k === 'jika_finances') { finances = Array.isArray(v) ? v : finances; if (currentTab === 'finance') renderFinance(); }
+        if (k === 'jika_vault')    { vault    = Array.isArray(v) ? v : vault; }
+      } catch(e) {}
+    }).subscribe();
+}
+
+/* ===== NAVIGATION ===== */
+function nav(page, el) {
+  currentTab = page;
+  document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-title').innerText = el.querySelector('span').innerText;
+  document.getElementById('history-btn').style.display = (page === 'tasks') ? 'block' : 'none';
+  renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  document.getElementById('fab-btn').style.display =
+    (currentTab === 'tasks' || currentTab === 'events' ||
+     (currentTab === 'vault' && enteredPin === CONFIG.VAULT_PIN)) ? 'flex' : 'none';
+  if (currentTab === 'tasks')   renderTasks();
+  if (currentTab === 'events')  renderEvents();
+  if (currentTab === 'finance') renderFinance();
+  if (currentTab === 'vault')   enteredPin === CONFIG.VAULT_PIN ? renderVaultOpen() : renderVaultLock();
+}
+
+function onFabClick() {
+  if (currentTab === 'tasks') openSheet('add-task-modal');
+  else if (currentTab === 'vault') alert('Thêm mục (đang phát triển)');
+}
+
+/* ===== RENDER TASKS ===== */
+function renderTasks() {
+  const m = document.getElementById('main-content');
+  const now = Date.now();
+  const activeTasks = tasks.filter(t => !t.completed);
+
+  const zones = [
+    { id: 'red',   label: 'Làm Ngay',  color: 'var(--red)' },
+    { id: 'green', label: 'Lên Lịch',  color: 'var(--green)' },
+    { id: 'grey',  label: 'Để Sau',    color: 'var(--grey)' }
+  ];
+
+  let html = '';
+  zones.forEach(z => {
+    const zt = activeTasks.filter(t => t.zone === z.id);
+    html += `<div class="section-label"><div class="zone-dot" style="background:${z.color}"></div>${z.label} <span style="color:var(--text-tertiary);font-weight:400">(${zt.length})</span></div>`;
+    if (!zt.length) {
+      html += `<div class="empty-state">Không có việc nào — tốt lắm! 🎉</div>`;
+    } else {
+      zt.forEach(t => {
+        const isOverdue = t.deadline && new Date(t.deadline).getTime() < now;
+        const deadlineText = t.deadline
+          ? formatDeadline(t.deadline, isOverdue)
+          : 'Không hạn';
+        const chatCount = (t.chat || []).length;
+        html += `
+          <div class="glass-card task-card zone-${z.id} ${isOverdue ? 'overdue-card' : ''}" onclick="openDetail('${t.id}')">
+            <div class="task-zone-bar"></div>
+            <div class="task-card-inner">
+              <div class="task-title">${escHtml(t.title)}</div>
+              <div class="task-meta-row">
+                <span class="task-assignee-pill">👤 ${t.assignee || '—'}</span>
+                <span class="task-deadline-text ${isOverdue ? 'overdue' : ''}">⏱ ${deadlineText}</span>
+              </div>
             </div>
-        </header>
+            <div class="task-right">
+              <div class="chat-badge">💬 ${chatCount}</div>
+            </div>
+          </div>`;
+      });
+    }
+  });
 
-        <main id="main-content"></main>
+  m.innerHTML = html;
+}
 
-        <button id="add-fab" class="fab" onclick="showAddModal()">+</button>
+function formatDeadline(dl, overdue) {
+  const d = new Date(dl);
+  const now = new Date();
+  const diffMs = d - now;
+  const diffH = Math.round(diffMs / 3600000);
+  const diffD = Math.round(diffMs / 86400000);
+  if (overdue) return `Quá hạn ${Math.abs(diffD)}n`;
+  if (diffH < 2) return `Còn ~${Math.max(0,diffH)}h`;
+  if (diffD < 1) return `Còn ${diffH}h`;
+  if (diffD < 7) return `Còn ${diffD} ngày`;
+  return `${d.getDate()}/${d.getMonth()+1}`;
+}
 
-        <div class="tab-bar">
-            <div class="tab-item active" onclick="nav('tasks', this)"><div class="tab-icon">📋</div>Task</div>
-            <div class="tab-item" onclick="nav('events', this)"><div class="tab-icon">⏳</div>Sự kiện</div>
-            <div class="tab-item" onclick="nav('finance', this)"><div class="tab-icon">💰</div>Tài chính</div>
-            <div class="tab-item" onclick="nav('vault', this)"><div class="tab-icon">🗄️</div>Ngăn Kéo</div>
+function updateTaskBadge() {
+  const urgent = tasks.filter(t => !t.completed && t.zone === 'red').length;
+  const badge = document.getElementById('task-badge');
+  if (urgent > 0) { badge.style.display = 'flex'; badge.innerText = urgent > 9 ? '9+' : urgent; }
+  else { badge.style.display = 'none'; }
+}
+
+/* ===== SAVE NEW TASK ===== */
+async function saveNewTask() {
+  const title = document.getElementById('task-title-input').value.trim();
+  if (!title) { document.getElementById('task-title-input').focus(); return; }
+  const assigneeActive = document.querySelector('#assignee-selector .active');
+  const zoneActive = document.querySelector('#zone-selector .active');
+
+  const newTask = {
+    id: 't' + Date.now(),
+    title,
+    zone: zoneActive ? zoneActive.dataset.val : 'red',
+    assignee: assigneeActive ? assigneeActive.dataset.val : currentUser,
+    deadline: document.getElementById('task-deadline-input').value || null,
+    alertBefore: {
+      d: parseInt(document.getElementById('alert-d').value) || 0,
+      h: parseInt(document.getElementById('alert-h').value) || 0,
+      m: parseInt(document.getElementById('alert-m').value) || 0
+    },
+    completed: false,
+    completedAt: null,
+    chat: [],
+    lastAlert: 0
+  };
+
+  tasks.push(newTask);
+  document.getElementById('task-title-input').value = '';
+  document.getElementById('task-deadline-input').value = '';
+  closeSheet('add-task-modal');
+
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
+  renderTasks();
+  updateTaskBadge();
+}
+
+/* ===== TASK DETAIL ===== */
+function openDetail(id) {
+  currentDetailId = id;
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  document.getElementById('dt-title').innerText = t.title;
+  document.getElementById('dt-info').innerText = `👤 ${t.assignee} | ⏱ ${t.deadline ? t.deadline.replace('T', ' ') : 'Không hạn'}`;
+
+  const doneBtn = document.getElementById('dt-done-btn');
+  doneBtn.className = 'chat-zone-badge zone-badge-' + t.zone;
+  doneBtn.innerText = 'Hoàn thành ✓';
+  doneBtn.onclick = () => finishTask(id);
+
+  openSheet('task-detail-modal');
+  renderChat(id);
+}
+
+function renderChat(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  const box = document.getElementById('chat-box');
+  const chat = t.chat || [];
+
+  box.innerHTML = '';
+  chat.forEach(msg => {
+    const isSent = msg.user === currentUser;
+    box.innerHTML += `
+      <div style="display:flex;flex-direction:column;align-items:${isSent?'flex-end':'flex-start'}">
+        <div class="msg-name">${msg.user}</div>
+        <div class="msg-bubble ${isSent ? 'sent' : 'recv'}">${escHtml(msg.text)}</div>
+      </div>`;
+  });
+  box.scrollTop = box.scrollHeight;
+
+  const limitBanner = document.getElementById('chat-limit-banner');
+  const limitWarn   = document.getElementById('chat-limit-warn');
+  const sendBtn     = document.getElementById('chat-send-btn');
+  const input       = document.getElementById('chat-msg-input');
+
+  if (chat.length >= 10) {
+    limitBanner.style.display = 'block';
+    limitWarn.style.display = 'none';
+    sendBtn.disabled = true;
+    input.disabled = true;
+    input.placeholder = 'Đã khoá — hãy gọi điện 📞';
+  } else if (chat.length === 9) {
+    limitWarn.style.display = 'block';
+    limitBanner.style.display = 'none';
+    sendBtn.disabled = false;
+    input.disabled = false;
+    input.placeholder = 'Tin nhắn cuối cùng…';
+  } else {
+    limitBanner.style.display = 'none';
+    limitWarn.style.display = 'none';
+    sendBtn.disabled = false;
+    input.disabled = false;
+    input.placeholder = 'Thảo luận…';
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-msg-input');
+  const text = input.value.trim();
+  if (!text || !currentDetailId) return;
+
+  const t = tasks.find(x => x.id === currentDetailId);
+  if (!t || (t.chat || []).length >= 10) return;
+
+  if (!t.chat) t.chat = [];
+  t.chat.push({ user: currentUser, text, time: new Date().toISOString() });
+  input.value = '';
+  renderChat(currentDetailId);
+
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
+}
+
+async function finishTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  t.completed = true;
+  t.completedAt = new Date().toISOString();
+  closeSheet('task-detail-modal');
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  renderTasks();
+  updateTaskBadge();
+}
+
+/* ===== ARCHIVE ===== */
+function openArchive() {
+  const list = document.getElementById('archive-list');
+  const done = tasks.filter(t => t.completed);
+
+  if (!done.length) {
+    list.innerHTML = `<div class="empty-state" style="padding:40px 20px">Chưa có việc nào hoàn thành</div>`;
+  } else {
+    list.innerHTML = done.map(t => `
+      <div class="glass-card archive-task-row" style="margin-bottom:10px">
+        <div>
+          <div class="archive-title">${escHtml(t.title)}</div>
+          <div class="archive-meta">👤 ${t.assignee} | ✓ ${t.completedAt ? new Date(t.completedAt).toLocaleDateString('vi-VN') : 'Đã xong'}</div>
         </div>
+        <button class="btn-secondary" onclick="restoreTask('${t.id}')">↩ Khôi phục</button>
+      </div>`).join('');
+  }
+  openSheet('archive-modal');
+}
+
+async function restoreTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  t.completed = false;
+  t.completedAt = null;
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+  closeSheet('archive-modal');
+  renderTasks();
+  updateTaskBadge();
+  openArchive();
+}
+
+/* ===== EVENTS ===== */
+function renderEvents() {
+  const m = document.getElementById('main-content');
+  const fixed = [
+    { n: "Sinh nhật Vợ ❤️",    d: "12-27" },
+    { n: "Sinh nhật Simba 🦁",  d: "11-25" },
+    { n: "Sinh nhật Lisa 🌸",   d: "08-28" }
+  ];
+  const now = new Date();
+  const allEvents = [...fixed, ...events];
+
+  const rows = allEvents.map(e => {
+    const raw = e.d || e.date;
+    let t;
+    if (raw.length === 5) {
+      const [mo, dy] = raw.split('-');
+      t = new Date(now.getFullYear(), parseInt(mo)-1, parseInt(dy));
+      if (t < now) t.setFullYear(now.getFullYear() + 1);
+    } else {
+      t = new Date(raw);
+    }
+    const days = Math.ceil((t - now) / 86400000);
+    let cls = ''; let label = `Còn ${days} ngày`;
+    if (days === 0) { cls = 'today'; label = 'Hôm nay! 🎉'; }
+    else if (days <= 7) { cls = 'soon'; label = `Còn ${days} ngày ⚡`; }
+    return `<div class="event-row"><div class="event-name">${e.n || e.name}</div><div class="event-countdown ${cls}">${label}</div></div>`;
+  }).join('');
+
+  m.innerHTML = `
+    <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Đếm ngược</div>
+    <div class="glass-card" style="overflow:hidden">${rows}</div>
+    <div style="margin-top:16px"><button class="btn-primary" onclick="alert('Sắp có — đang phát triển 🚧')">+ Thêm sự kiện</button></div>`;
+}
+
+/* ===== FINANCE ===== */
+function renderFinance() {
+  const m = document.getElementById('main-content');
+  let tin = 0, tout = 0;
+  finances.forEach(f => {
+    const amt = parseInt(f.amount) || 0;
+    if (f.type === 'in') tin += amt; else tout += amt;
+  });
+  const bal = tin - tout;
+  const balCls = bal >= 0 ? 'positive' : 'negative';
+
+  const recent = [...finances].reverse().slice(0, 10);
+  const rows = recent.map(f => {
+    const isIn = f.type === 'in';
+    return `<div class="finance-row">
+      <div><div class="finance-label">${escHtml(f.name)}</div><div style="font-size:10px;color:var(--text-tertiary)">${f.date ? new Date(f.date).toLocaleDateString('vi-VN') : ''}</div></div>
+      <div class="finance-val ${isIn?'income':'expense'}">${isIn?'+':'−'}${parseInt(f.amount).toLocaleString('vi-VN')}đ</div>
+    </div>`;
+  }).join('');
+
+  m.innerHTML = `
+    <div class="glass-card" style="margin-bottom:14px">
+      <div class="finance-summary">
+        <div style="font-size:11px;color:var(--text-secondary);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px">Số dư hiện tại</div>
+        <div class="finance-balance ${balCls}">${bal.toLocaleString('vi-VN')}đ</div>
+        <div style="display:flex;justify-content:center;gap:24px;margin-top:14px">
+          <div style="text-align:center"><div style="font-size:10px;color:var(--text-tertiary);font-weight:700;text-transform:uppercase">Thu</div><div style="font-size:15px;font-weight:700;color:var(--green)">${tin.toLocaleString('vi-VN')}đ</div></div>
+          <div style="width:0.5px;background:var(--glass-border)"></div>
+          <div style="text-align:center"><div style="font-size:10px;color:var(--text-tertiary);font-weight:700;text-transform:uppercase">Chi</div><div style="font-size:15px;font-weight:700;color:var(--red)">${tout.toLocaleString('vi-VN')}đ</div></div>
+        </div>
+      </div>
     </div>
 
-    <!-- MODAL ADD TASK -->
-    <div id="add-task-modal" class="modal" onclick="closeModal('add-task-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin:0 0 20px">Việc mới</h2>
-            <div class="form-group"><label>Tiêu đề việc cần làm ★</label><input type="text" id="task-title-input" class="form-input" placeholder="Bạn cần làm gì?"></div>
-            <div class="form-group"><label>Mức độ ưu tiên (Eisenhower)</label>
-                <div class="segmented-control" id="zone-selector">
-                    <button class="zone-btn active" data-val="red">LÀM NGAY<span>Khẩn cấp</span></button>
-                    <button class="zone-btn" data-val="green">LÊN LỊCH<span>Quan trọng</span></button>
-                    <button class="zone-btn" data-val="grey">ĐỂ SAU<span>Lặt vặt</span></button>
-                </div>
-            </div>
-            <div style="display:flex; gap:12px">
-                <div class="form-group" style="flex:1"><label>Đảm nhận</label>
-                    <div class="segmented-control" id="assignee-selector">
-                        <button class="assign-btn active" data-val="Chồng">Chồng</button>
-                        <button class="assign-btn" data-val="Vợ">Vợ</button>
-                    </div>
-                </div>
-                <div class="form-group" style="flex:1"><label>Hạn chót</label><input type="datetime-local" id="task-deadline-input" class="form-input" style="padding:12px"></div>
-            </div>
-            <button class="btn-main" id="btn-save-task" onclick="saveNewTask()">LƯU CÔNG VIỆC ✓</button>
-        </div>
+    <div class="glass-card" style="margin-bottom:14px;overflow:hidden">
+      <div class="finance-row" style="background:rgba(255,69,58,0.07);border-bottom:0.5px solid var(--glass-border)">
+        <div><div class="finance-label" style="font-weight:700">⚠️ Lãi Sacombank</div><div style="font-size:10px;color:var(--text-tertiary)">Ngày 25 hàng tháng</div></div>
+        <div class="finance-val expense">28.000.000đ</div>
+      </div>
     </div>
 
-    <!-- MODAL CHAT & DETAIL -->
-    <div id="task-detail-modal" class="modal" onclick="closeModal('task-detail-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:15px; border-bottom:1px solid #eee;">
-                <div style="flex:1; padding-right:10px;"><h2 id="dt-title" style="margin:0; font-size:20px; line-height:1.2;"></h2><p id="dt-info" style="font-size:11px; color:#666; margin-top:5px;"></p></div>
-                <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px; margin:0;" id="dt-done-btn">Xong</button>
-            </div>
-            <div id="chat-limit-warning"></div>
-            <div class="chat-box" id="chat-box"></div>
-            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;">
-                <input type="text" id="chat-msg-input" class="form-input" placeholder="Thảo luận..." style="margin:0">
-                <button onclick="sendChat()" style="background:var(--ios-blue); border:none; color:white; width:48px; height:48px; border-radius:24px; font-size:22px;">↑</button>
-            </div>
-        </div>
+    <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Nhập giao dịch</div>
+    <div class="glass-card" style="padding:16px;margin-bottom:14px">
+      <input id="fn" class="form-input" placeholder="Nội dung giao dịch" style="margin-bottom:10px">
+      <input id="fa" type="number" class="form-input" placeholder="Số tiền (VND)">
+      <div class="finance-entry-type" style="margin-top:12px">
+        <button class="type-btn income-btn" onclick="addFin('in')">+ Thu nhập</button>
+        <button class="type-btn expense-btn" onclick="addFin('out')">− Chi tiêu</button>
+      </div>
     </div>
 
-    <script>
-        const CONFIG = {
-            SB_URL: "https://zxvlthyrahpfzmrnfbib.supabase.co",
-            SB_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss",
-            TG_TOKEN: "8188166581:AAFCm486x9i1v_t7rNOf9P9uHq68S4yG6tU",
-            TG_CHAT_ID: "-1002587798916",
-            VAULT_PIN: "0561000963557",
-            SWITCH_PIN: "0000",
-            AVATARS: { "Chồng": "https://lh3.googleusercontent.com/d/1Uv_l3p40A2M_wU0L8Z3W_E_E_f_G_L_8=w1000", "Vợ": "https://lh3.googleusercontent.com/d/1_S_t4r3_v5_p_q_W_I_y_L_v_o_v_W_X=w1000" }
-        };
+    ${recent.length > 0 ? `
+    <div class="section-label"><div class="zone-dot" style="background:var(--grey)"></div>Gần đây</div>
+    <div class="glass-card" style="overflow:hidden">${rows}</div>` : ''}`;
+}
 
-        const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let currentUser = localStorage.getItem('jika_user') || 'Chồng';
-        let tasks = [], currentDetailId = null, currentTab = 'tasks', isHistoryView = false;
+async function addFin(type) {
+  const n = document.getElementById('fn').value.trim();
+  const a = document.getElementById('fa').value;
+  if (!n || !a) return;
+  finances.push({ name: n, amount: parseInt(a), type, date: new Date().toISOString() });
+  await _sb.from('jika_data').upsert({ key: 'jika_finances', value: JSON.stringify(finances) });
+  renderFinance();
+}
 
-        async function init() {
-            document.getElementById('display-name').innerText = currentUser;
-            document.getElementById('user-avatar').src = CONFIG.AVATARS[currentUser];
-            document.getElementById('mood-user-name').innerText = `Chào ${currentUser} ❤️`;
-            setupSegmentedControls();
-            await loadAll();
-            checkMoodCheckin();
-            setupRealtime();
-        }
+/* ===== VAULT ===== */
+function renderVaultLock() {
+  enteredPin = '';
+  const m = document.getElementById('main-content');
+  m.innerHTML = `
+    <div style="text-align:center;padding-top:40px">
+      <div style="font-size:56px;margin-bottom:12px">🗄️</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Ngăn Kéo Bảo Mật</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:32px">Nhập mã PIN để mở tủ</div>
+      <div class="pin-display">${'<div class="pin-dot"></div>'.repeat(CONFIG.VAULT_PIN.length > 8 ? 8 : 4)}</div>
+      <div class="pin-keypad">
+        ${[1,2,3,4,5,6,7,8,9,'C',0,'⌫'].map(k=>`<button class="pin-key" onclick="tapPin('${k}')">${k}</button>`).join('')}
+      </div>
+    </div>`;
+}
 
-        async function loadAll() {
-            const { data } = await _sb.from('jika_data').select('*');
-            if(data) data.forEach(i => { if(i.key==='jika_tasks') tasks = JSON.parse(i.value || "[]"); });
-            renderCurrentTab();
-        }
+function tapPin(v) {
+  if (v === 'C') enteredPin = '';
+  else if (v === '⌫') enteredPin = enteredPin.slice(0, -1);
+  else enteredPin += v;
 
-        function setupRealtime() {
-            _sb.channel('jika_core').on('postgres_changes', {event:'*', schema:'public', table:'jika_data'}, payload => {
-                if(payload.new.key === 'jika_tasks') {
-                    tasks = JSON.parse(payload.new.value || "[]");
-                    if(currentTab === 'tasks') renderTasks();
-                    if(currentDetailId) renderChat(currentDetailId);
-                    document.getElementById('sync-status').innerText = "● ĐÃ ĐỒNG BỘ " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                }
-            }).subscribe();
-        }
+  document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < enteredPin.length));
+  if (enteredPin === CONFIG.VAULT_PIN) renderVaultOpen();
+}
 
-        function renderCurrentTab() {
-            const m = document.getElementById('main-content'); m.innerHTML = '';
-            document.getElementById('add-fab').style.display = (currentTab==='tasks') ? 'flex' : 'none';
-            if(currentTab === 'tasks') renderTasks();
-            else m.innerHTML = `<div style="text-align:center; padding:100px; color:#aaa; font-size:14px;">Module ${currentTab} sẽ được hoàn thiện tiếp theo.</div>`;
-        }
+function renderVaultOpen() {
+  const m = document.getElementById('main-content');
+  const items = vault.map((v, idx) => `
+    <div class="glass-card vault-item" style="margin-bottom:8px">
+      <div>
+        <div class="vault-item-label">${escHtml(v.title)}</div>
+        <div class="vault-item-val">${escHtml(v.val)}</div>
+      </div>
+      <button class="btn-danger" onclick="delVault(${idx})">Xoá</button>
+    </div>`).join('');
 
-        function renderTasks() {
-            const m = document.getElementById('main-content');
-            m.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 10px;">
-                    <div class="section-label" style="margin:0">${isHistoryView ? 'KHO LƯU TRỮ' : 'VIỆC CẦN LÀM'}</div>
-                    <button onclick="toggleHistory()" style="background:rgba(255,255,255,0.7); border:1px solid var(--glass-border); padding:8px 15px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer;">
-                        ${isHistoryView ? '← Hiện tại' : '🕒 Lịch sử'}
-                    </button>
-                </div>
-            `;
+  m.innerHTML = `
+    <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Hồ sơ gia đình</div>
+    ${items || '<div class="empty-state">Chưa có mục nào</div>'}
+    <button class="btn-secondary" style="margin-top:12px" onclick="renderVaultLock()">🔒 Khoá tủ</button>`;
+}
 
-            const zones = [{id:'red',l:'LÀM NGAY',c:'var(--ios-red)'},{id:'green',l:'LÊN LỊCH',c:'var(--ios-green)'},{id:'grey',l:'ĐỂ SAU',c:'var(--ios-grey)'}];
-            zones.forEach(z => {
-                const zt = tasks.filter(t => t.zone === z.id && (!!t.completed === isHistoryView));
-                if(zt.length > 0) {
-                    m.innerHTML += `<div class="section-label"><div class="dot" style="background:${z.c}"></div>${z.l}</div>`;
-                    zt.forEach(t => {
-                        const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
-                        m.innerHTML += `
-                            <div class="card task-card" onclick="openDetail('${t.id}')" style="${isOverdue ? 'border: 1.5px solid var(--ios-red);' : ''}">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div class="avatar-frame" style="width:32px; height:32px;"><img src="${CONFIG.AVATARS[t.assignee]}"></div>
-                                    <div class="task-info">
-                                        <h3 style="${t.completed ? 'text-decoration:line-through; color:#888;' : ''}">${t.title}</h3>
-                                        <p>${isOverdue ? '🚨 QUÁ HẠN | ' : ''}👤 ${t.assignee} | ⏳ ${t.deadline ? t.deadline.replace('T',' ') : 'Không hạn'}</p>
-                                    </div>
-                                </div>
-                                <div class="task-meta"><span class="msg-count" style="${(t.chat && t.chat.length >= 9) ? 'background:var(--ios-red); color:white;' : ''}">💬 ${t.chat ? t.chat.length : 0}</span></div>
-                            </div>`;
-                    });
-                }
-            });
-            if (m.innerHTML.indexOf('task-card') === -1) m.innerHTML += `<div style="text-align:center; padding:60px; color:#aaa; font-size:13px;">(Trống)</div>`;
-        }
+async function delVault(idx) {
+  if (!confirm('Xoá mục này?')) return;
+  vault.splice(idx, 1);
+  await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) });
+  renderVaultOpen();
+}
 
-        async function saveNewTask() {
-            const title = document.getElementById('task-title-input').value.trim();
-            if(!title) return;
-            const btn = document.getElementById('btn-save-task');
-            btn.disabled = true; btn.innerText = "LƯU...";
+/* ===== MOOD ===== */
+function checkMoodCheckin() {
+  const last = localStorage.getItem('jika_mood_time');
+  if (!last || Date.now() - parseInt(last) > 10800000) { // 3 hours
+    document.getElementById('mood-overlay').style.display = 'flex';
+  }
+}
 
-            const newTask = {
-                id: 't'+Date.now(), title, zone: document.querySelector('#zone-selector .active').dataset.val,
-                assignee: document.querySelector('#assignee-selector .active').dataset.val,
-                deadline: document.getElementById('task-deadline-input').value,
-                completed: false, chat: []
-            };
+async function saveMood(m) {
+  moods.push({ u: currentUser, m, t: new Date().toISOString() });
+  localStorage.setItem('jika_mood_time', Date.now().toString());
+  document.getElementById('mood-overlay').style.display = 'none';
+  await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) });
+}
 
-            const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify([...tasks, newTask]) });
-            if(!error) {
-                document.getElementById('task-title-input').value = '';
-                closeModal('add-task-modal');
-                fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 <b>VIỆC MỚI</b>\n📍 ${newTask.title}\n👤 Phụ trách: ${newTask.assignee}`)}&parse_mode=HTML`).catch(e=>{});
-            }
-            btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC ✓";
-        }
+/* ===== ALERTS ===== */
+async function checkAlerts() {
+  const now = Date.now();
+  let changed = false;
+  tasks.forEach(async t => {
+    if (t.completed || !t.deadline || !t.alertBefore) return;
+    const dl = new Date(t.deadline).getTime();
+    const alertMs = ((t.alertBefore.d||0)*86400 + (t.alertBefore.h||0)*3600 + (t.alertBefore.m||0)*60) * 1000;
+    if (now >= (dl - alertMs) && (now - (t.lastAlert||0) > 3600000)) {
+      const diffH = Math.round((dl - now)/3600000);
+      sendTelegram(`🚨 <b>NHẮC VIỆC CHƯA XONG</b>\n📌 ${t.title}\n👤 ${t.assignee}\n⏰ Còn khoảng ${diffH}h`);
+      t.lastAlert = now; changed = true;
+    }
+  });
+  if (changed) await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+}
 
-        function openDetail(id) {
-            currentDetailId = id; const t = tasks.find(x => x.id === id);
-            document.getElementById('dt-title').innerText = t.title;
-            document.getElementById('dt-info').innerText = `${t.assignee} | Hạn: ${t.deadline || 'Không'}`;
-            const btn = document.getElementById('dt-done-btn');
-            btn.innerText = t.completed ? "Khôi phục" : "Xong";
-            btn.style.background = t.completed ? "var(--ios-grey)" : "var(--ios-blue)";
-            btn.onclick = () => updateStatus(id, !t.completed);
-            document.getElementById('task-detail-modal').style.display = 'flex';
-            renderChat(id);
-        }
+/* ===== TELEGRAM ===== */
+function sendTelegram(text) {
+  fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=HTML`)
+    .catch(() => {});
+}
 
-        async function updateStatus(id, st) {
-            const idx = tasks.findIndex(x => x.id === id);
-            tasks[idx].completed = st;
-            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-            closeModal('task-detail-modal');
-        }
+/* ===== USER SWITCH ===== */
+function switchUserPrompt() {
+  const pin = prompt('Nhập PIN để đổi user:');
+  if (pin === CONFIG.SWITCH_PIN) {
+    currentUser = currentUser === 'Chồng' ? 'Vợ' : 'Chồng';
+    localStorage.setItem('jika_user', currentUser);
+    location.reload();
+  }
+}
 
-        function renderChat(id) {
-            const t = tasks.find(x => x.id === id);
-            const b = document.getElementById('chat-box');
-            const warn = document.getElementById('chat-limit-warning');
-            const area = document.getElementById('chat-input-area');
-            b.innerHTML = ''; (t.chat || []).forEach(m => b.innerHTML += `<div class="msg ${m.user===currentUser?'sent':'received'}">${m.text}</div>`);
-            b.scrollTop = b.scrollHeight;
+/* ===== SHEET HELPERS ===== */
+function openSheet(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  el.classList.add('open');
+}
+function closeSheet(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'none';
+  el.classList.remove('open');
+  if (id === 'task-detail-modal') currentDetailId = null;
+}
 
-            const len = (t.chat || []).length;
-            if(len >= 10) {
-                warn.style.display='block'; warn.innerHTML="🚫 Đã đạt giới hạn 10 câu thảo luận.<br>Nhấc máy gọi cho nhau ngay để tránh hiểu lầm!";
-                area.style.display='none';
-            } else {
-                warn.style.display = (len === 9 ? 'block' : 'none');
-                if(len === 9) warn.innerText = "⚠️ Lượt thảo luận cuối cùng!";
-                area.style.display='flex';
-            }
-        }
+/* ===== UTILS ===== */
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-        async function sendChat() {
-            const i = document.getElementById('chat-msg-input'); if(!i.value.trim()) return;
-            const idx = tasks.findIndex(x => x.id === currentDetailId);
-            if(!tasks[idx].chat) tasks[idx].chat = [];
-            tasks[idx].chat.push({ user: currentUser, text: i.value.trim() });
-            const txt = i.value; i.value = '';
-            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-            fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`💬 <b>${currentUser}</b> nhắn trong ${tasks[idx].title}:\n"${txt}"`)}&parse_mode=HTML`).catch(e=>{});
-        }
-
-        function toggleHistory() { isHistoryView = !isHistoryView; renderTasks(); }
-        function nav(p, el) { 
-            currentTab = p; isHistoryView = false;
-            document.querySelectorAll('.tab-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); 
-            document.getElementById('page-title').innerText = el.innerText.trim(); renderCurrentTab(); 
-        }
-        function showAddModal() { document.getElementById('add-task-modal').style.display='flex'; }
-        function closeModal(id) { document.getElementById(id).style.display='none'; currentDetailId=null; }
-        function setupSegmentedControls() {
-            document.querySelectorAll('.segmented-control button').forEach(b => b.onclick = function() {
-                this.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('active'));
-                this.classList.add('active');
-            });
-        }
-        function checkMoodCheckin() { if(!localStorage.getItem('jika_mood_time') || Date.now() - localStorage.getItem('jika_mood_time') > 3600000) document.getElementById('mood-overlay').style.display='flex'; }
-        async function saveMood(m) { 
-            localStorage.setItem('jika_mood_time', Date.now()); 
-            document.getElementById('mood-overlay').style.display='none'; 
-            fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`🎭 <b>Tâm trạng:</b> ${currentUser} chọn ${m}`)}&parse_mode=HTML`).catch(e=>{}); 
-        }
-        function switchUserPrompt() { if(prompt("PIN (0000):")===CONFIG.SWITCH_PIN){currentUser=currentUser==='Chồng'?'Vợ':'Chồng'; localStorage.setItem('jika_user',currentUser); location.reload();} }
-        
-        window.onload = init;
-    </script>
+window.onload = init;
+</script>
 </body>
 </html>
