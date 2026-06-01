@@ -11,7 +11,7 @@
             --glass: rgba(255, 255, 255, 0.4); --glass-border: rgba(255, 255, 255, 0.5);
             --text-main: #1c1c1e;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: #f5f7fa; color: var(--text-main); overflow: hidden; }
         .mesh-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, #ee9ca7, #ffdde1, #2193b0, #6dd5ed); background-size: 400% 400%; animation: gradientBG 15s ease infinite; filter: blur(60px); }
         @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
@@ -26,7 +26,7 @@
         main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; scroll-behavior: smooth; }
         .section-label { font-size: 12px; font-weight: 800; color: #444; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .card { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .task-card:active { transform: scale(0.97); }
         .task-info h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1c1c1e; }
@@ -37,7 +37,7 @@
         @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 11px; font-weight: 800; color: #888; margin-bottom: 8px; text-transform: uppercase; }
-        .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; outline: none; font-family: inherit; transition: 0.2s; }
+        .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; outline: none; font-family: inherit; }
         .segmented-control { display: flex; background: #efeff4; border-radius: 16px; padding: 3px; gap: 3px; }
         .segmented-control button { flex: 1; border: none; padding: 10px 5px; border-radius: 13px; font-size: 12px; font-weight: 700; cursor: pointer; color: #666; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
         .segmented-control button span { font-size: 8px; font-weight: 500; opacity: 0.7; margin-top: 2px; }
@@ -46,23 +46,17 @@
         .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; }
         .assign-btn.active { background: white; color: var(--ios-blue); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
         .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 18px; border-radius: 22px; font-size: 17px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .btn-main:active { transform: scale(0.96); opacity: 0.9; }
         .tab-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-top: 12px; z-index: 100; }
         .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 600; cursor: pointer; flex: 1; }
         .tab-item.active { color: var(--ios-blue); }
         .tab-icon { font-size: 24px; margin-bottom: 5px; }
         .fab { position: fixed; bottom: 105px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.3); z-index: 90; border: none; cursor: pointer; }
-        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
-        .msg { font-size: 14px; max-width: 80%; padding: 12px 16px; border-radius: 20px; line-height: 1.4; }
+        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; }
+        .msg { font-size: 14px; max-width: 80%; padding: 12px 16px; border-radius: 20px; }
         .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.received { background: #e9e9eb; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
         #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .mood-card { background: white; padding: 40px; border-radius: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 85%; max-width: 340px; }
-        .pin-dots { display: flex; justify-content: center; gap: 10px; margin: 20px 0 30px; }
-        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #ccc; }
-        .pin-dot.active { background: var(--ios-blue); border-color: var(--ios-blue); }
-        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 0 auto; width: 260px; }
-        .pin-btn { background: #f2f2f7; border: none; width: 70px; height: 70px; border-radius: 35px; font-size: 24px; font-weight: 500; cursor: pointer; transition: 0.1s; }
+        .mood-card { background: white; padding: 40px; border-radius: 40px; text-align: center; width: 85%; max-width: 340px; }
     </style>
 </head>
 <body>
@@ -100,12 +94,12 @@
     <div id="add-task-modal" class="modal" onclick="closeModal('add-task-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h2 style="margin:0 0 20px">Tạo việc mới</h2>
-            <div class="form-group"><label>Nội dung công việc</label><input type="text" id="task-title-input" class="form-input" placeholder="Bạn cần làm gì?"></div>
-            <div class="form-group"><label>Mức độ ưu tiên</label>
+            <div class="form-group"><label>Nội dung</label><input type="text" id="task-title-input" class="form-input" placeholder="Việc gì thế?"></div>
+            <div class="form-group"><label>Ưu tiên</label>
                 <div class="segmented-control" id="zone-selector">
-                    <button class="zone-btn active" data-val="red">LÀM NGAY <span>Khẩn cấp</span></button>
-                    <button class="zone-btn" data-val="green">LÊN LỊCH <span>Quan trọng</span></button>
-                    <button class="zone-btn" data-val="grey">ĐỂ SAU <span>Lặt vặt</span></button>
+                    <button class="zone-btn active" data-val="red">LÀM NGAY</button>
+                    <button class="zone-btn" data-val="green">LÊN LỊCH</button>
+                    <button class="zone-btn" data-val="grey">ĐỂ SAU</button>
                 </div>
             </div>
             <div style="display:flex; gap:12px">
@@ -121,18 +115,16 @@
         </div>
     </div>
 
-    <!-- MODAL DETAIL -->
     <div id="task-detail-modal" class="modal" onclick="closeModal('task-detail-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:15px; border-bottom:1px solid #eee;">
                 <div style="flex:1"><h2 id="dt-title" style="margin:0; font-size:18px;"></h2><p id="dt-info" style="margin:5px 0 0; font-size:11px; color:#666;"></p></div>
                 <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px; margin-top:0" id="dt-done-btn">Xong</button>
             </div>
-            <div id="chat-limit-warning" style="display:none; color:var(--ios-red); font-size:11px; text-align:center; padding:12px; background:#fff1f0; border-radius:12px; margin-top:10px; font-weight:700;"></div>
             <div class="chat-box" id="chat-box"></div>
-            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;">
-                <input type="text" id="chat-msg-input" class="form-input" placeholder="Gõ thảo luận...">
-                <button onclick="sendChat()" style="background:var(--ios-blue); border:none; color:white; width:48px; height:48px; border-radius:24px; font-size:20px;">↑</button>
+            <div id="chat-input-area" style="display:flex; gap:10px;">
+                <input type="text" id="chat-msg-input" class="form-input" placeholder="Chat...">
+                <button onclick="sendChat()" style="background:var(--ios-blue); border:none; color:white; width:48px; height:48px; border-radius:24px;">↑</button>
             </div>
         </div>
     </div>
@@ -158,24 +150,20 @@
             document.getElementById('user-avatar').src = CONFIG.AVATARS[currentUser];
             setupSegmentedControls();
             await loadAll();
-            checkMoodCheckin();
             setupRealtime();
         }
 
         async function loadAll() {
-            try {
-                const { data } = await _sb.from('jika_data').select('*');
-                if(data) {
-                    data.forEach(i => {
-                        const val = JSON.parse(i.value || "[]");
-                        if(i.key==='jika_tasks') tasks = val;
-                        if(i.key==='jika_finances') finances = val;
-                        if(i.key==='jika_events') events = val;
-                        if(i.key==='jika_vault') vault = val;
-                    });
-                    renderCurrentTab();
-                }
-            } catch (e) { console.error("Load failed", e); }
+            const { data, error } = await _sb.from('jika_data').select('*');
+            if(error) { console.error("Load Error:", error); return; }
+            data.forEach(i => {
+                const val = JSON.parse(i.value || "[]");
+                if(i.key==='jika_tasks') tasks = val;
+                if(i.key==='jika_finances') finances = val;
+                if(i.key==='jika_events') events = val;
+                if(i.key==='jika_vault') vault = val;
+            });
+            renderCurrentTab();
         }
 
         function setupRealtime() {
@@ -183,7 +171,6 @@
                 const k = payload.new.key; const v = JSON.parse(payload.new.value || "[]");
                 if(k==='jika_tasks') tasks = v;
                 if(k==='jika_finances') finances = v;
-                if(k==='jika_vault') vault = v;
                 renderCurrentTab();
                 if(currentDetailId) renderChat(currentDetailId);
             }).subscribe();
@@ -191,17 +178,15 @@
 
         function renderCurrentTab() {
             const m = document.getElementById('main-content'); m.innerHTML = '';
-            document.getElementById('add-fab').style.display = (currentTab==='tasks'||currentTab==='events'||(currentTab==='vault' && enteredPin===CONFIG.VAULT_PIN)) ? 'flex' : 'none';
+            document.getElementById('add-fab').style.display = (currentTab==='tasks') ? 'flex' : 'none';
             if(currentTab==='tasks') renderTasks();
-            else if(currentTab==='events') renderEvents();
-            else if(currentTab==='finance') renderFinance();
-            else if(currentTab==='vault') enteredPin === CONFIG.VAULT_PIN ? renderVaultOpen() : renderVaultLock();
+            else m.innerHTML = `<div style="text-align:center; padding:50px; color:#aaa;">Đang phát triển...</div>`;
         }
 
         function renderTasks() {
             const m = document.getElementById('main-content');
             m.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 10px;">
-                <div class="section-label" style="margin:0">${isHistoryView ? 'Lịch sử' : 'Việc cần làm'}</div>
+                <div class="section-label">${isHistoryView ? 'Lịch sử' : 'Việc cần làm'}</div>
                 <button onclick="toggleHistory()" style="background:rgba(255,255,255,0.7); border:1px solid #ddd; padding:8px 15px; border-radius:12px; font-size:12px; font-weight:700;">${isHistoryView ? '← Hiện tại' : '🕒 Lịch sử'}</button>
             </div>`;
             const zones = [{id:'red',l:'LÀM NGAY',c:'var(--ios-red)'},{id:'green',l:'LÊN LỊCH',c:'var(--ios-green)'},{id:'grey',l:'ĐỂ SAU',c:'var(--ios-grey)'}];
@@ -210,13 +195,11 @@
                 if(zt.length > 0) {
                     m.innerHTML += `<div class="section-label"><div class="dot" style="background:${z.c}"></div>${z.l}</div>`;
                     zt.forEach(t => {
-                        const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
-                        m.innerHTML += `<div class="card task-card" onclick="openDetail('${t.id}')" style="${isOverdue ? 'border: 1.5px solid var(--ios-red);' : ''}">
+                        m.innerHTML += `<div class="card task-card" onclick="openDetail('${t.id}')">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="avatar-frame" style="width:30px; height:30px;"><img src="${CONFIG.AVATARS[t.assignee]}"></div>
                                 <div class="task-info"><h3>${t.title}</h3><p>👤 ${t.assignee} | ⏳ ${t.deadline?t.deadline.replace('T',' '):'Không hạn'}</p></div>
                             </div>
-                            <div class="task-meta"><span class="msg-count">💬 ${t.chat?t.chat.length:0}</span></div>
                         </div>`;
                     });
                 }
@@ -227,135 +210,60 @@
             const btn = document.getElementById('btn-save-task');
             const title = document.getElementById('task-title-input').value.trim();
             if(!title) return;
+            btn.disabled = true; btn.innerText = "LƯU...";
+
+            const newTask = { id: 't' + Date.now(), title, zone: document.querySelector('#zone-selector .active').dataset.val, assignee: document.querySelector('#assignee-selector .active').dataset.val, deadline: document.getElementById('task-deadline-input').value, completed: false, chat: [] };
             
-            btn.disabled = true; btn.innerText = "ĐANG LƯU...";
-
-            const newTask = {
-                id: 't' + Date.now(), title, 
-                zone: document.querySelector('#zone-selector .active').dataset.val,
-                assignee: document.querySelector('#assignee-selector .active').dataset.val,
-                deadline: document.getElementById('task-deadline-input').value,
-                completed: false, chat: [], lastAlert: 0
-            };
-
-            try {
-                // 1. Lưu Database trước
-                const { error } = await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify([...tasks, newTask])});
-                if(error) throw error;
-
-                // 2. Thành công mới đóng modal
+            // THỬ LƯU LẠI VỚI XỬ LÝ LỖI CHI TIẾT
+            const { error } = await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify([...tasks, newTask])});
+            
+            if(error) {
+                alert("KHÔNG LƯU ĐƯỢC! Hãy kiểm tra xem bạn đã tắt RLS trong Supabase chưa? Mã lỗi: " + error.message);
+                console.error("Supabase Error:", error);
+            } else {
                 document.getElementById('task-title-input').value = '';
                 closeModal('add-task-modal');
-
-                // 3. Gửi Telegram (để trong try/catch riêng để không làm hỏng lưu task)
-                try {
-                    fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 VIỆC MỚI: ${newTask.title}\n👤: ${newTask.assignee}`)}&parse_mode=HTML`);
-                } catch(tgErr) { console.error("Telegram notification failed", tgErr); }
-
-            } catch (err) {
-                alert("Lỗi mạng hoặc Supabase bị ngắt. Hãy thử lại!");
-                console.error(err);
-            } finally {
-                btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC";
+                // Gửi Telegram ẩn danh (nếu lỗi cũng không sao)
+                fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 VIỆC MỚI: ${newTask.title}`)}`).catch(e=>{});
             }
+            btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC";
         }
 
         function openDetail(id) {
             currentDetailId = id; const t = tasks.find(x => x.id === id);
-            if(!t) return;
             document.getElementById('dt-title').innerText = t.title;
-            document.getElementById('dt-info').innerText = `${t.assignee} | Hạn: ${t.deadline || 'Không'}`;
-            const btn = document.getElementById('dt-done-btn');
-            btn.innerText = t.completed ? "Khôi phục" : "Xong";
-            btn.onclick = () => updateStatus(id, !t.completed);
+            document.getElementById('dt-info').innerText = `${t.assignee} | ${t.deadline || 'Không hạn'}`;
+            document.getElementById('dt-done-btn').onclick = async () => {
+                tasks.find(x => x.id === id).completed = true;
+                await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
+                closeModal('task-detail-modal');
+            };
             document.getElementById('task-detail-modal').style.display = 'flex';
             renderChat(id);
-        }
-
-        async function updateStatus(id, st) {
-            const idx = tasks.findIndex(x => x.id === id);
-            tasks[idx].completed = st;
-            await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
-            closeModal('task-detail-modal');
         }
 
         function renderChat(id) {
             const t = tasks.find(x => x.id === id);
             const b = document.getElementById('chat-box');
-            const warn = document.getElementById('chat-limit-warning');
-            const area = document.getElementById('chat-input-area');
             b.innerHTML = ''; (t.chat || []).forEach(m => b.innerHTML += `<div class="msg ${m.user===currentUser?'sent':'received'}">${m.text}</div>`);
             b.scrollTop = b.scrollHeight;
-            const len = (t.chat || []).length;
-            if(len >= 10) { warn.style.display='block'; warn.innerHTML="🚫 Đã đủ 10 câu. Hãy gọi điện!"; area.style.display='none'; }
-            else { warn.style.display=(len===9?'block':'none'); if(len===9) warn.innerText="⚠️ Lượt cuối!"; area.style.display='flex'; }
         }
 
         async function sendChat() {
-            const i = document.getElementById('chat-msg-input'); const txt = i.value.trim();
-            if(!txt) return;
+            const i = document.getElementById('chat-msg-input'); if(!i.value.trim()) return;
             const idx = tasks.findIndex(x => x.id === currentDetailId);
             if(!tasks[idx].chat) tasks[idx].chat = [];
-            tasks[idx].chat.push({user: currentUser, text: txt});
-            i.value = '';
+            tasks[idx].chat.push({user: currentUser, text: i.value.trim()});
+            i.value = ''; renderChat(currentDetailId);
             await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
         }
 
-        // --- MODULES ---
-        function renderEvents() {
-            const m = document.getElementById('main-content'); m.innerHTML = `<div class="section-label">Sự kiện sắp tới</div>`;
-            const fixed = [{n:"Sinh nhật Vợ ❤️",d:"12-27"},{n:"Sinh nhật Simba 🦁",d:"11-25"},{n:"Sinh nhật Lisa 🌸",d:"08-28"}];
-            let h = `<div class="card">`;
-            fixed.concat(events).forEach(e => {
-                const now = new Date(); let t = (e.d||e.date).length===5 ? new Date(now.getFullYear(), (e.d||e.date).split('-')[0]-1, (e.d||e.date).split('-')[1]) : new Date(e.d||e.date);
-                if(t < now && (e.d||e.date).length===5) t.setFullYear(now.getFullYear()+1);
-                const days = Math.ceil((t-now)/(1000*60*60*24));
-                h += `<div class="event-item"><div class="event-name">${e.n}</div><div class="event-countdown">Còn ${days} ngày</div></div>`;
-            });
-            m.innerHTML += h + `</div>`;
-        }
-
-        function renderFinance() {
-            const m = document.getElementById('main-content');
-            let tin=0, tout=0; finances.forEach(f=>{if(f.type==='in') tin+=parseInt(f.amount); else tout+=parseInt(f.amount);});
-            m.innerHTML = `<div class="section-label">Tài chính</div><div class="card" style="text-align:center"><h2>${(tin-tout).toLocaleString()}đ</h2></div>
-            <div class="card"><input id="fn" class="form-input" placeholder="Nội dung"><input id="fa" type="number" class="form-input" style="margin-top:10px" placeholder="Số tiền"><button class="btn-main" onclick="addFin()">Lưu</button></div>`;
-        }
-        async function addFin(){
-            const n=document.getElementById('fn').value, a=document.getElementById('fa').value;
-            if(!n||!a) return;
-            finances.push({name:n, amount:a, type:'out', date:new Date().toISOString()});
-            await _sb.from('jika_data').upsert({key:'jika_finances', value:JSON.stringify(finances)});
-        }
-
-        function renderVaultLock() {
-            enteredPin = ""; const m = document.getElementById('main-content');
-            m.innerHTML = `<div style="text-align:center; padding-top:20px"><span style="font-size:50px">🗄️</span><h2>PIN:</h2><div class="pin-dots">${'<div class="pin-dot"></div>'.repeat(CONFIG.VAULT_PIN.length)}</div><div class="pin-keypad" id="pk"></div></div>`;
-            for(let i=1;i<=9;i++) document.getElementById('pk').innerHTML+=`<button class="pin-btn" onclick="tapP('${i}')">${i}</button>`;
-            document.getElementById('pk').innerHTML+=`<button class="pin-btn" onclick="tapP('C')">C</button><button class="pin-btn" onclick="tapP('0')">0</button><button class="pin-btn" onclick="tapP('del')">⌫</button>`;
-        }
-        function tapP(v){
-            if(v==='C') enteredPin=""; else if(v==='del') enteredPin=enteredPin.slice(0,-1); else enteredPin+=v;
-            const ds=document.querySelectorAll('.pin-dot'); ds.forEach((d,i)=>d.classList.toggle('active',i<enteredPin.length));
-            if(enteredPin===CONFIG.VAULT_PIN) renderVaultOpen();
-        }
-        function renderVaultOpen(){
-            const m=document.getElementById('main-content'); m.innerHTML=`<div class="section-label">Hồ sơ bí mật</div>`;
-            vault.forEach((v,idx)=>m.innerHTML+=`<div class="card">${v.title}: ${v.val} <span onclick="delV(${idx})" style="color:red">✕</span></div>`);
-            m.innerHTML+=`<button class="btn-main" onclick="renderVaultLock()">Khóa</button>`;
-        }
-        async function delV(idx){ if(confirm("Xóa?")){vault.splice(idx,1); await _sb.from('jika_data').upsert({key:'jika_vault', value:JSON.stringify(vault)});}}
-
-        // --- UTILS ---
         function toggleHistory() { isHistoryView = !isHistoryView; renderTasks(); }
-        function nav(p, el) { currentTab=p; isHistoryView=false; document.querySelectorAll('.tab-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); document.getElementById('page-title').innerText=el.innerText.trim(); renderCurrentTab(); }
+        function nav(p, el) { currentTab=p; document.querySelectorAll('.tab-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); renderCurrentTab(); }
         function showAddModal() { document.getElementById('add-task-modal').style.display='flex'; }
         function closeModal(id) { document.getElementById(id).style.display='none'; currentDetailId=null; }
         function setupSegmentedControls() { document.querySelectorAll('.segmented-control button').forEach(b => b.onclick = function(){ this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active')); this.classList.add('active'); }); }
-        function checkMoodCheckin() { if(!localStorage.getItem('jika_mood_time') || Date.now() - localStorage.getItem('jika_mood_time') > 3600000) document.getElementById('mood-overlay').style.display='flex'; }
-        async function saveMood(m) { moods.push({u:currentUser, m, t:new Date().toISOString()}); localStorage.setItem('jika_mood_time', Date.now()); document.getElementById('mood-overlay').style.display='none'; await _sb.from('jika_data').upsert({key:'jika_moods', value:JSON.stringify(moods)}); }
-        function switchUserPrompt() { if(prompt("PIN:")===CONFIG.SWITCH_PIN){currentUser=currentUser==='Chồng'?'Vợ':'Chồng'; localStorage.setItem('jika_user',currentUser); location.reload();} }
-        
+        function switchUserPrompt() { if(prompt("PIN:")==="0000"){currentUser=currentUser==='Chồng'?'Vợ':'Chồng'; localStorage.setItem('jika_user',currentUser); location.reload();} }
         window.onload = init;
     </script>
 </body>
