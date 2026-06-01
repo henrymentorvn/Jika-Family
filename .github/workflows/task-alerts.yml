@@ -1,0 +1,115 @@
+name: Jika Family — Task Alert
+
+on:
+  schedule:
+    # Chạy mỗi 30 phút
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Cho phép chạy thủ công để test
+
+jobs:
+  check-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check task deadlines & send Telegram
+        run: |
+          node -e "
+          const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
+          const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
+          const TG_TOKEN = '8188166581:AAFCm486x9i1v_t7rNOf9P9uHq68S4yG6tU';
+          const TG_CHAT_ID = '-1002587798916';
+
+          async function main() {
+            // 1. Lấy tasks từ Supabase
+            const res = await fetch(SB_URL + '/rest/v1/jika_data?key=eq.jika_tasks&select=value', {
+              headers: {
+                'apikey': SB_KEY,
+                'Authorization': 'Bearer ' + SB_KEY
+              }
+            });
+            
+            if (!res.ok) {
+              console.log('Supabase error:', res.status, await res.text());
+              return;
+            }
+            
+            const data = await res.json();
+            if (!data || !data.length) { console.log('Không có dữ liệu'); return; }
+            
+            let tasks = [];
+            try {
+              let val = data[0].value;
+              if (typeof val === 'string') val = JSON.parse(val);
+              if (Array.isArray(val)) tasks = val;
+            } catch(e) { console.log('Parse error:', e.message); return; }
+            
+            console.log('Tổng tasks:', tasks.length);
+            
+            const now = Date.now();
+            let changed = false;
+            const updates = [];
+
+            for (const t of tasks) {
+              if (t.completed || !t.deadline || !t.alertBefore) continue;
+              
+              const dl = new Date(t.deadline).getTime();
+              const alertMs = (
+                (t.alertBefore.d || 0) * 86400000 +
+                (t.alertBefore.h || 0) * 3600000 +
+                (t.alertBefore.m || 0) * 60000
+              );
+              
+              if (alertMs <= 0) continue;
+              
+              const alertTime = dl - alertMs;
+              const lastAlert = t.lastAlert || 0;
+              
+              // Chỉ nhắc nếu: đã đến giờ nhắc VÀ chưa nhắc trong 1 giờ qua
+              if (now >= alertTime && (now - lastAlert) > 3600000) {
+                const diffMs = dl - now;
+                const diffH = Math.round(diffMs / 3600000);
+                const diffD = Math.round(diffMs / 86400000);
+                
+                let timeStr = '';
+                if (diffMs < 0) timeStr = 'ĐÃ QUÁ HẠN';
+                else if (diffH < 1) timeStr = 'Còn dưới 1 giờ ⚠️';
+                else if (diffH < 24) timeStr = 'Còn ' + diffH + ' giờ';
+                else timeStr = 'Còn ' + diffD + ' ngày';
+
+                const msg = '🚨 NHẮC VIỆC CHƯA XONG\n📌 ' + t.title + '\n👤 ' + t.assignee + '\n⏰ ' + timeStr + '\n📅 Hạn: ' + t.deadline.replace('T', ' ').substring(0, 16);
+                
+                // Gửi Telegram
+                const tgRes = await fetch(
+                  'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg) + '&parse_mode=HTML'
+                );
+                const tgData = await tgRes.json();
+                
+                if (tgData.ok) {
+                  console.log('✅ Đã nhắc:', t.title);
+                  t.lastAlert = now;
+                  changed = true;
+                } else {
+                  console.log('❌ Telegram lỗi:', tgData.description);
+                }
+              }
+            }
+            
+            // 2. Cập nhật lastAlert lên Supabase nếu có thay đổi
+            if (changed) {
+              const updateRes = await fetch(SB_URL + '/rest/v1/jika_data', {
+                method: 'POST',
+                headers: {
+                  'apikey': SB_KEY,
+                  'Authorization': 'Bearer ' + SB_KEY,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'resolution=merge-duplicates,return=minimal'
+                },
+                body: JSON.stringify({ key: 'jika_tasks', value: JSON.stringify(tasks) })
+              });
+              console.log('Cập nhật Supabase:', updateRes.ok ? 'OK' : 'FAIL ' + updateRes.status);
+            } else {
+              console.log('Không có task nào cần nhắc lúc này');
+            }
+          }
+
+          main().catch(e => { console.error('Error:', e.message); process.exit(1); });
+          "
