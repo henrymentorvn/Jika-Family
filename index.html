@@ -1,36 +1,316 @@
-async function saveTask() {
-    const input = document.getElementById('task-title');
-    const btn = document.getElementById('save-btn');
-    const title = input.value.trim();
-    if (!title) return;
-
-    btn.disabled = true; btn.innerText = "ĐANG LƯU...";
-
-    // Chuẩn bị dữ liệu
-    const updatedTasks = [...tasks, { id: Date.now(), title: title }];
-
-    try {
-        // Sử dụng lệnh trực tiếp thay vì qua thư viện để tránh lỗi Fetch
-        const { error } = await _sb
-            .from('jika_data')
-            .upsert({ 
-                key: 'jika_tasks', 
-                value: JSON.stringify(updatedTasks) 
-            });
-
-        if (error) {
-            console.error("Lỗi từ Supabase:", error);
-            alert("Database từ chối lưu! Mã lỗi: " + error.message);
-        } else {
-            tasks = updatedTasks;
-            renderTasks();
-            input.value = "";
-            alert("Đã lưu thành công!");
+<!DOCTYPE html>
+<html lang="vi-VN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jika Family — Digital Brain</title>
+    <!-- Tải thư viện Supabase từ nguồn dự phòng -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --ios-red: #ff3b30; --ios-blue: #007aff; --ios-green: #34c759; --ios-grey: #8e8e93;
+            --glass: rgba(255, 255, 255, 0.4); --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #1c1c1e;
         }
-    } catch (err) {
-        console.error("Lỗi hệ thống:", err);
-        alert("TRÌNH DUYỆT CHẶN KẾT NỐI!\n\nCách sửa:\n1. Tắt các phần mềm chặn quảng cáo (AdBlock).\n2. Đổi sang dùng mạng 4G.");
-    } finally {
-        btn.disabled = false; btn.innerText = "LƯU LẠI";
-    }
-}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f7fa; color: var(--text-main); overflow: hidden; }
+        .mesh-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, #ee9ca7, #ffdde1, #2193b0, #6dd5ed); background-size: 400% 400%; animation: gradientBG 15s ease infinite; filter: blur(60px); }
+        @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
+        
+        .app-container { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
+        header { padding: 50px 20px 10px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        header h1 { font-size: 26px; margin: 0; font-weight: 800; letter-spacing: -1px; }
+        
+        .user-section { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.4); padding: 5px 12px; border-radius: 25px; border: 1px solid var(--glass-border); }
+        .avatar-frame { width: 34px; height: 34px; border-radius: 50%; background: #fff; overflow: hidden; border: 1.5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
+        
+        main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; scroll-behavior: smooth; }
+        .section-label { font-size: 12px; font-weight: 800; color: #444; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        .card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .task-card:active { transform: scale(0.97); }
+        .task-info h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1c1c1e; }
+        .task-info p { margin: 5px 0 0; font-size: 11px; color: #666; font-weight: 600; }
+        
+        .modal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; }
+        .modal-content { background: #fff; width: 100%; max-height: 94%; border-radius: 32px 32px 0 0; padding: 25px; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0, 0.5, 0.5, 1); overflow-y: auto; }
+        @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
+        
+        .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; margin-bottom: 15px; }
+        .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 18px; border-radius: 22px; font-size: 17px; font-weight: 700; cursor: pointer; }
+        
+        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-top: 12px; z-index: 100; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 600; cursor: pointer; flex: 1; }
+        .tab-item.active { color: var(--ios-blue); }
+        
+        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; }
+        .msg { font-size: 14px; max-width: 80%; padding: 12px 16px; border-radius: 20px; line-height: 1.4; }
+        .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.received { background: #e9e9eb; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
+        
+        .segmented-control { display: flex; background: #efeff4; border-radius: 16px; padding: 3px; gap: 3px; margin-bottom: 15px; }
+        .segmented-control button { flex: 1; border: none; padding: 10px 5px; border-radius: 13px; font-size: 12px; font-weight: 700; cursor: pointer; color: #666; transition: 0.2s; }
+        .zone-btn[data-val="red"].active { background: var(--ios-red); color: white; }
+        .zone-btn[data-val="green"].active { background: var(--ios-green); color: white; }
+        .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; }
+        
+        .fab { position: fixed; bottom: 105px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.3); z-index: 90; border: none; }
+    </style>
+</head>
+<body>
+    <div class="mesh-bg"></div>
+
+    <div class="app-container">
+        <header>
+            <div><h1 id="page-title">Task</h1><div id="sync-status" style="font-size: 10px; color: var(--ios-green); font-weight: 800;">● KIỂM TRA KẾT NỐI...</div></div>
+            <div class="user-section">
+                <span class="user-name" id="display-name" onclick="switchUser()">---</span>
+                <div class="avatar-frame"><img id="user-avatar" src=""></div>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <div style="text-align:center; padding-top:100px; color:#888;">Đang tải dữ liệu từ bộ não số...</div>
+        </main>
+
+        <button class="fab" onclick="showAddModal()">+</button>
+
+        <div class="tab-bar">
+            <div class="tab-item active" onclick="nav('tasks', this)">📋 Task</div>
+            <div class="tab-item" onclick="nav('events', this)">⏳ Sự kiện</div>
+            <div class="tab-item" onclick="nav('finance', this)">💰 Tài chính</div>
+            <div class="tab-item" onclick="nav('vault', this)">🗄️ Ngăn Kéo</div>
+        </div>
+    </div>
+
+    <!-- MODAL ADD -->
+    <div id="add-modal" class="modal" onclick="closeModal('add-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="margin:0 0 20px">Việc mới</h2>
+            <input type="text" id="task-title-input" class="form-input" placeholder="Cần làm gì?">
+            <div class="segmented-control" id="zone-selector">
+                <button class="zone-btn active" data-val="red">LÀM NGAY</button>
+                <button class="zone-btn" data-val="green">LÊN LỊCH</button>
+                <button class="zone-btn" data-val="grey">ĐỂ SAU</button>
+            </div>
+            <div class="segmented-control" id="assignee-selector">
+                <button class="assign-btn active" data-val="Chồng" style="background:white; color:var(--ios-blue)">Chồng</button>
+                <button class="assign-btn" data-val="Vợ">Vợ</button>
+            </div>
+            <input type="datetime-local" id="task-deadline-input" class="form-input">
+            <button class="btn-main" id="save-btn" onclick="saveNewTask()">LƯU CÔNG VIỆC</button>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL & CHAT -->
+    <div id="detail-modal" class="modal" onclick="closeModal('detail-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:15px;">
+                <div style="flex:1"><h2 id="dt-title" style="margin:0; font-size:18px;"></h2><p id="dt-info" style="font-size:11px; color:#666;"></p></div>
+                <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px; margin:0;" id="dt-done-btn">Xong</button>
+            </div>
+            <div id="chat-limit-warning" style="display:none; color:var(--ios-red); font-size:11px; text-align:center; padding:10px; background:#fff1f0; border-radius:10px; margin-top:10px; font-weight:bold;">🚫 Đạt 10 câu. Hãy gọi điện!</div>
+            <div class="chat-box" id="chat-box"></div>
+            <div id="chat-input-area" style="display:flex; gap:10px;">
+                <input type="text" id="chat-msg-input" class="form-input" style="margin:0" placeholder="Thảo luận...">
+                <button onclick="sendChat()" style="background:var(--ios-blue); color:white; border:none; width:50px; height:50px; border-radius:25px; font-size:20px;">↑</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            SB_URL: "https://zxvlthyrahpfzmrnfbib.supabase.co",
+            SB_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss",
+            TG_TOKEN: "8188166581:AAFCm486x9i1v_t7rNOf9P9uHq68S4yG6tU",
+            TG_CHAT_ID: "-1002587798916",
+            AVATARS: { "Chồng": "https://lh3.googleusercontent.com/d/1Uv_l3p40A2M_wU0L8Z3W_E_E_f_G_L_8=w1000", "Vợ": "https://lh3.googleusercontent.com/d/1_S_t4r3_v5_p_q_W_I_y_L_v_o_v_W_X=w1000" }
+        };
+
+        let _sb;
+        let currentUser = localStorage.getItem('jika_user') || 'Chồng';
+        let tasks = [], currentDetailId = null, currentTab = 'tasks', isHistoryView = false;
+
+        async function init() {
+            try {
+                // Khởi tạo Supabase
+                _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+                document.getElementById('display-name').innerText = currentUser;
+                document.getElementById('user-avatar').src = CONFIG.AVATARS[currentUser];
+                
+                setupSegmentedControls();
+                await loadTasks();
+                setupRealtime();
+                document.getElementById('sync-status').innerText = "● ĐÃ ĐỒNG BỘ";
+            } catch (err) {
+                document.getElementById('sync-status').innerText = "❌ LỖI KẾT NỐI";
+                alert("Không thể kết nối tới bộ não số. Hãy kiểm tra mạng hoặc DNS!");
+            }
+        }
+
+        async function loadTasks() {
+            const { data, error } = await _sb.from('jika_data').select('*').eq('key', 'jika_tasks').single();
+            if (data) tasks = JSON.parse(data.value);
+            if (currentTab === 'tasks') renderTasks();
+        }
+
+        function setupRealtime() {
+            _sb.channel('jika_all').on('postgres_changes', {event:'*', schema:'public', table:'jika_data'}, payload => {
+                if(payload.new.key === 'jika_tasks') {
+                    tasks = JSON.parse(payload.new.value);
+                    if(currentTab === 'tasks') renderTasks();
+                    if(currentDetailId) renderChat(currentDetailId);
+                }
+            }).subscribe();
+        }
+
+        function renderTasks() {
+            const m = document.getElementById('main-content');
+            m.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div class="section-label" style="margin:0">${isHistoryView ? 'KHO LƯU TRỮ' : 'VIỆC CẦN LÀM'}</div>
+                    <button onclick="toggleHistory()" style="background:none; border:1px solid #ccc; padding:5px 12px; border-radius:10px; font-size:11px; font-weight:bold;">
+                        ${isHistoryView ? '← Hiện tại' : '🕒 Lịch sử'}
+                    </button>
+                </div>
+            `;
+
+            const zones = [{id:'red',l:'LÀM NGAY',c:'var(--ios-red)'},{id:'green',l:'LÊN LỊCH',c:'var(--ios-green)'},{id:'grey',l:'ĐỂ SAU',c:'var(--ios-grey)'}];
+            
+            zones.forEach(z => {
+                const zt = tasks.filter(t => t.zone === z.id && (!!t.completed === isHistoryView));
+                if(zt.length > 0) {
+                    m.innerHTML += `<div class="section-label"><div class="dot" style="background:${z.c}"></div>${z.l}</div>`;
+                    zt.forEach(t => {
+                        const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
+                        m.innerHTML += `
+                        <div class="card task-card" onclick="openDetail('${t.id}')" style="${isOverdue ? 'border: 1.5px solid var(--ios-red); background:rgba(255,59,48,0.05);' : ''}">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="avatar-frame" style="width:30px; height:30px;"><img src="${CONFIG.AVATARS[t.assignee]}"></div>
+                                <div class="task-info">
+                                    <h3 style="${t.completed ? 'text-decoration:line-through; color:#888' : ''}">${t.title}</h3>
+                                    <p>${isOverdue?'🚨 QUÁ HẠN | ':''}👤 ${t.assignee} | ⏳ ${t.deadline?t.deadline.replace('T',' '):'Không hạn'}</p>
+                                </div>
+                            </div>
+                            <div class="task-meta"><span style="font-size:11px; font-weight:bold; opacity:0.5;">💬 ${t.chat?t.chat.length:0}</span></div>
+                        </div>`;
+                    });
+                }
+            });
+            if(m.innerHTML.indexOf('task-card') === -1) m.innerHTML += `<div style="text-align:center; padding:50px; color:#aaa; font-size:13px;">Trống</div>`;
+        }
+
+        async function saveNewTask() {
+            const title = document.getElementById('task-title-input').value.trim();
+            if(!title) return;
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true; btn.innerText = "ĐANG LƯU...";
+
+            const newTask = {
+                id: 't' + Date.now(), title,
+                zone: document.querySelector('#zone-selector .active').dataset.val,
+                assignee: document.querySelector('#assignee-selector .active').dataset.val,
+                deadline: document.getElementById('task-deadline-input').value,
+                completed: false, chat: []
+            };
+
+            const updatedTasks = [...tasks, newTask];
+            const { error } = await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(updatedTasks) });
+
+            if(!error) {
+                document.getElementById('task-title-input').value = '';
+                closeModal('add-modal');
+                fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 VIỆC MỚI: ${newTask.title}\n👤 Phụ trách: ${newTask.assignee}`)}&parse_mode=HTML`).catch(e=>{});
+            } else {
+                alert("Lỗi: " + error.message);
+            }
+            btn.disabled = false; btn.innerText = "LƯU CÔNG VIỆC";
+        }
+
+        function openDetail(id) {
+            currentDetailId = id;
+            const t = tasks.find(x => x.id === id);
+            document.getElementById('dt-title').innerText = t.title;
+            document.getElementById('dt-info').innerText = `${t.assignee} | Hạn: ${t.deadline || 'Không'}`;
+            const btn = document.getElementById('dt-done-btn');
+            btn.innerText = t.completed ? "Khôi phục" : "Xong";
+            btn.style.background = t.completed ? "var(--ios-grey)" : "var(--ios-blue)";
+            btn.onclick = () => updateStatus(id, !t.completed);
+            document.getElementById('detail-modal').style.display = 'flex';
+            renderChat(id);
+        }
+
+        async function updateStatus(id, status) {
+            const idx = tasks.findIndex(x => x.id === id);
+            tasks[idx].completed = status;
+            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+            closeModal('detail-modal');
+        }
+
+        function renderChat(id) {
+            const t = tasks.find(x => x.id === id);
+            const b = document.getElementById('chat-box');
+            const warn = document.getElementById('chat-limit-warning');
+            const area = document.getElementById('chat-input-area');
+            b.innerHTML = ''; (t.chat || []).forEach(m => b.innerHTML += `<div class="msg ${m.user===currentUser?'sent':'received'}">${m.text}</div>`);
+            b.scrollTop = b.scrollHeight;
+            const len = (t.chat || []).length;
+            if(len >= 10) { warn.style.display='block'; area.style.display='none'; }
+            else { warn.style.display=(len===9?'block':'none'); area.style.display='flex'; }
+        }
+
+        async function sendChat() {
+            const i = document.getElementById('chat-msg-input');
+            const txt = i.value.trim();
+            if(!txt) return;
+            const idx = tasks.findIndex(x => x.id === currentDetailId);
+            if(!tasks[idx].chat) tasks[idx].chat = [];
+            tasks[idx].chat.push({ user: currentUser, text: txt });
+            i.value = '';
+            await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+        }
+
+        function toggleHistory() { isHistoryView = !isHistoryView; renderTasks(); }
+        function nav(p, el) { 
+            currentTab = p; isHistoryView = false;
+            document.querySelectorAll('.tab-item').forEach(i=>i.classList.remove('active'));
+            el.classList.add('active');
+            if(p === 'tasks') renderTasks();
+            else document.getElementById('main-content').innerHTML = `<div style="text-align:center; padding:50px; color:#aaa;">Module ${p} đang phát phát triển.</div>`;
+        }
+        function showAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; currentDetailId = null; }
+        function setupSegmentedControls() {
+            document.querySelectorAll('.segmented-control button').forEach(b => b.onclick = function() {
+                this.parentElement.querySelectorAll('button').forEach(x => {
+                    x.classList.remove('active');
+                    x.style.background = "none";
+                    x.style.color = "#666";
+                    x.style.boxShadow = "none";
+                });
+                this.classList.add('active');
+                if (this.classList.contains('zone-btn')) {
+                    const color = this.dataset.val === 'red' ? 'var(--ios-red)' : (this.dataset.val === 'green' ? 'var(--ios-green)' : 'var(--ios-grey)');
+                    this.style.background = color;
+                    this.style.color = "white";
+                } else {
+                    this.style.background = "white";
+                    this.style.color = "var(--ios-blue)";
+                    this.style.boxShadow = "0 3px 8px rgba(0,0,0,0.1)";
+                }
+            });
+        }
+        function switchUser() {
+            if(prompt("PIN (0000):") === "0000") {
+                currentUser = currentUser === 'Chồng' ? 'Vợ' : 'Chồng';
+                localStorage.setItem('jika_user', currentUser);
+                location.reload();
+            }
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
