@@ -6,40 +6,39 @@
 <title>Jika Family — Digital Brain</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ===== LIQUID GLASS DARK — iOS 26 ===== */
+/* ===== LIQUID GLASS LIGHT — iOS 26 ===== */
 :root {
   --accent: #007aff;
-  --accent-glow: rgba(0,122,255,0.35);
-  --red: #ff453a;
-  --green: #30d158;
-  --amber: #ffd60a;
-  --grey: #636366;
+  --accent-glow: rgba(0,122,255,0.25);
+  --red: #ff3b30;
+  --green: #34c759;
+  --amber: #ff9500;
+  --grey: #8e8e93;
 
-  --glass-bg: rgba(28,28,32,0.72);
-  --glass-bg-strong: rgba(36,36,42,0.88);
-  --glass-bg-light: rgba(255,255,255,0.06);
-  --glass-border: rgba(255,255,255,0.10);
-  --glass-border-bright: rgba(255,255,255,0.18);
-  --glass-shine: rgba(255,255,255,0.04);
+  /* Light glass tokens */
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-bg-strong: rgba(255,255,255,0.72);
+  --glass-bg-light: rgba(255,255,255,0.40);
+  --glass-border: rgba(0,0,0,0.07);
+  --glass-border-bright: rgba(255,255,255,0.90);
+  --glass-shine: rgba(255,255,255,0.60);
 
-  --text-primary: rgba(255,255,255,0.95);
-  --text-secondary: rgba(255,255,255,0.55);
-  --text-tertiary: rgba(255,255,255,0.30);
+  --text-primary: rgba(0,0,0,0.88);
+  --text-secondary: rgba(0,0,0,0.45);
+  --text-tertiary: rgba(0,0,0,0.25);
 
-  --surface-0: #0a0a0f;
-  --surface-1: rgba(18,18,24,0.95);
-  --surface-2: rgba(28,28,36,0.80);
-  --surface-3: rgba(44,44,56,0.60);
-
-  --blur-main: blur(28px) saturate(180%);
-  --blur-heavy: blur(48px) saturate(200%);
-  --blur-overlay: blur(60px) saturate(180%);
+  --blur-main: blur(32px) saturate(200%);
+  --blur-heavy: blur(52px) saturate(220%);
+  --blur-overlay: blur(60px) saturate(200%);
 
   --radius-sm: 14px;
   --radius-md: 20px;
-  --radius-lg: 28px;
-  --radius-xl: 36px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
   --radius-full: 999px;
+
+  --shadow-card: 0 2px 20px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06);
+  --shadow-float: 0 8px 32px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
 }
 
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -47,26 +46,27 @@
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   font-family: -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, sans-serif;
-  background: var(--surface-0);
+  background: #e8edf5;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== MESH BACKGROUND ===== */
+/* ===== MESH BACKGROUND — LIGHT ===== */
 .mesh-bg {
   position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(60,80,180,0.28) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(100,40,180,0.22) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 60% 85%, rgba(20,80,160,0.20) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 10% 70%, rgba(80,20,120,0.18) 0%, transparent 55%),
-    linear-gradient(160deg, #0d0d18 0%, #0a0812 50%, #070710 100%);
-  animation: meshShift 20s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 55% at 15% 5%,  rgba(180,210,255,0.60) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 85% 15%,  rgba(200,180,255,0.45) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 55% 90%,  rgba(160,220,255,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 5%  75%,  rgba(180,200,240,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 90% 70%,  rgba(210,190,255,0.30) 0%, transparent 55%),
+    linear-gradient(155deg, #dce8f8 0%, #e4dff8 40%, #d8eaf8 100%);
+  animation: meshShift 25s ease-in-out infinite alternate;
 }
 @keyframes meshShift {
-  0%   { filter: hue-rotate(0deg) brightness(1); }
-  50%  { filter: hue-rotate(15deg) brightness(1.05); }
-  100% { filter: hue-rotate(-10deg) brightness(0.98); }
+  0%   { filter: hue-rotate(0deg)   brightness(1);    }
+  50%  { filter: hue-rotate(12deg)  brightness(1.03); }
+  100% { filter: hue-rotate(-8deg)  brightness(0.98); }
 }
 
 /* ===== APP SHELL ===== */
@@ -80,42 +80,61 @@ header {
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
   border-bottom: 0.5px solid var(--glass-border);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8), var(--shadow-card);
   display: flex; justify-content: space-between; align-items: flex-end;
   z-index: 50;
 }
-.header-title { font-size: 30px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; }
+.header-title { font-size: 30px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; color: var(--text-primary); }
 .header-sub { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: 0.3px; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.header-actions { display: flex; gap: 8px; align-items: center; }
 
 .user-pill {
   display: flex; align-items: center; gap: 9px;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
   border-radius: var(--radius-full);
   padding: 5px 14px 5px 6px;
   cursor: pointer;
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
-  transition: background 0.2s;
+  box-shadow: var(--shadow-card);
+  transition: background 0.2s, transform 0.1s;
 }
-.user-pill:active { background: rgba(255,255,255,0.10); }
+.user-pill:active { transform: scale(0.97); }
 .avatar-ring {
   width: 32px; height: 32px; border-radius: 50%;
-  border: 1.5px solid var(--glass-border-bright);
+  border: 1.5px solid rgba(255,255,255,0.9);
   overflow: hidden; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, rgba(0,122,255,0.5), rgba(100,40,200,0.5));
-  font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+  background: linear-gradient(135deg, #5b9cf6, #8b5cf6);
+  box-shadow: 0 2px 8px rgba(91,156,246,0.4);
+  flex-shrink: 0;
 }
 .avatar-ring img { width: 100%; height: 100%; object-fit: cover; display: none; }
 .avatar-ring img.loaded { display: block; }
-.avatar-ring .initials { font-size: 13px; font-weight: 700; }
+.avatar-ring .initials { font-size: 13px; font-weight: 700; color: white; }
 .user-name-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+/* sync button */
+.sync-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--glass-bg);
+  border: 0.5px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  color: var(--accent); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.sync-btn.spinning { animation: spin 0.7s linear; }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
 /* ===== MAIN SCROLL ===== */
 main {
   flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 16px 16px 120px;
+  padding: 14px 14px 120px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
@@ -125,7 +144,7 @@ main::-webkit-scrollbar { display: none; }
 .section-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
   color: var(--text-secondary);
-  margin: 24px 0 10px 4px;
+  margin: 22px 0 9px 4px;
   display: flex; align-items: center; gap: 8px;
 }
 .zone-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -137,159 +156,144 @@ main::-webkit-scrollbar { display: none; }
   backdrop-filter: var(--blur-main);
   border: 0.5px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   position: relative; overflow: hidden;
-  transition: transform 0.15s, border-color 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 .glass-card::before {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(145deg, var(--glass-shine) 0%, transparent 50%);
+  background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, transparent 55%);
   pointer-events: none; border-radius: inherit;
+  z-index: 0;
 }
-.glass-card:active { transform: scale(0.98); }
+.glass-card > * { position: relative; z-index: 1; }
+.glass-card:active { transform: scale(0.985); box-shadow: var(--shadow-card); }
 
 /* ===== TASK CARD ===== */
 .task-card {
-  padding: 16px 18px;
-  margin-bottom: 10px;
+  padding: 15px 16px 15px 20px;
+  margin-bottom: 9px;
   cursor: pointer;
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 12px;
 }
 .task-zone-bar {
-  width: 3px; height: 100%; border-radius: 2px;
-  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3.5px; height: calc(100% - 16px); border-radius: 2px;
+  position: absolute; left: 8px; top: 8px;
 }
-.task-card-inner { flex: 1; min-width: 0; padding-left: 4px; }
+.task-card-inner { flex: 1; min-width: 0; }
 .task-title { font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+.task-meta-row { display: flex; align-items: center; gap: 7px; margin-top: 5px; flex-wrap: wrap; }
 .task-assignee-pill {
   font-size: 10px; font-weight: 700;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  background: rgba(0,0,0,0.05);
+  border: 0.5px solid rgba(0,0,0,0.08);
   border-radius: var(--radius-full);
   padding: 2px 9px;
   color: var(--text-secondary);
 }
 .task-deadline-text { font-size: 10px; color: var(--text-tertiary); }
-.task-deadline-text.overdue { color: var(--red); font-weight: 600; }
-.task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.task-deadline-text.overdue { color: var(--red); font-weight: 700; }
+.task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
 .chat-badge {
   font-size: 10px; font-weight: 700;
-  background: rgba(255,255,255,0.08);
-  border: 0.5px solid var(--glass-border);
+  background: rgba(0,0,0,0.05);
+  border: 0.5px solid rgba(0,0,0,0.07);
   border-radius: var(--radius-full);
   padding: 3px 9px;
   color: var(--text-secondary);
   display: flex; align-items: center; gap: 4px;
 }
-.zone-badge {
-  width: 8px; height: 8px; border-radius: 50%;
-}
 
-/* Zone colours */
-.zone-red  .task-zone-bar { background: var(--red); }
+/* Zone bar colours */
+.zone-red   .task-zone-bar { background: var(--red); }
 .zone-green .task-zone-bar { background: var(--green); }
 .zone-grey  .task-zone-bar { background: var(--grey); }
-.zone-red  .task-title { color: rgba(255,255,255,0.97); }
 
 /* Overdue card */
 .task-card.overdue-card {
-  border-color: rgba(255,69,58,0.35);
-  box-shadow: inset 0 0 0 0.5px rgba(255,69,58,0.2), 0 0 20px rgba(255,69,58,0.08);
+  border-color: rgba(255,59,48,0.25);
+  background: rgba(255,59,48,0.04);
 }
 
 /* Empty state */
-.empty-state { padding: 16px 20px; font-size: 12px; color: var(--text-tertiary); text-align: center; }
+.empty-state { padding: 14px 18px; font-size: 12px; color: var(--text-tertiary); text-align: center; }
 
 /* ===== TAB BAR ===== */
 .tab-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
-  height: calc(72px + env(safe-area-inset-bottom, 16px));
+  height: calc(70px + env(safe-area-inset-bottom, 16px));
   background: var(--glass-bg-strong);
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
   border-top: 0.5px solid var(--glass-border);
+  box-shadow: 0 -1px 0 rgba(255,255,255,0.9);
   display: flex; justify-content: space-around; align-items: flex-start;
-  padding-top: 10px;
-  z-index: 50;
+  padding-top: 10px; z-index: 50;
 }
 .tab-item {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
   cursor: pointer; color: var(--text-tertiary);
   font-size: 10px; font-weight: 500;
-  padding: 0 4px;
-  transition: color 0.2s;
-  user-select: none;
+  padding: 0 4px; transition: color 0.2s; user-select: none;
 }
 .tab-item.active { color: var(--accent); }
 .tab-icon {
   width: 28px; height: 28px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  transition: background 0.2s, transform 0.15s;
+  font-size: 18px; transition: background 0.2s, transform 0.15s;
 }
-.tab-item.active .tab-icon {
-  background: rgba(0,122,255,0.15);
-  transform: scale(1.08);
-}
+.tab-item.active .tab-icon { background: rgba(0,122,255,0.10); transform: scale(1.08); }
 
 /* ===== FAB ===== */
 .fab {
   position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom, 16px));
+  bottom: calc(78px + env(safe-area-inset-bottom, 16px));
   right: 18px;
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: none;
-  color: white;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--accent); border: none; color: white;
   font-size: 28px; font-weight: 300;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 24px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 20px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.15);
   z-index: 40; cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.fab:active { transform: scale(0.93); box-shadow: 0 3px 12px var(--accent-glow); }
+.fab:active { transform: scale(0.92); }
 
 /* ===== MODAL / SHEET ===== */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.55);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.30);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: none; align-items: flex-end;
 }
 .modal-overlay.open { display: flex; }
 
 .sheet {
-  width: 100%;
-  max-height: 96dvh;
-  background: var(--glass-bg-strong);
+  width: 100%; max-height: 96dvh;
+  background: rgba(242,242,247,0.92);
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
-  border-top: 0.5px solid var(--glass-border-bright);
+  border-top: 0.5px solid rgba(255,255,255,0.9);
   border-radius: 32px 32px 0 0;
-  display: flex; flex-direction: column;
-  overflow: hidden;
+  display: flex; flex-direction: column; overflow: hidden;
   animation: sheetUp 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.12);
 }
-@keyframes sheetUp { from { transform: translateY(100%); opacity:0.6; } to { transform: translateY(0); opacity:1; } }
+@keyframes sheetUp { from { transform: translateY(100%); opacity:0.7; } to { transform: translateY(0); opacity:1; } }
 
-.sheet-handle-bar {
-  display: flex; justify-content: center; padding: 12px 0 4px;
-  flex-shrink: 0;
-}
-.sheet-handle { width: 36px; height: 5px; border-radius: 3px; background: var(--glass-border-bright); }
+.sheet-handle-bar { display: flex; justify-content: center; padding: 12px 0 4px; flex-shrink: 0; }
+.sheet-handle { width: 36px; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.15); }
 
 .sheet-header {
   padding: 0 20px 14px;
   display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 0.5px solid var(--glass-border);
-  flex-shrink: 0;
+  border-bottom: 0.5px solid rgba(0,0,0,0.07); flex-shrink: 0;
 }
-.sheet-title { font-size: 18px; font-weight: 700; }
+.sheet-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
 .sheet-close {
   width: 30px; height: 30px; border-radius: 50%;
-  background: var(--glass-bg-light); border: 0.5px solid var(--glass-border);
+  background: rgba(0,0,0,0.06); border: 0.5px solid rgba(0,0,0,0.08);
   color: var(--text-secondary); font-size: 16px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; flex-shrink: 0;
@@ -302,30 +306,26 @@ main::-webkit-scrollbar { display: none; }
 .form-group { margin-bottom: 18px; }
 .form-label {
   display: block; font-size: 11px; font-weight: 700;
-  color: var(--text-secondary); letter-spacing: 0.6px; text-transform: uppercase;
-  margin-bottom: 8px;
+  color: var(--text-secondary); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 8px;
 }
 .form-input {
   width: 100%; padding: 14px 16px;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  background: rgba(255,255,255,0.7);
+  border: 0.5px solid rgba(0,0,0,0.10);
   border-radius: var(--radius-md);
   color: var(--text-primary); font-size: 15px; font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-  -webkit-appearance: none;
+  outline: none; transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
-.form-input:focus { border-color: rgba(0,122,255,0.6); background: rgba(0,122,255,0.05); }
+.form-input:focus { border-color: rgba(0,122,255,0.5); background: rgba(255,255,255,0.88); }
 .form-input::placeholder { color: var(--text-tertiary); }
-input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
+input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; }
 
 /* Segmented */
 .seg-control {
-  display: flex;
-  background: rgba(0,0,0,0.25);
-  border: 0.5px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 3px; gap: 2px;
+  display: flex; background: rgba(0,0,0,0.06);
+  border: 0.5px solid rgba(0,0,0,0.07);
+  border-radius: var(--radius-md); padding: 3px; gap: 2px;
 }
 .seg-btn {
   flex: 1; border: none; background: transparent;
@@ -336,17 +336,15 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 }
 .seg-btn .seg-sub { font-size: 8.5px; font-weight: 400; opacity: 0; transition: opacity 0.18s; }
 .seg-btn.active .seg-sub { opacity: 0.75; }
-.seg-btn.active { color: white; }
-.zone-seg .seg-btn[data-val="red"].active  { background: var(--red); }
-.zone-seg .seg-btn[data-val="green"].active{ background: var(--green); color: #000; }
-.zone-seg .seg-btn[data-val="grey"].active { background: var(--grey); }
-.assign-seg .seg-btn.active { background: var(--accent); }
+.zone-seg .seg-btn[data-val="red"].active   { background: var(--red); color: white; }
+.zone-seg .seg-btn[data-val="green"].active { background: var(--green); color: white; }
+.zone-seg .seg-btn[data-val="grey"].active  { background: var(--grey); color: white; }
+.assign-seg .seg-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
 
 /* Picker */
 .picker-row { display: flex; gap: 8px; }
 .picker-cell {
-  flex: 1; background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  flex: 1; background: rgba(255,255,255,0.7); border: 0.5px solid rgba(0,0,0,0.09);
   border-radius: var(--radius-md); padding: 8px 10px;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
@@ -360,129 +358,131 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 
 /* Buttons */
 .btn-primary {
-  width: 100%; padding: 17px;
-  background: var(--accent); color: white;
+  width: 100%; padding: 16px; background: var(--accent); color: white;
   border: none; border-radius: var(--radius-md);
   font-size: 16px; font-weight: 700; font-family: inherit;
-  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
-  margin-top: 4px;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s; margin-top: 4px;
+  box-shadow: 0 4px 16px var(--accent-glow);
 }
 .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
 .btn-secondary {
   padding: 10px 18px;
-  background: var(--glass-bg-light); color: var(--text-secondary);
-  border: 0.5px solid var(--glass-border); border-radius: var(--radius-full);
-  font-size: 13px; font-weight: 600; font-family: inherit;
-  cursor: pointer; transition: background 0.15s;
+  background: rgba(0,0,0,0.05); color: var(--text-secondary);
+  border: 0.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
 }
-.btn-secondary:active { background: rgba(255,255,255,0.10); }
+.btn-secondary:active { background: rgba(0,0,0,0.10); }
 .btn-danger {
   padding: 10px 18px;
-  background: rgba(255,69,58,0.12); color: var(--red);
-  border: 0.5px solid rgba(255,69,58,0.3); border-radius: var(--radius-full);
-  font-size: 13px; font-weight: 600; font-family: inherit;
-  cursor: pointer;
+  background: rgba(255,59,48,0.08); color: var(--red);
+  border: 0.5px solid rgba(255,59,48,0.2); border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
 }
 
 /* ===== CHAT SHEET ===== */
 .chat-header-info { flex: 1; min-width: 0; }
-.chat-task-title { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-task-title { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
 .chat-task-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
 .chat-zone-badge {
-  flex-shrink: 0; padding: 5px 12px;
+  flex-shrink: 0; padding: 6px 14px;
   border-radius: var(--radius-full); border: none;
-  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-size: 12px; font-weight: 700; cursor: pointer;
 }
-.zone-badge-red   { background: rgba(255,69,58,0.15); color: var(--red); border: 0.5px solid rgba(255,69,58,0.3); }
-.zone-badge-green { background: rgba(48,209,88,0.15); color: var(--green); border: 0.5px solid rgba(48,209,88,0.3); }
-.zone-badge-grey  { background: rgba(99,99,102,0.20); color: #aeaeb2; border: 0.5px solid rgba(99,99,102,0.3); }
+.zone-badge-red   { background: rgba(255,59,48,0.10); color: var(--red); border: 0.5px solid rgba(255,59,48,0.2); }
+.zone-badge-green { background: rgba(52,199,89,0.10); color: var(--green); border: 0.5px solid rgba(52,199,89,0.2); }
+.zone-badge-grey  { background: rgba(142,142,147,0.12); color: var(--grey); border: 0.5px solid rgba(142,142,147,0.2); }
 
-.chat-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.chat-body { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .chat-body::-webkit-scrollbar { display: none; }
 
+/* chat message row */
+.msg-row { display: flex; flex-direction: column; }
+.msg-row.sent  { align-items: flex-end; }
+.msg-row.recv  { align-items: flex-start; }
+
+.msg-name { font-size: 10px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 3px; padding: 0 4px; }
+
 .msg-bubble {
-  max-width: 82%; padding: 10px 14px;
+  max-width: 80%; padding: 10px 14px;
   border-radius: 20px; font-size: 14px; line-height: 1.45;
-  animation: bubblePop 0.2s ease;
+  animation: bubblePop 0.18s ease;
 }
-@keyframes bubblePop { from {opacity:0;transform:scale(0.94)} to {opacity:1;transform:scale(1)} }
+@keyframes bubblePop { from {opacity:0;transform:scale(0.93) translateY(4px)} to {opacity:1;transform:scale(1) translateY(0)} }
 .msg-bubble.sent {
-  background: var(--accent);
-  color: white; align-self: flex-end;
+  background: var(--accent); color: white;
   border-bottom-right-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,122,255,0.25);
 }
 .msg-bubble.recv {
-  background: rgba(58,58,66,0.85);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  color: var(--text-primary); align-self: flex-start;
+  background: rgba(255,255,255,0.82);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  color: var(--text-primary);
   border-bottom-left-radius: 5px;
-  border: 0.5px solid var(--glass-border);
+  border: 0.5px solid rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-.msg-name { font-size: 10px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 3px; }
 
+/* timestamp + read receipt row */
+.msg-meta {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 3px; padding: 0 4px;
+  font-size: 10px; color: var(--text-tertiary);
+}
+.msg-meta.sent  { justify-content: flex-end; }
+.msg-meta.recv  { justify-content: flex-start; }
+.read-tick { font-size: 11px; }
+.read-tick.read  { color: var(--accent); }
+.read-tick.unread { color: var(--text-tertiary); opacity: 0.6; }
+
+/* limit banners */
 .chat-limit-banner {
-  margin: 8px 16px;
-  padding: 10px 14px;
-  background: rgba(255,69,58,0.10);
-  border: 0.5px solid rgba(255,69,58,0.3);
-  border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 600; color: var(--red);
-  text-align: center;
-  display: none;
+  margin: 6px 14px; padding: 10px 14px;
+  background: rgba(255,59,48,0.07); border: 0.5px solid rgba(255,59,48,0.2);
+  border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; color: var(--red);
+  text-align: center; display: none;
 }
 .chat-limit-warn {
-  margin: 8px 16px;
-  padding: 10px 14px;
-  background: rgba(255,214,10,0.08);
-  border: 0.5px solid rgba(255,214,10,0.3);
-  border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 600; color: var(--amber);
-  text-align: center;
-  display: none;
+  margin: 6px 14px; padding: 10px 14px;
+  background: rgba(255,149,0,0.07); border: 0.5px solid rgba(255,149,0,0.2);
+  border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; color: var(--amber);
+  text-align: center; display: none;
 }
 
 .chat-input-row {
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   display: flex; align-items: center; gap: 8px;
-  border-top: 0.5px solid var(--glass-border);
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: var(--blur-main);
-  backdrop-filter: var(--blur-main);
+  border-top: 0.5px solid rgba(0,0,0,0.07);
+  background: rgba(242,242,247,0.95);
+  -webkit-backdrop-filter: var(--blur-main); backdrop-filter: var(--blur-main);
   flex-shrink: 0;
 }
 .chat-text-input {
   flex: 1; padding: 11px 16px;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  background: rgba(255,255,255,0.8); border: 0.5px solid rgba(0,0,0,0.10);
   border-radius: var(--radius-full);
   color: var(--text-primary); font-size: 15px; font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
+  outline: none; transition: border-color 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
-.chat-text-input:focus { border-color: rgba(0,122,255,0.5); }
+.chat-text-input:focus { border-color: rgba(0,122,255,0.4); }
 .chat-text-input::placeholder { color: var(--text-tertiary); }
 .chat-send-btn {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--accent); border: none;
-  color: white; font-size: 18px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent); border: none; color: white; font-size: 17px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0;
-  transition: opacity 0.15s, transform 0.1s;
+  cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 3px 10px var(--accent-glow);
 }
-.chat-send-btn:active { opacity: 0.8; transform: scale(0.93); }
-.chat-send-btn:disabled { background: var(--grey); opacity: 0.5; cursor: default; }
+.chat-send-btn:active { opacity: 0.8; transform: scale(0.92); }
+.chat-send-btn:disabled { background: var(--grey); opacity: 0.4; cursor: default; box-shadow: none; }
 
-.chat-action-row {
-  padding: 10px 16px 2px;
-  display: flex; gap: 8px; flex-shrink: 0;
-}
+.chat-action-row { padding: 10px 16px 2px; display: flex; gap: 8px; flex-shrink: 0; }
 
 /* ===== ARCHIVE SHEET ===== */
 .archive-task-row {
-  padding: 14px 16px; margin-bottom: 8px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
+  padding: 13px 15px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .archive-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: line-through; }
 .archive-meta { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
@@ -490,85 +490,72 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 /* ===== MOOD OVERLAY ===== */
 #mood-overlay {
   position: fixed; inset: 0; z-index: 300;
-  -webkit-backdrop-filter: var(--blur-overlay);
-  backdrop-filter: var(--blur-overlay);
-  background: rgba(0,0,0,0.45);
+  -webkit-backdrop-filter: var(--blur-overlay); backdrop-filter: var(--blur-overlay);
+  background: rgba(0,0,0,0.18);
   display: none; align-items: center; justify-content: center;
 }
 .mood-card {
-  background: var(--glass-bg-strong);
-  -webkit-backdrop-filter: var(--blur-heavy);
-  backdrop-filter: var(--blur-heavy);
-  border: 0.5px solid var(--glass-border-bright);
-  border-radius: var(--radius-xl);
-  padding: 36px 28px 32px;
-  text-align: center; width: 88%; max-width: 320px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  background: rgba(255,255,255,0.88);
+  -webkit-backdrop-filter: var(--blur-heavy); backdrop-filter: var(--blur-heavy);
+  border: 0.5px solid rgba(255,255,255,0.95);
+  border-radius: var(--radius-xl); padding: 36px 28px 32px;
+  text-align: center; width: 88%; max-width: 300px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.06);
 }
-.mood-greeting { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.mood-greeting { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
 .mood-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
 .mood-btns { display: flex; justify-content: space-around; }
-.mood-btn { font-size: 48px; background: none; border: none; cursor: pointer; transition: transform 0.15s; padding: 8px; border-radius: 16px; }
-.mood-btn:active { transform: scale(0.88); }
-
-/* ===== PLACEHOLDER TABS ===== */
-.placeholder-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 12px; }
-.placeholder-icon { font-size: 52px; opacity: 0.25; }
-.placeholder-text { font-size: 15px; color: var(--text-tertiary); }
-.placeholder-sub { font-size: 12px; color: var(--text-tertiary); opacity: 0.6; }
+.mood-btn { font-size: 46px; background: none; border: none; cursor: pointer; transition: transform 0.15s; padding: 8px; border-radius: 16px; }
+.mood-btn:active { transform: scale(0.86); }
 
 /* ===== EVENT ITEMS ===== */
-.event-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.event-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 17px; border-bottom: 0.5px solid var(--glass-border); }
 .event-row:last-child { border-bottom: none; }
-.event-name { font-size: 14px; font-weight: 600; }
+.event-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .event-countdown { font-size: 13px; font-weight: 700; color: var(--accent); }
 .event-countdown.soon { color: var(--amber); }
 .event-countdown.today { color: var(--green); }
 
 /* ===== FINANCE ===== */
 .finance-summary { padding: 20px; text-align: center; }
-.finance-balance { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.finance-balance { font-size: 34px; font-weight: 700; letter-spacing: -1px; }
 .finance-balance.positive { color: var(--green); }
 .finance-balance.negative { color: var(--red); }
-.finance-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.finance-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 17px; border-bottom: 0.5px solid var(--glass-border); }
 .finance-row:last-child { border-bottom: none; }
-.finance-label { font-size: 14px; font-weight: 500; }
+.finance-label { font-size: 14px; font-weight: 500; color: var(--text-primary); }
 .finance-val { font-size: 14px; font-weight: 700; }
 .finance-val.income { color: var(--green); }
 .finance-val.expense { color: var(--red); }
-.finance-entry-type { display: flex; gap: 8px; }
-.type-btn { flex: 1; padding: 13px; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
-.type-btn.income-btn { background: rgba(48,209,88,0.2); color: var(--green); border: 0.5px solid rgba(48,209,88,0.3); }
-.type-btn.expense-btn { background: rgba(255,69,58,0.2); color: var(--red); border: 0.5px solid rgba(255,69,58,0.3); }
+.type-btn { flex: 1; padding: 13px; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.type-btn.income-btn { background: rgba(52,199,89,0.12); color: var(--green); border: 0.5px solid rgba(52,199,89,0.2); }
+.type-btn.expense-btn { background: rgba(255,59,48,0.10); color: var(--red); border: 0.5px solid rgba(255,59,48,0.2); }
 
 /* ===== VAULT ===== */
 .pin-display { display: flex; justify-content: center; gap: 12px; margin: 24px 0 28px; }
-.pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--glass-border-bright); transition: background 0.15s, transform 0.15s; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(0,0,0,0.12); transition: background 0.15s, transform 0.15s; }
 .pin-dot.filled { background: var(--accent); transform: scale(1.15); box-shadow: 0 0 8px var(--accent-glow); }
 .pin-keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; max-width: 260px; margin: 0 auto; }
 .pin-key {
   aspect-ratio: 1; border-radius: 50%;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border-bright);
+  background: rgba(255,255,255,0.70); border: 0.5px solid rgba(0,0,0,0.08);
   color: var(--text-primary); font-size: 24px; font-weight: 400;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background 0.1s, transform 0.1s;
-  font-family: inherit;
+  cursor: pointer; transition: background 0.1s, transform 0.1s; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 }
-.pin-key:active { background: rgba(255,255,255,0.15); transform: scale(0.92); }
-.vault-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 0.5px solid var(--glass-border); }
+.pin-key:active { background: rgba(0,122,255,0.12); transform: scale(0.92); }
+.vault-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 17px; border-bottom: 0.5px solid var(--glass-border); }
 .vault-item:last-child { border-bottom: none; }
 .vault-item-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
 .vault-item-val { font-size: 15px; font-weight: 600; color: var(--accent); margin-top: 2px; }
 
-/* ===== HISTORY btn in header ===== */
+/* ===== HISTORY btn ===== */
 .history-btn {
   padding: 6px 12px;
-  background: var(--glass-bg-light);
-  border: 0.5px solid var(--glass-border);
+  background: rgba(0,0,0,0.05); border: 0.5px solid rgba(0,0,0,0.08);
   border-radius: var(--radius-full);
-  color: var(--text-secondary); font-size: 12px; font-weight: 600; font-family: inherit;
-  cursor: pointer;
+  color: var(--text-secondary); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
 }
 
 /* ===== TASK COUNT BADGE ===== */
@@ -577,8 +564,8 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   min-width: 16px; height: 16px; border-radius: 8px;
   background: var(--red); color: white;
   font-size: 9px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 4px;
+  display: flex; align-items: center; justify-content: center; padding: 0 4px;
+  box-shadow: 0 1px 4px rgba(255,59,48,0.4);
 }
 .tab-icon-wrap { position: relative; display: inline-flex; }
 </style>
@@ -604,12 +591,11 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   <header>
     <div>
       <div class="header-title" id="page-title">Task</div>
-      <div class="header-sub">
-        <span class="live-dot"></span> LIVE SYNC
-      </div>
+      <div class="header-sub"><span class="live-dot"></span> LIVE SYNC</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div class="header-actions">
       <button class="history-btn" id="history-btn" onclick="openArchive()" style="display:none">🕒 Lịch sử</button>
+      <div class="sync-btn" id="sync-btn" onclick="manualSync()" title="Đồng bộ">↻</div>
       <div class="user-pill" onclick="switchUserPrompt()">
         <div class="avatar-ring" id="avatar-ring">
           <img id="user-avatar" src="" alt="">
@@ -621,7 +607,6 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   </header>
 
   <main id="main-content"></main>
-
   <button class="fab" id="fab-btn" onclick="onFabClick()">+</button>
 
   <div class="tab-bar">
@@ -633,21 +618,18 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
       <span>Task</span>
     </div>
     <div class="tab-item" onclick="nav('events',this)">
-      <div class="tab-icon">⏳</div>
-      <span>Sự kiện</span>
+      <div class="tab-icon">⏳</div><span>Sự kiện</span>
     </div>
     <div class="tab-item" onclick="nav('finance',this)">
-      <div class="tab-icon">💰</div>
-      <span>Tài chính</span>
+      <div class="tab-icon">💰</div><span>Tài chính</span>
     </div>
     <div class="tab-item" onclick="nav('vault',this)">
-      <div class="tab-icon">🗄️</div>
-      <span>Ngăn Kéo</span>
+      <div class="tab-icon">🗄️</div><span>Ngăn Kéo</span>
     </div>
   </div>
 </div>
 
-<!-- ===== SHEET: ADD TASK ===== -->
+<!-- SHEET: ADD TASK -->
 <div class="modal-overlay" id="add-task-modal" onclick="closeSheet('add-task-modal')">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
@@ -694,7 +676,7 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   </div>
 </div>
 
-<!-- ===== SHEET: TASK DETAIL / CHAT ===== -->
+<!-- SHEET: TASK DETAIL / CHAT -->
 <div class="modal-overlay" id="task-detail-modal" onclick="closeSheet('task-detail-modal')">
   <div class="sheet" style="max-height:98dvh;height:92dvh" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
@@ -708,8 +690,8 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
     <div class="chat-action-row">
       <button class="btn-secondary" onclick="closeSheet('task-detail-modal')">← Quay lại</button>
     </div>
-    <div id="chat-limit-warn" class="chat-limit-warn">⚠️ Còn 1 câu cuối — nên gọi điện để trao đổi trực tiếp!</div>
-    <div id="chat-limit-banner" class="chat-limit-banner">🔒 Đã đủ 10 câu thảo luận. Hãy gọi điện cho nhau!</div>
+    <div id="chat-limit-warn" class="chat-limit-warn">⚠️ Còn 1 câu cuối — nên gọi điện trực tiếp!</div>
+    <div id="chat-limit-banner" class="chat-limit-banner">🔒 Đã đủ 10 câu. Hãy gọi điện cho nhau!</div>
     <div class="chat-body" id="chat-box"></div>
     <div class="chat-input-row">
       <input type="text" id="chat-msg-input" class="chat-text-input" placeholder="Thảo luận…" onkeydown="if(event.key==='Enter')sendChat()">
@@ -718,7 +700,7 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   </div>
 </div>
 
-<!-- ===== SHEET: ARCHIVE ===== -->
+<!-- SHEET: ARCHIVE -->
 <div class="modal-overlay" id="archive-modal" onclick="closeSheet('archive-modal')">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
@@ -738,8 +720,9 @@ const CONFIG = {
   TG_CHAT_ID: "-1002587798916",
   VAULT_PIN: "0561000963557",
   SWITCH_PIN: "0000",
-  // Thay thế bằng link ảnh thật khi có
-  AVATARS: { "Chồng": "", "Vợ": "" }
+  AVATARS: { "Chồng": "", "Vợ": "" },
+  // Mood check-in: chỉ hiện sau lần đầu MỞ APP nếu đã qua 3 giờ kể từ lần check-in cuối
+  MOOD_INTERVAL_MS: 3 * 60 * 60 * 1000
 };
 
 const _sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
@@ -753,6 +736,7 @@ async function init() {
   fillPickers();
   setupSegmentedControls();
   await loadAll();
+  // Mood: chỉ hỏi 1 lần khi mở app, không hỏi lại mỗi 30 phút bằng interval
   checkMoodCheckin();
   setupRealtime();
   setInterval(checkAlerts, 60000);
@@ -762,18 +746,14 @@ function setUserUI() {
   document.getElementById('display-name').innerText = currentUser;
   document.getElementById('mood-greeting').innerText = `Chào ${currentUser} ❤️`;
   document.getElementById('user-initials').innerText = currentUser === 'Chồng' ? 'C' : 'V';
-
-  // Set default assignee to currentUser
   document.querySelectorAll('#assignee-selector .seg-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.val === currentUser);
   });
-
   const img = document.getElementById('user-avatar');
-  const avatarUrl = CONFIG.AVATARS[currentUser];
-  if (avatarUrl) {
+  const url = CONFIG.AVATARS[currentUser];
+  if (url) {
     img.onload = () => { img.classList.add('loaded'); document.getElementById('user-initials').style.display = 'none'; };
-    img.onerror = () => {};
-    img.src = avatarUrl;
+    img.src = url;
   }
 }
 
@@ -797,10 +777,11 @@ function setupSegmentedControls() {
   });
 }
 
-/* ===== LOAD DATA ===== */
+/* ===== LOAD DATA (từ Supabase — tasks không bị mất sau reload) ===== */
 async function loadAll() {
   try {
-    const { data } = await _sb.from('jika_data').select('*');
+    const { data, error } = await _sb.from('jika_data').select('*');
+    if (error) throw error;
     if (data) data.forEach(row => {
       try {
         const val = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
@@ -809,16 +790,26 @@ async function loadAll() {
         if (row.key === 'jika_events')   events   = Array.isArray(val) ? val : [];
         if (row.key === 'jika_vault')    vault    = Array.isArray(val) ? val : [];
         if (row.key === 'jika_moods')    moods    = Array.isArray(val) ? val : [];
-      } catch(e) {}
+      } catch(e) { console.warn('Parse error:', row.key, e); }
     });
-  } catch(e) { console.warn('Load failed:', e); }
+  } catch(e) { console.warn('loadAll failed:', e); }
   renderCurrentTab();
   updateTaskBadge();
 }
 
+/* ===== MANUAL SYNC (nút đồng bộ thủ công) ===== */
+async function manualSync() {
+  const btn = document.getElementById('sync-btn');
+  btn.classList.add('spinning');
+  await loadAll();
+  // Nếu đang xem chat, refresh luôn
+  if (currentDetailId) renderChat(currentDetailId);
+  setTimeout(() => btn.classList.remove('spinning'), 700);
+}
+
 /* ===== REALTIME ===== */
 function setupRealtime() {
-  _sb.channel('jika_all')
+  _sb.channel('jika_realtime_v3')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'jika_data' }, payload => {
       if (!payload.new || !payload.new.key) return;
       try {
@@ -866,13 +857,11 @@ function renderTasks() {
   const m = document.getElementById('main-content');
   const now = Date.now();
   const activeTasks = tasks.filter(t => !t.completed);
-
   const zones = [
-    { id: 'red',   label: 'Làm Ngay',  color: 'var(--red)' },
-    { id: 'green', label: 'Lên Lịch',  color: 'var(--green)' },
-    { id: 'grey',  label: 'Để Sau',    color: 'var(--grey)' }
+    { id: 'red',   label: 'Làm Ngay', color: 'var(--red)' },
+    { id: 'green', label: 'Lên Lịch', color: 'var(--green)' },
+    { id: 'grey',  label: 'Để Sau',   color: 'var(--grey)' }
   ];
-
   let html = '';
   zones.forEach(z => {
     const zt = activeTasks.filter(t => t.zone === z.id);
@@ -882,9 +871,7 @@ function renderTasks() {
     } else {
       zt.forEach(t => {
         const isOverdue = t.deadline && new Date(t.deadline).getTime() < now;
-        const deadlineText = t.deadline
-          ? formatDeadline(t.deadline, isOverdue)
-          : 'Không hạn';
+        const deadlineText = t.deadline ? formatDeadline(t.deadline, isOverdue) : 'Không hạn';
         const chatCount = (t.chat || []).length;
         html += `
           <div class="glass-card task-card zone-${z.id} ${isOverdue ? 'overdue-card' : ''}" onclick="openDetail('${t.id}')">
@@ -903,13 +890,11 @@ function renderTasks() {
       });
     }
   });
-
   m.innerHTML = html;
 }
 
 function formatDeadline(dl, overdue) {
-  const d = new Date(dl);
-  const now = new Date();
+  const d = new Date(dl), now = new Date();
   const diffMs = d - now;
   const diffH = Math.round(diffMs / 3600000);
   const diffD = Math.round(diffMs / 86400000);
@@ -924,7 +909,7 @@ function updateTaskBadge() {
   const urgent = tasks.filter(t => !t.completed && t.zone === 'red').length;
   const badge = document.getElementById('task-badge');
   if (urgent > 0) { badge.style.display = 'flex'; badge.innerText = urgent > 9 ? '9+' : urgent; }
-  else { badge.style.display = 'none'; }
+  else badge.style.display = 'none';
 }
 
 /* ===== SAVE NEW TASK ===== */
@@ -933,10 +918,8 @@ async function saveNewTask() {
   if (!title) { document.getElementById('task-title-input').focus(); return; }
   const assigneeActive = document.querySelector('#assignee-selector .active');
   const zoneActive = document.querySelector('#zone-selector .active');
-
   const newTask = {
-    id: 't' + Date.now(),
-    title,
+    id: 't' + Date.now(), title,
     zone: zoneActive ? zoneActive.dataset.val : 'red',
     assignee: assigneeActive ? assigneeActive.dataset.val : currentUser,
     deadline: document.getElementById('task-deadline-input').value || null,
@@ -945,21 +928,15 @@ async function saveNewTask() {
       h: parseInt(document.getElementById('alert-h').value) || 0,
       m: parseInt(document.getElementById('alert-m').value) || 0
     },
-    completed: false,
-    completedAt: null,
-    chat: [],
-    lastAlert: 0
+    completed: false, completedAt: null, chat: [], lastAlert: 0
   };
-
   tasks.push(newTask);
   document.getElementById('task-title-input').value = '';
   document.getElementById('task-deadline-input').value = '';
   closeSheet('add-task-modal');
-
   await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
   sendTelegram(`📌 Task mới từ ${currentUser}\n"${title}"\n👤 ${newTask.assignee} | Zone: ${newTask.zone.toUpperCase()}${newTask.deadline ? '\n⏰ Hạn: ' + newTask.deadline.replace('T',' ') : ''}`);
-  renderTasks();
-  updateTaskBadge();
+  renderTasks(); updateTaskBadge();
 }
 
 /* ===== TASK DETAIL ===== */
@@ -967,33 +944,56 @@ function openDetail(id) {
   currentDetailId = id;
   const t = tasks.find(x => x.id === id);
   if (!t) return;
-
   document.getElementById('dt-title').innerText = t.title;
   document.getElementById('dt-info').innerText = `👤 ${t.assignee} | ⏱ ${t.deadline ? t.deadline.replace('T', ' ') : 'Không hạn'}`;
-
   const doneBtn = document.getElementById('dt-done-btn');
   doneBtn.className = 'chat-zone-badge zone-badge-' + t.zone;
   doneBtn.innerText = 'Hoàn thành ✓';
   doneBtn.onclick = () => finishTask(id);
-
+  // Đánh dấu đã đọc: ghi nhận user hiện tại đã xem task này
+  markRead(id);
   openSheet('task-detail-modal');
   renderChat(id);
 }
 
+/* Đánh dấu user đã đọc chat mới nhất trong task */
+async function markRead(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t || !(t.chat || []).length) return;
+  if (!t.readBy) t.readBy = {};
+  const lastIdx = t.chat.length - 1;
+  if (t.readBy[currentUser] === lastIdx) return; // đã đọc rồi, không cần save
+  t.readBy[currentUser] = lastIdx;
+  await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
+}
+
+/* ===== RENDER CHAT (có thời gian + dấu đã đọc) ===== */
 function renderChat(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
-
   const box = document.getElementById('chat-box');
   const chat = t.chat || [];
+  const readBy = t.readBy || {};
+  const other = currentUser === 'Chồng' ? 'Vợ' : 'Chồng';
 
   box.innerHTML = '';
-  chat.forEach(msg => {
+  chat.forEach((msg, idx) => {
     const isSent = msg.user === currentUser;
+    const timeStr = msg.time ? fmtTime(msg.time) : '';
+    // Dấu đọc: chỉ hiện ở tin nhắn cuối cùng của mình, kiểm tra đối phương đã đọc chưa
+    let readTick = '';
+    if (isSent) {
+      const otherRead = (readBy[other] !== undefined && readBy[other] >= idx);
+      readTick = `<span class="read-tick ${otherRead ? 'read' : 'unread'}">${otherRead ? '✓✓' : '✓'}</span>`;
+    }
     box.innerHTML += `
-      <div style="display:flex;flex-direction:column;align-items:${isSent?'flex-end':'flex-start'}">
+      <div class="msg-row ${isSent ? 'sent' : 'recv'}">
         <div class="msg-name">${msg.user}</div>
         <div class="msg-bubble ${isSent ? 'sent' : 'recv'}">${escHtml(msg.text)}</div>
+        <div class="msg-meta ${isSent ? 'sent' : 'recv'}">
+          <span>${timeStr}</span>
+          ${readTick}
+        </div>
       </div>`;
   });
   box.scrollTop = box.scrollHeight;
@@ -1004,39 +1004,41 @@ function renderChat(id) {
   const input       = document.getElementById('chat-msg-input');
 
   if (chat.length >= 10) {
-    limitBanner.style.display = 'block';
-    limitWarn.style.display = 'none';
-    sendBtn.disabled = true;
-    input.disabled = true;
-    input.placeholder = 'Đã khoá — hãy gọi điện 📞';
+    limitBanner.style.display = 'block'; limitWarn.style.display = 'none';
+    sendBtn.disabled = true; input.disabled = true; input.placeholder = 'Đã khoá — gọi điện 📞';
   } else if (chat.length === 9) {
-    limitWarn.style.display = 'block';
-    limitBanner.style.display = 'none';
-    sendBtn.disabled = false;
-    input.disabled = false;
-    input.placeholder = 'Tin nhắn cuối cùng…';
+    limitWarn.style.display = 'block'; limitBanner.style.display = 'none';
+    sendBtn.disabled = false; input.disabled = false; input.placeholder = 'Tin nhắn cuối…';
   } else {
-    limitBanner.style.display = 'none';
-    limitWarn.style.display = 'none';
-    sendBtn.disabled = false;
-    input.disabled = false;
-    input.placeholder = 'Thảo luận…';
+    limitBanner.style.display = 'none'; limitWarn.style.display = 'none';
+    sendBtn.disabled = false; input.disabled = false; input.placeholder = 'Thảo luận…';
   }
+}
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const h = d.getHours().toString().padStart(2,'0');
+  const m = d.getMinutes().toString().padStart(2,'0');
+  if (sameDay) return `${h}:${m}`;
+  return `${d.getDate()}/${d.getMonth()+1} ${h}:${m}`;
 }
 
 async function sendChat() {
   const input = document.getElementById('chat-msg-input');
   const text = input.value.trim();
   if (!text || !currentDetailId) return;
-
   const t = tasks.find(x => x.id === currentDetailId);
   if (!t || (t.chat || []).length >= 10) return;
-
   if (!t.chat) t.chat = [];
+  if (!t.readBy) t.readBy = {};
   t.chat.push({ user: currentUser, text, time: new Date().toISOString() });
+  // Người gửi tự đọc tin nhắn của mình ngay
+  t.readBy[currentUser] = t.chat.length - 1;
   input.value = '';
   renderChat(currentDetailId);
-
   await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
   sendTelegram(`💬 ${currentUser} → [${t.title}]\n"${text}"`);
 }
@@ -1044,24 +1046,21 @@ async function sendChat() {
 async function finishTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
-  t.completed = true;
-  t.completedAt = new Date().toISOString();
+  t.completed = true; t.completedAt = new Date().toISOString();
   closeSheet('task-detail-modal');
   await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
-  renderTasks();
-  updateTaskBadge();
+  renderTasks(); updateTaskBadge();
 }
 
 /* ===== ARCHIVE ===== */
 function openArchive() {
   const list = document.getElementById('archive-list');
   const done = tasks.filter(t => t.completed);
-
   if (!done.length) {
     list.innerHTML = `<div class="empty-state" style="padding:40px 20px">Chưa có việc nào hoàn thành</div>`;
   } else {
     list.innerHTML = done.map(t => `
-      <div class="glass-card archive-task-row" style="margin-bottom:10px">
+      <div class="glass-card archive-task-row" style="margin-bottom:9px">
         <div>
           <div class="archive-title">${escHtml(t.title)}</div>
           <div class="archive-meta">👤 ${t.assignee} | ✓ ${t.completedAt ? new Date(t.completedAt).toLocaleDateString('vi-VN') : 'Đã xong'}</div>
@@ -1075,43 +1074,35 @@ function openArchive() {
 async function restoreTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
-  t.completed = false;
-  t.completedAt = null;
+  t.completed = false; t.completedAt = null;
   await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) });
   closeSheet('archive-modal');
-  renderTasks();
-  updateTaskBadge();
-  openArchive();
+  renderTasks(); updateTaskBadge(); openArchive();
 }
 
 /* ===== EVENTS ===== */
 function renderEvents() {
   const m = document.getElementById('main-content');
   const fixed = [
-    { n: "Sinh nhật Vợ ❤️",    d: "12-27" },
-    { n: "Sinh nhật Simba 🦁",  d: "11-25" },
-    { n: "Sinh nhật Lisa 🌸",   d: "08-28" }
+    { n: "Sinh nhật Vợ ❤️", d: "12-27" },
+    { n: "Sinh nhật Simba 🦁", d: "11-25" },
+    { n: "Sinh nhật Lisa 🌸", d: "08-28" }
   ];
   const now = new Date();
-  const allEvents = [...fixed, ...events];
-
-  const rows = allEvents.map(e => {
+  const rows = [...fixed, ...events].map(e => {
     const raw = e.d || e.date;
     let t;
     if (raw.length === 5) {
       const [mo, dy] = raw.split('-');
       t = new Date(now.getFullYear(), parseInt(mo)-1, parseInt(dy));
       if (t < now) t.setFullYear(now.getFullYear() + 1);
-    } else {
-      t = new Date(raw);
-    }
+    } else { t = new Date(raw); }
     const days = Math.ceil((t - now) / 86400000);
-    let cls = ''; let label = `Còn ${days} ngày`;
+    let cls = '', label = `Còn ${days} ngày`;
     if (days === 0) { cls = 'today'; label = 'Hôm nay! 🎉'; }
     else if (days <= 7) { cls = 'soon'; label = `Còn ${days} ngày ⚡`; }
     return `<div class="event-row"><div class="event-name">${e.n || e.name}</div><div class="event-countdown ${cls}">${label}</div></div>`;
   }).join('');
-
   m.innerHTML = `
     <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Đếm ngược</div>
     <div class="glass-card" style="overflow:hidden">${rows}</div>
@@ -1122,27 +1113,21 @@ function renderEvents() {
 function renderFinance() {
   const m = document.getElementById('main-content');
   let tin = 0, tout = 0;
-  finances.forEach(f => {
-    const amt = parseInt(f.amount) || 0;
-    if (f.type === 'in') tin += amt; else tout += amt;
-  });
+  finances.forEach(f => { const a = parseInt(f.amount)||0; if(f.type==='in') tin+=a; else tout+=a; });
   const bal = tin - tout;
-  const balCls = bal >= 0 ? 'positive' : 'negative';
-
   const recent = [...finances].reverse().slice(0, 10);
   const rows = recent.map(f => {
     const isIn = f.type === 'in';
     return `<div class="finance-row">
-      <div><div class="finance-label">${escHtml(f.name)}</div><div style="font-size:10px;color:var(--text-tertiary)">${f.date ? new Date(f.date).toLocaleDateString('vi-VN') : ''}</div></div>
+      <div><div class="finance-label">${escHtml(f.name)}</div><div style="font-size:10px;color:var(--text-tertiary)">${f.date?new Date(f.date).toLocaleDateString('vi-VN'):''}</div></div>
       <div class="finance-val ${isIn?'income':'expense'}">${isIn?'+':'−'}${parseInt(f.amount).toLocaleString('vi-VN')}đ</div>
     </div>`;
   }).join('');
-
   m.innerHTML = `
     <div class="glass-card" style="margin-bottom:14px">
       <div class="finance-summary">
         <div style="font-size:11px;color:var(--text-secondary);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px">Số dư hiện tại</div>
-        <div class="finance-balance ${balCls}">${bal.toLocaleString('vi-VN')}đ</div>
+        <div class="finance-balance ${bal>=0?'positive':'negative'}">${bal.toLocaleString('vi-VN')}đ</div>
         <div style="display:flex;justify-content:center;gap:24px;margin-top:14px">
           <div style="text-align:center"><div style="font-size:10px;color:var(--text-tertiary);font-weight:700;text-transform:uppercase">Thu</div><div style="font-size:15px;font-weight:700;color:var(--green)">${tin.toLocaleString('vi-VN')}đ</div></div>
           <div style="width:0.5px;background:var(--glass-border)"></div>
@@ -1150,27 +1135,22 @@ function renderFinance() {
         </div>
       </div>
     </div>
-
     <div class="glass-card" style="margin-bottom:14px;overflow:hidden">
-      <div class="finance-row" style="background:rgba(255,69,58,0.07);border-bottom:0.5px solid var(--glass-border)">
+      <div class="finance-row" style="background:rgba(255,59,48,0.04)">
         <div><div class="finance-label" style="font-weight:700">⚠️ Lãi Sacombank</div><div style="font-size:10px;color:var(--text-tertiary)">Ngày 25 hàng tháng</div></div>
         <div class="finance-val expense">28.000.000đ</div>
       </div>
     </div>
-
     <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Nhập giao dịch</div>
     <div class="glass-card" style="padding:16px;margin-bottom:14px">
       <input id="fn" class="form-input" placeholder="Nội dung giao dịch" style="margin-bottom:10px">
       <input id="fa" type="number" class="form-input" placeholder="Số tiền (VND)">
-      <div class="finance-entry-type" style="margin-top:12px">
+      <div style="display:flex;gap:8px;margin-top:12px">
         <button class="type-btn income-btn" onclick="addFin('in')">+ Thu nhập</button>
         <button class="type-btn expense-btn" onclick="addFin('out')">− Chi tiêu</button>
       </div>
     </div>
-
-    ${recent.length > 0 ? `
-    <div class="section-label"><div class="zone-dot" style="background:var(--grey)"></div>Gần đây</div>
-    <div class="glass-card" style="overflow:hidden">${rows}</div>` : ''}`;
+    ${recent.length?`<div class="section-label"><div class="zone-dot" style="background:var(--grey)"></div>Gần đây</div><div class="glass-card" style="overflow:hidden">${rows}</div>`:''}`;
 }
 
 async function addFin(type) {
@@ -1186,12 +1166,13 @@ async function addFin(type) {
 function renderVaultLock() {
   enteredPin = '';
   const m = document.getElementById('main-content');
+  const dotCount = Math.min(CONFIG.VAULT_PIN.length, 13);
   m.innerHTML = `
     <div style="text-align:center;padding-top:40px">
-      <div style="font-size:56px;margin-bottom:12px">🗄️</div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Ngăn Kéo Bảo Mật</div>
+      <div style="font-size:54px;margin-bottom:12px">🗄️</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px;color:var(--text-primary)">Ngăn Kéo Bảo Mật</div>
       <div style="font-size:13px;color:var(--text-secondary);margin-bottom:32px">Nhập mã PIN để mở tủ</div>
-      <div class="pin-display">${'<div class="pin-dot"></div>'.repeat(CONFIG.VAULT_PIN.length > 8 ? 8 : 4)}</div>
+      <div class="pin-display">${'<div class="pin-dot"></div>'.repeat(dotCount)}</div>
       <div class="pin-keypad">
         ${[1,2,3,4,5,6,7,8,9,'C',0,'⌫'].map(k=>`<button class="pin-key" onclick="tapPin('${k}')">${k}</button>`).join('')}
       </div>
@@ -1202,7 +1183,6 @@ function tapPin(v) {
   if (v === 'C') enteredPin = '';
   else if (v === '⌫') enteredPin = enteredPin.slice(0, -1);
   else enteredPin += v;
-
   document.querySelectorAll('.pin-dot').forEach((d, i) => d.classList.toggle('filled', i < enteredPin.length));
   if (enteredPin === CONFIG.VAULT_PIN) renderVaultOpen();
 }
@@ -1211,13 +1191,9 @@ function renderVaultOpen() {
   const m = document.getElementById('main-content');
   const items = vault.map((v, idx) => `
     <div class="glass-card vault-item" style="margin-bottom:8px">
-      <div>
-        <div class="vault-item-label">${escHtml(v.title)}</div>
-        <div class="vault-item-val">${escHtml(v.val)}</div>
-      </div>
+      <div><div class="vault-item-label">${escHtml(v.title)}</div><div class="vault-item-val">${escHtml(v.val)}</div></div>
       <button class="btn-danger" onclick="delVault(${idx})">Xoá</button>
     </div>`).join('');
-
   m.innerHTML = `
     <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Hồ sơ gia đình</div>
     ${items || '<div class="empty-state">Chưa có mục nào</div>'}
@@ -1231,16 +1207,21 @@ async function delVault(idx) {
   renderVaultOpen();
 }
 
-/* ===== MOOD ===== */
+/* ===== MOOD — chỉ hiện 1 lần khi mở app, nếu đã > 3h kể từ lần cuối ===== */
 function checkMoodCheckin() {
-  const last = localStorage.getItem('jika_mood_time');
-  if (!last || Date.now() - parseInt(last) > 10800000) { // 3 hours
-    document.getElementById('mood-overlay').style.display = 'flex';
+  const last = parseInt(localStorage.getItem('jika_mood_time') || '0');
+  const now = Date.now();
+  // Chỉ hỏi nếu đã qua đủ interval (3 giờ) — KHÔNG dùng setInterval để tránh popup liên tục
+  if (now - last > CONFIG.MOOD_INTERVAL_MS) {
+    // Delay 1.2s để app load xong rồi mới hiện overlay, tránh bật ngay khi mở
+    setTimeout(() => {
+      document.getElementById('mood-overlay').style.display = 'flex';
+    }, 1200);
   }
 }
 
-async function saveMood(m) {
-  moods.push({ u: currentUser, m, t: new Date().toISOString() });
+async function saveMood(emoji) {
+  moods.push({ u: currentUser, m: emoji, t: new Date().toISOString() });
   localStorage.setItem('jika_mood_time', Date.now().toString());
   document.getElementById('mood-overlay').style.display = 'none';
   await _sb.from('jika_data').upsert({ key: 'jika_moods', value: JSON.stringify(moods) });
@@ -1248,13 +1229,12 @@ async function saveMood(m) {
 
 /* ===== ALERTS ===== */
 async function checkAlerts() {
-  const now = Date.now();
-  let changed = false;
-  tasks.forEach(async t => {
+  const now = Date.now(); let changed = false;
+  tasks.forEach(t => {
     if (t.completed || !t.deadline || !t.alertBefore) return;
     const dl = new Date(t.deadline).getTime();
-    const alertMs = ((t.alertBefore.d||0)*86400 + (t.alertBefore.h||0)*3600 + (t.alertBefore.m||0)*60) * 1000;
-    if (now >= (dl - alertMs) && (now - (t.lastAlert||0) > 3600000)) {
+    const alertMs = ((t.alertBefore.d||0)*86400 + (t.alertBefore.h||0)*3600 + (t.alertBefore.m||0)*60)*1000;
+    if (alertMs > 0 && now >= (dl - alertMs) && (now - (t.lastAlert||0) > 3600000)) {
       const diffH = Math.round((dl - now)/3600000);
       sendTelegram(`🚨 <b>NHẮC VIỆC CHƯA XONG</b>\n📌 ${t.title}\n👤 ${t.assignee}\n⏰ Còn khoảng ${diffH}h`);
       t.lastAlert = now; changed = true;
@@ -1265,8 +1245,7 @@ async function checkAlerts() {
 
 /* ===== TELEGRAM ===== */
 function sendTelegram(text) {
-  fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=HTML`)
-    .catch(() => {});
+  fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=HTML`).catch(()=>{});
 }
 
 /* ===== USER SWITCH ===== */
@@ -1280,17 +1259,8 @@ function switchUserPrompt() {
 }
 
 /* ===== SHEET HELPERS ===== */
-function openSheet(id) {
-  const el = document.getElementById(id);
-  el.style.display = 'flex';
-  el.classList.add('open');
-}
-function closeSheet(id) {
-  const el = document.getElementById(id);
-  el.style.display = 'none';
-  el.classList.remove('open');
-  if (id === 'task-detail-modal') currentDetailId = null;
-}
+function openSheet(id) { const el = document.getElementById(id); el.style.display='flex'; el.classList.add('open'); }
+function closeSheet(id) { const el = document.getElementById(id); el.style.display='none'; el.classList.remove('open'); if(id==='task-detail-modal') currentDetailId=null; }
 
 /* ===== UTILS ===== */
 function escHtml(s) {
