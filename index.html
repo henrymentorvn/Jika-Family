@@ -24,64 +24,62 @@
         .user-name { font-size: 13px; font-weight: 700; color: #333; cursor: pointer; }
         .sync-btn { font-size: 18px; cursor: pointer; color: var(--ios-blue); }
         main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 120px; scroll-behavior: smooth; }
-        .section-label { font-size: 13px; font-weight: 700; color: #444; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .section-label { font-size: 12px; font-weight: 800; color: #444; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .card { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
-        .task-card:active { transform: scale(0.98); }
-        .task-info h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .task-info p { margin: 5px 0 0; font-size: 11px; color: #444; font-weight: 500; }
-        .msg-count { font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.08); padding: 3px 10px; border-radius: 12px; }
-        .modal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.3); display: none; justify-content: center; align-items: flex-end; }
+        .card { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .task-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .task-card:active { transform: scale(0.97); }
+        .task-info h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1c1c1e; }
+        .task-info p { margin: 5px 0 0; font-size: 11px; color: #666; font-weight: 600; }
+        .msg-count { font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.06); padding: 3px 10px; border-radius: 12px; }
+        
+        .modal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; }
         .modal-content { background: #fff; width: 100%; max-height: 94%; border-radius: 32px 32px 0 0; padding: 25px; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0, 0.5, 0.5, 1); overflow-y: auto; }
         @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)} }
+        
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 800; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-input { width: 100%; padding: 15px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; outline: none; font-family: inherit; }
+        .form-group label { display: block; font-size: 11px; font-weight: 800; color: #888; margin-bottom: 8px; text-transform: uppercase; }
+        .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #eee; background: #f5f5f7; font-size: 16px; outline: none; font-family: inherit; transition: 0.2s; }
+        .form-input:focus { border-color: var(--ios-blue); background: #fff; }
         
         .segmented-control { display: flex; background: #efeff4; border-radius: 16px; padding: 3px; gap: 3px; }
-        .segmented-control button { flex: 1; border: none; padding: 8px 5px; border-radius: 13px; font-size: 13px; font-weight: 700; cursor: pointer; color: #666; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
-        .segmented-control button span { font-size: 8.5px; font-weight: 500; opacity: 0.7; margin-top: 2px; text-transform: none; }
+        .segmented-control button { flex: 1; border: none; padding: 10px 5px; border-radius: 13px; font-size: 12px; font-weight: 700; cursor: pointer; color: #666; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .segmented-control button span { font-size: 8px; font-weight: 500; opacity: 0.7; margin-top: 2px; }
         .zone-btn[data-val="red"].active { background: var(--ios-red); color: white; }
         .zone-btn[data-val="green"].active { background: var(--ios-green); color: white; }
         .zone-btn[data-val="grey"].active { background: var(--ios-grey); color: white; }
         .assign-btn.active { background: white; color: var(--ios-blue); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
 
-        .picker-container { display: flex; gap: 10px; }
-        .picker-wrap { flex: 1; background: #f5f5f7; border-radius: 14px; padding: 5px 10px; display: flex; flex-direction: column; align-items: center; border: 1px solid #eee; }
-        .picker-wrap select { background: none; border: none; font-size: 18px; font-weight: 700; color: var(--ios-blue); width: 100%; text-align: center; outline: none; padding: 5px 0; -webkit-appearance: none; }
-        .picker-label { font-size: 9px; font-weight: 800; color: #999; text-transform: uppercase; }
+        .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 18px; border-radius: 22px; font-size: 17px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-main:active { transform: scale(0.96); opacity: 0.9; }
 
-        .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 18px; border-radius: 20px; font-size: 17px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .fab { position: fixed; bottom: 100px; right: 20px; width: 64px; height: 64px; border-radius: 32px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 10px 25px rgba(0,122,255,0.4); z-index: 90; border: none; cursor: pointer; }
-        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-top: 12px; z-index: 100; }
+        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding-top: 12px; z-index: 100; }
         .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 600; cursor: pointer; flex: 1; }
         .tab-item.active { color: var(--ios-blue); }
-        .tab-icon { font-size: 26px; margin-bottom: 5px; }
-        #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.1); backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .mood-card { background: white; padding: 40px 30px; border-radius: 45px; text-align: center; box-shadow: 0 25px 70px rgba(0,0,0,0.2); width: 88%; max-width: 340px; }
-        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; padding: 5px; }
-        .msg { font-size: 14px; max-width: 85%; padding: 12px 16px; border-radius: 20px; line-height: 1.4; position: relative; }
+        .tab-icon { font-size: 24px; margin-bottom: 5px; }
+        .fab { position: fixed; bottom: 105px; right: 20px; width: 60px; height: 60px; border-radius: 30px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 10px 20px rgba(0,122,255,0.3); z-index: 90; border: none; cursor: pointer; }
+
+        .chat-box { flex: 1; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
+        .msg { font-size: 14px; max-width: 80%; padding: 12px 16px; border-radius: 20px; line-height: 1.4; }
         .msg.sent { background: var(--ios-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.received { background: #e9e9eb; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
         
-        .pin-dots { display: flex; justify-content: center; gap: 10px; margin: 20px 0 30px; flex-wrap: wrap; padding: 0 20px; }
-        .pin-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; }
-        .pin-dot.active { background: var(--ios-blue); transform: scale(1.2); }
-        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 280px; margin: 0 auto; }
-        .pin-btn { background: white; border: none; width: 65px; height: 64px; border-radius: 50%; font-size: 24px; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .event-item { display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 0.5px solid #eee; }
-        .event-name { font-weight: 700; font-size: 14px; }
-        .event-countdown { font-size: 12px; color: var(--ios-blue); font-weight: 800; }
-        .finance-row { display: flex; justify-content: space-between; align-items: center; }
-        .finance-label { font-size: 14px; font-weight: 600; }
-        .finance-val.expense { color: var(--ios-red); font-weight: 800; }
+        .pin-dots { display: flex; justify-content: center; gap: 10px; margin: 20px 0 30px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #ccc; }
+        .pin-dot.active { background: var(--ios-blue); border-color: var(--ios-blue); }
+        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 0 auto; width: 260px; }
+        .pin-btn { background: #f2f2f7; border: none; width: 70px; height: 70px; border-radius: 35px; font-size: 24px; font-weight: 500; cursor: pointer; transition: 0.1s; }
+        .pin-btn:active { background: #d1d1d6; }
+
+        #mood-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .mood-card { background: white; padding: 40px; border-radius: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 85%; max-width: 340px; }
     </style>
 </head>
 <body>
     <div class="mesh-bg"></div>
+
     <div id="mood-overlay"><div class="mood-card">
-        <h2 id="mood-user-name">Chào ❤️</h2><p style="color: #666; font-size: 14px;">Cảm xúc của bạn lúc này?</p>
+        <h2 id="mood-user-name">Chào ❤️</h2><p style="color: #666;">Cảm xúc của bạn lúc này?</p>
         <div style="display: flex; justify-content: space-around; margin-top: 30px;">
             <button onclick="saveMood('😊')" style="font-size: 50px; border:none; background:none; cursor:pointer;">😊</button>
             <button onclick="saveMood('😐')" style="font-size: 50px; border:none; background:none; cursor:pointer;">😐</button>
@@ -91,15 +89,18 @@
 
     <div class="app-container">
         <header>
-            <div><h1 id="page-title">Task</h1><div style="font-size: 10px; color: var(--ios-green); font-weight: 800;">● LIVE SYNC</div></div>
+            <div><h1 id="page-title">Task</h1><div id="sync-status" style="font-size: 10px; color: var(--ios-green); font-weight: 800;">● ĐANG ĐỒNG BỘ</div></div>
             <div class="user-section">
                 <div class="sync-btn" onclick="location.reload()">↻</div>
-                <span class="user-name" id="display-name" onclick="switchUserPrompt()">---</span>
-                <div class="avatar-frame"><img id="user-avatar" src="" alt="Avatar"></div>
+                <span class="user-name" id="display-name" onclick="switchUserPrompt()">...</span>
+                <div class="avatar-frame"><img id="user-avatar" src="" alt="A"></div>
             </div>
         </header>
+
         <main id="main-content"></main>
+
         <button id="add-fab" class="fab" onclick="showAddModal()">+</button>
+
         <div class="tab-bar">
             <div class="tab-item active" onclick="nav('tasks', this)"><span class="tab-icon">📋</span>Task</div>
             <div class="tab-item" onclick="nav('events', this)"><span class="tab-icon">⏳</span>Sự kiện</div>
@@ -108,36 +109,44 @@
         </div>
     </div>
 
-    <!-- MODAL ADD -->
+    <!-- MODAL ADD TASK -->
     <div id="add-task-modal" class="modal" onclick="closeModal('add-task-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin-top:0">Việc mới</h2>
-            <div class="form-group"><label>Tiêu đề ★</label><input type="text" id="task-title-input" class="form-input" placeholder="Ví dụ: Đóng tiền nước"></div>
-            <div class="form-group"><label>Ưu tiên</label><div class="segmented-control" id="zone-selector">
-                <button class="zone-btn active" data-val="red">Làm Ngay <span>Khẩn cấp</span></button>
-                <button class="zone-btn" data-val="green">Lên Lịch <span>Kế hoạch</span></button>
-                <button class="zone-btn" data-val="grey">Để Sau <span>Lặt vặt</span></button>
-            </div></div>
-            <div style="display:flex; gap:12px"><div class="form-group" style="flex:1"><label>Đảm nhận</label><div class="segmented-control" id="assignee-selector"><button class="assign-btn active" data-val="Chồng">Chồng</button><button class="assign-btn" data-val="Vợ">Vợ</button></div></div><div class="form-group" style="flex:1"><label>Hạn chót</label><input type="datetime-local" id="task-deadline-input" class="form-input"></div></div>
-            <div class="form-group"><label>Nhắc trước</label><div class="picker-container">
-                <div class="picker-wrap"><select id="alert-d"></select><div class="picker-label">Ngày</div></div>
-                <div class="picker-wrap"><select id="alert-h"></select><div class="picker-label">Giờ</div></div>
-                <div class="picker-wrap"><select id="alert-m"></select><div class="picker-label">Phút</div></div>
-            </div></div>
-            <button class="btn-main" onclick="saveNewTask()">Lưu công việc ✓</button>
+            <h2 style="margin:0 0 20px">Tạo việc mới</h2>
+            <div class="form-group"><label>Nội dung công việc</label><input type="text" id="task-title-input" class="form-input" placeholder="Bạn cần làm gì?"></div>
+            <div class="form-group"><label>Mức độ ưu tiên</label>
+                <div class="segmented-control" id="zone-selector">
+                    <button class="zone-btn active" data-val="red">LÀM NGAY <span>Khẩn cấp</span></button>
+                    <button class="zone-btn" data-val="green">LÊN LỊCH <span>Quan trọng</span></button>
+                    <button class="zone-btn" data-val="grey">ĐỂ SAU <span>Lặt vặt</span></button>
+                </div>
+            </div>
+            <div style="display:flex; gap:12px">
+                <div class="form-group" style="flex:1"><label>Người làm</label>
+                    <div class="segmented-control" id="assignee-selector">
+                        <button class="assign-btn active" data-val="Chồng">Chồng</button>
+                        <button class="assign-btn" data-val="Vợ">Vợ</button>
+                    </div>
+                </div>
+                <div class="form-group" style="flex:1"><label>Hạn chót</label><input type="datetime-local" id="task-deadline-input" class="form-input" style="padding:12px"></div>
+            </div>
+            <button class="btn-main" id="btn-save-task" onclick="saveNewTask()">LƯU CÔNG VIỆC</button>
         </div>
     </div>
 
-    <!-- MODAL DETAIL -->
+    <!-- MODAL DETAIL & CHAT -->
     <div id="task-detail-modal" class="modal" onclick="closeModal('task-detail-modal')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:15px; border-bottom:1px solid #eee;">
-                <div style="flex:1; padding-right:10px;"><h2 id="dt-title" style="margin:0; font-size:18px;"></h2><p id="dt-info" style="font-size:11px; color:#666; margin-top:5px;"></p></div>
-                <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px;" id="dt-done-btn">Xong</button>
+                <div style="flex:1"><h2 id="dt-title" style="margin:0; font-size:18px;"></h2><p id="dt-info" style="margin:5px 0 0; font-size:11px; color:#666;"></p></div>
+                <button class="btn-main" style="width:auto; padding:10px 20px; font-size:14px; margin-top:0" id="dt-done-btn">Xong</button>
             </div>
-            <div id="chat-limit-warning" style="display:none; color:var(--ios-red); font-size:11px; text-align:center; padding:12px; background:#fff1f0; border-radius:12px; margin-top:10px; font-weight:600;"></div>
+            <div id="chat-limit-warning" style="display:none; color:var(--ios-red); font-size:11px; text-align:center; padding:12px; background:#fff1f0; border-radius:12px; margin-top:10px; font-weight:700;"></div>
             <div class="chat-box" id="chat-box"></div>
-            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;"><input type="text" id="chat-msg-input" class="form-input" placeholder="Thảo luận..."><button onclick="sendChat()" style="background:var(--ios-blue); border:none; color:white; width:44px; height:44px; border-radius:50%; font-size:22px; cursor:pointer;">↑</button></div>
+            <div id="chat-input-area" style="display:flex; gap:10px; align-items:center;">
+                <input type="text" id="chat-msg-input" class="form-input" placeholder="Gõ thảo luận...">
+                <button onclick="sendChat()" style="background:var(--ios-blue); border:none; color:white; width:48px; height:48px; border-radius:24px; font-size:20px; cursor:pointer;">↑</button>
+            </div>
         </div>
     </div>
 
@@ -160,7 +169,6 @@
         async function init() {
             document.getElementById('display-name').innerText = currentUser;
             document.getElementById('user-avatar').src = CONFIG.AVATARS[currentUser];
-            fillPickers();
             setupSegmentedControls();
             await loadAll();
             checkMoodCheckin();
@@ -168,162 +176,243 @@
             setInterval(checkAlerts, 60000);
         }
 
-        function fillPickers() {
-            const d = document.getElementById('alert-d'), h = document.getElementById('alert-h'), m = document.getElementById('alert-m');
-            d.innerHTML = h.innerHTML = m.innerHTML = '';
-            for(let i=0; i<=30; i++) d.innerHTML += `<option value="${i}">${i}</option>`;
-            for(let i=0; i<=23; i++) h.innerHTML += `<option value="${i}">${i}</option>`;
-            for(let i=0; i<=59; i++) m.innerHTML += `<option value="${i}">${i}</option>`;
-        }
-
         async function loadAll() {
-            const { data } = await _sb.from('jika_data').select('*');
-            if(data) data.forEach(i => {
-                const val = JSON.parse(i.value);
-                if(i.key==='jika_tasks') tasks = val;
-                if(i.key==='jika_finances') finances = val;
-                if(i.key==='jika_events') events = val;
-                if(i.key==='jika_vault') vault = val;
-                if(i.key==='jika_moods') moods = val;
-            });
-            renderCurrentTab();
+            const { data, error } = await _sb.from('jika_data').select('*');
+            if(data) {
+                data.forEach(i => {
+                    const val = JSON.parse(i.value || "[]");
+                    if(i.key==='jika_tasks') tasks = val;
+                    if(i.key==='jika_finances') finances = val;
+                    if(i.key==='jika_events') events = val;
+                    if(i.key==='jika_vault') vault = val;
+                });
+                renderCurrentTab();
+            }
         }
 
         function setupRealtime() {
-            _sb.channel('jika_all').on('postgres_changes', {event:'*', schema:'public', table:'jika_data'}, payload => {
-                const k = payload.new.key; const v = JSON.parse(payload.new.value);
-                if(k==='jika_tasks') tasks=v;
-                if(k==='jika_finances') finances=v;
-                if(k==='jika_vault') vault=v;
+            _sb.channel('jika_changes').on('postgres_changes', {event:'*', schema:'public', table:'jika_data'}, payload => {
+                const k = payload.new.key;
+                const v = JSON.parse(payload.new.value || "[]");
+                if(k==='jika_tasks') tasks = v;
+                if(k==='jika_finances') finances = v;
+                if(k==='jika_vault') vault = v;
+                
                 renderCurrentTab();
                 if(currentDetailId) renderChat(currentDetailId);
+                
+                document.getElementById('sync-status').innerText = "● ĐÃ CẬP NHẬT " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             }).subscribe();
         }
 
         function renderCurrentTab() {
-            const m = document.getElementById('main-content'); m.innerHTML = '';
+            const m = document.getElementById('main-content');
+            m.innerHTML = '';
             document.getElementById('add-fab').style.display = (currentTab==='tasks'||currentTab==='events'||(currentTab==='vault' && enteredPin===CONFIG.VAULT_PIN)) ? 'flex' : 'none';
+            
             if(currentTab==='tasks') renderTasks();
             else if(currentTab==='events') renderEvents();
             else if(currentTab==='finance') renderFinance();
             else if(currentTab==='vault') enteredPin === CONFIG.VAULT_PIN ? renderVaultOpen() : renderVaultLock();
         }
 
+        // --- TASK LOGIC ---
         function renderTasks() {
             const m = document.getElementById('main-content');
-            m.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 10px;">
-                <div class="section-label" style="margin:0">${isHistoryView ? 'KHO LƯU TRỮ' : 'VIỆC CẦN LÀM'}</div>
-                <button onclick="toggleHistory()" style="background:rgba(255,255,255,0.6); border:1px solid #ccc; padding:6px 12px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer;">
-                    ${isHistoryView ? '← Hiện tại' : '🕒 Lịch sử'}
-                </button></div>`;
-            const zones = [{id:'red',l:'LÀM NGAY',c:'var(--ios-red)'},{id:'green',l:'LÊN LỊCH',c:'var(--ios-green)'},{id:'grey',l:'ĐỂ SAU',c:'var(--ios-grey)'}];
+            m.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 10px;">
+                    <div class="section-label" style="margin:0">${isHistoryView ? 'Lịch sử hoàn thành' : 'Công việc hiện tại'}</div>
+                    <button onclick="toggleHistory()" style="background:rgba(255,255,255,0.7); border:1px solid #ddd; padding:8px 15px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer;">
+                        ${isHistoryView ? '← Hiện tại' : '🕒 Lịch sử'}
+                    </button>
+                </div>
+            `;
+
+            const zones = [
+                {id:'red',l:'LÀM NGAY',c:'var(--ios-red)'},
+                {id:'green',l:'LÊN LỊCH',c:'var(--ios-green)'},
+                {id:'grey',l:'ĐỂ SAU',c:'var(--ios-grey)'}
+            ];
+
             zones.forEach(z => {
                 const zt = tasks.filter(t => t.zone === z.id && (!!t.completed === isHistoryView));
                 if(zt.length > 0) {
                     m.innerHTML += `<div class="section-label"><div class="dot" style="background:${z.c}"></div>${z.l}</div>`;
                     zt.forEach(t => {
                         const isOverdue = t.deadline && new Date(t.deadline) < new Date() && !t.completed;
-                        m.innerHTML += `<div class="card task-card" onclick="openDetail('${t.id}')" style="${isOverdue ? 'border: 1.5px solid var(--ios-red); background:rgba(255,59,48,0.1);' : ''}">
+                        m.innerHTML += `
+                        <div class="card task-card" onclick="openDetail('${t.id}')" style="${isOverdue ? 'border: 1.5px solid var(--ios-red); background:rgba(255,59,48,0.05);' : ''}">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="avatar-frame" style="width:30px; height:30px;"><img src="${CONFIG.AVATARS[t.assignee]}"></div>
-                                <div class="task-info"><h3>${t.title}</h3><p>${isOverdue?'🚨 Quá hạn | ':''}👤 ${t.assignee} | ⏳ ${t.deadline?t.deadline.replace('T',' '):'Không hạn'}</p></div>
+                                <div class="task-info">
+                                    <h3 style="${t.completed ? 'text-decoration:line-through; color:#888' : ''}">${t.title}</h3>
+                                    <p>${isOverdue?'🚨 QUÁ HẠN | ':''}👤 ${t.assignee} | ⏳ ${t.deadline?t.deadline.replace('T',' '):'Không hạn'}</p>
+                                </div>
                             </div>
                             <div class="task-meta"><span class="msg-count" style="${(t.chat&&t.chat.length>=9)?'background:var(--ios-red);color:white;':''}">💬 ${t.chat?t.chat.length:0}</span></div>
                         </div>`;
                     });
                 }
             });
+            if (m.innerHTML.indexOf('task-card') === -1) m.innerHTML += `<div style="text-align:center; padding:50px; color:#aaa; font-size:13px;">Trống</div>`;
         }
 
-        function toggleHistory() { isHistoryView = !isHistoryView; renderTasks(); }
-
         async function saveNewTask() {
+            const btn = document.getElementById('btn-save-task');
             const title = document.getElementById('task-title-input').value.trim();
             if(!title) return;
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG LƯU...";
+
             const newTask = {
-                id:'t'+Date.now(), title, zone:document.querySelector('#zone-selector .active').dataset.val,
-                assignee:document.querySelector('#assignee-selector .active').dataset.val,
-                deadline:document.getElementById('task-deadline-input').value,
-                alertBefore: { d:parseInt(document.getElementById('alert-d').value), h:parseInt(document.getElementById('alert-h').value), m:parseInt(document.getElementById('alert-m').value) },
-                completed:false, chat:[], lastAlert:0
+                id: 't' + Date.now(),
+                title,
+                zone: document.querySelector('#zone-selector .active').dataset.val,
+                assignee: document.querySelector('#assignee-selector .active').dataset.val,
+                deadline: document.getElementById('task-deadline-input').value,
+                completed: false,
+                chat: [],
+                lastAlert: 0
             };
-            tasks.push(newTask);
-            await _sb.from('jika_data').upsert({key:'jika_tasks', value:JSON.stringify(tasks)});
-            closeModal('add-task-modal'); renderTasks();
-            fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 VIỆC MỚI: ${newTask.title}\n👤 Phụ trách: ${newTask.assignee}`)}&parse_mode=HTML`);
+
+            // CHỈ CẬP NHẬT LÊN SERVER, Realtime sẽ tự động cập nhật UI sau khi lưu thành công
+            const updatedTasks = [...tasks, newTask];
+            const { error } = await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(updatedTasks)});
+            
+            if(!error) {
+                document.getElementById('task-title-input').value = '';
+                closeModal('add-task-modal');
+                fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`📌 VIỆC MỚI: ${newTask.title}\n👤 Phụ trách: ${newTask.assignee}`)}&parse_mode=HTML`);
+            } else {
+                alert("Lỗi lưu dữ liệu: " + error.message);
+            }
+            btn.disabled = false;
+            btn.innerText = "LƯU CÔNG VIỆC";
         }
 
         function openDetail(id) {
-            currentDetailId = id; const t = tasks.find(x => x.id === id);
+            currentDetailId = id;
+            const t = tasks.find(x => x.id === id);
+            if(!t) return;
+
             document.getElementById('dt-title').innerText = t.title;
-            document.getElementById('dt-info').innerText = `${t.assignee} | ${t.deadline || 'Không hạn'}`;
+            document.getElementById('dt-info').innerText = `Phụ trách: ${t.assignee} | Hạn: ${t.deadline || 'Không'}`;
+            
             const btn = document.getElementById('dt-done-btn');
             if(t.completed) {
                 btn.innerText = "Khôi phục"; btn.style.background = "var(--ios-grey)";
-                btn.onclick = () => undoTask(id);
+                btn.onclick = () => updateTaskStatus(id, false);
             } else {
                 btn.innerText = "Xong"; btn.style.background = "var(--ios-blue)";
-                btn.onclick = () => finishTask(id);
+                btn.onclick = () => updateTaskStatus(id, true);
             }
             document.getElementById('task-detail-modal').style.display = 'flex';
             renderChat(id);
         }
 
+        async function updateTaskStatus(id, status) {
+            const idx = tasks.findIndex(x => x.id === id);
+            if(idx === -1) return;
+            tasks[idx].completed = status;
+            await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
+            closeModal('task-detail-modal');
+        }
+
         function renderChat(id) {
             const t = tasks.find(x => x.id === id);
+            if(!t) return;
             const b = document.getElementById('chat-box');
             const warn = document.getElementById('chat-limit-warning');
             const area = document.getElementById('chat-input-area');
-            b.innerHTML = ''; (t.chat || []).forEach(m => b.innerHTML += `<div class="msg ${m.user===currentUser?'sent':'received'}">${m.text}</div>`);
+            
+            b.innerHTML = '';
+            (t.chat || []).forEach(m => b.innerHTML += `<div class="msg ${m.user===currentUser?'sent':'received'}">${m.text}</div>`);
             b.scrollTop = b.scrollHeight;
+
             const len = (t.chat || []).length;
-            if(len >= 10) { warn.style.display='block'; warn.innerHTML="🚫 Đã đủ 10 câu. Hãy gọi cho nhau!"; area.style.display='none'; }
-            else { warn.style.display=(len===9?'block':'none'); if(len===9) warn.innerText="⚠️ Lượt cuối!"; area.style.display='flex'; }
+            if(len >= 10) {
+                warn.style.display='block'; warn.innerHTML="🚫 Đã đủ 10 câu thảo luận. Vui lòng gọi điện hoặc nói chuyện trực tiếp!";
+                area.style.display='none';
+            } else {
+                warn.style.display=(len===9?'block':'none');
+                if(len===9) warn.innerText="⚠️ Đây là lượt thảo luận cuối cùng!";
+                area.style.display='flex';
+            }
         }
 
         async function sendChat() {
-            const i = document.getElementById('chat-msg-input'); if(!i.value.trim()) return;
-            const t = tasks.find(x => x.id === currentDetailId);
-            if(!t.chat) t.chat = []; t.chat.push({user:currentUser, text:i.value.trim()});
-            await _sb.from('jika_data').upsert({key:'jika_tasks', value:JSON.stringify(tasks)});
-            i.value = ''; renderChat(currentDetailId);
+            const i = document.getElementById('chat-msg-input');
+            const txt = i.value.trim();
+            if(!txt || !currentDetailId) return;
+
+            const idx = tasks.findIndex(x => x.id === currentDetailId);
+            if(!tasks[idx].chat) tasks[idx].chat = [];
+            tasks[idx].chat.push({user: currentUser, text: txt});
+
+            i.value = '';
+            await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
+            
+            // Telegram thông báo
+            fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`💬 ${currentUser} nhắn trong ${tasks[idx].title}: "${txt}"`)}&parse_mode=HTML`);
         }
 
-        async function finishTask(id) { tasks.find(x=>x.id===id).completed=true; await _sb.from('jika_data').upsert({key:'jika_tasks',value:JSON.stringify(tasks)}); closeModal('task-detail-modal'); renderTasks(); }
-        async function undoTask(id) { tasks.find(x=>x.id===id).completed=false; await _sb.from('jika_data').upsert({key:'jika_tasks',value:JSON.stringify(tasks)}); closeModal('task-detail-modal'); renderTasks(); }
-
+        // --- CÁC MODULE KHÁC (GIỮ NGUYÊN VÀ FIX LỖI ĐỒNG BỘ) ---
         function renderEvents() {
             const m = document.getElementById('main-content');
-            m.innerHTML = `<div class="section-label">Sự kiện sắp tới</div>`;
+            m.innerHTML = `<div class="section-label">Sự kiện & Đếm ngược</div>`;
             const fixed = [{n:"Sinh nhật Vợ ❤️",d:"12-27"},{n:"Sinh nhật Simba 🦁",d:"11-25"},{n:"Sinh nhật Lisa 🌸",d:"08-28"}];
             let h = `<div class="card">`;
             fixed.concat(events).forEach(e => {
                 const now = new Date(); let t = (e.d||e.date).length===5 ? new Date(now.getFullYear(), (e.d||e.date).split('-')[0]-1, (e.d||e.date).split('-')[1]) : new Date(e.d||e.date);
                 if(t < now && (e.d||e.date).length===5) t.setFullYear(now.getFullYear()+1);
                 const days = Math.ceil((t-now)/(1000*60*60*24));
-                h += `<div class="event-item"><div class="event-name">${e.n||e.name}</div><div class="event-countdown">Còn ${days} ngày</div></div>`;
+                h += `<div class="event-item"><div class="event-name">${e.n||e.name}</div><div class="event-countdown">${days > 0 ? 'Còn '+days+' ngày' : 'Hôm nay!'}</div></div>`;
             });
-            m.innerHTML += h + `</div>`;
+            m.innerHTML += h + `</div><button class="btn-main" onclick="alert('Module đang hoàn thiện')">+ Thêm sự kiện mới</button>`;
         }
 
         function renderFinance() {
             const m = document.getElementById('main-content');
             let tin=0, tout=0; finances.forEach(f=>{if(f.type==='in') tin+=parseInt(f.amount); else tout+=parseInt(f.amount);});
-            m.innerHTML = `<div class="section-label">Số dư: ${(tin-tout).toLocaleString()}đ</div>
-            <div class="card"><input id="fn" class="form-input" placeholder="Nội dung" style="margin-bottom:10px"><input id="fa" type="number" class="form-input" placeholder="Số tiền"><div style="display:flex;gap:10px;margin-top:15px"><button class="btn-main" style="background:var(--ios-green)" onclick="addFin('in')">Thu+</button><button class="btn-main" style="background:var(--ios-red)" onclick="addFin('out')">Chi-</button></div></div>`;
+            m.innerHTML = `
+            <div class="section-label">Tình hình tài chính</div>
+            <div class="card" style="display:flex; justify-content:space-around; text-align:center;">
+                <div><div style="font-size:10px; color:#666">SỐ DƯ</div><div style="font-size:18px; font-weight:800; color:var(--ios-blue)">${(tin-tout).toLocaleString()}đ</div></div>
+                <div style="width:1px; background:#eee"></div>
+                <div><div style="font-size:10px; color:#666">THÁNG NÀY</div><div style="font-size:18px; font-weight:800; color:var(--ios-red)">-${tout.toLocaleString()}đ</div></div>
+            </div>
+            <div class="section-label">Giao dịch nhanh</div>
+            <div class="card"><input id="fn" class="form-input" placeholder="Nội dung chi tiêu..."><input id="fa" type="number" class="form-input" placeholder="Số tiền" style="margin-top:10px"><div style="display:flex;gap:10px;margin-top:15px"><button class="btn-main" style="background:var(--ios-green); margin:0" onclick="addFin('in')">Thu+</button><button class="btn-main" style="background:var(--ios-red); margin:0" onclick="addFin('out')">Chi-</button></div></div>`;
         }
-        async function addFin(t){const n=document.getElementById('fn').value,a=document.getElementById('fa').value; if(!n||!a)return; finances.push({name:n,amount:a,type:t,date:new Date().toISOString()}); await _sb.from('jika_data').upsert({key:'jika_finances',value:JSON.stringify(finances)}); renderFinance();}
+        async function addFin(t){
+            const n=document.getElementById('fn').value, a=document.getElementById('fa').value;
+            if(!n||!a) return;
+            finances.push({name:n, amount:a, type:t, date:new Date().toISOString()});
+            await _sb.from('jika_data').upsert({key:'jika_finances', value:JSON.stringify(finances)});
+        }
 
         function renderVaultLock() {
             enteredPin = ""; const m = document.getElementById('main-content');
-            m.innerHTML = `<div style="text-align:center; padding-top:20px"><span style="font-size:50px">🗄️</span><h2 style="margin:10px 0 5px">Ngăn Kéo</h2><div class="pin-dots">${'<div class="pin-dot"></div>'.repeat(CONFIG.VAULT_PIN.length)}</div><div class="pin-keypad" id="pk"></div></div>`;
+            m.innerHTML = `<div style="text-align:center; padding-top:20px"><span style="font-size:50px">🗄️</span><h2 style="margin:10px 0 5px">Ngăn Kéo Bảo Mật</h2><p style="color:#666; font-size:13px">Vui lòng nhập mã PIN</p><div class="pin-dots">${'<div class="pin-dot"></div>'.repeat(CONFIG.VAULT_PIN.length)}</div><div class="pin-keypad" id="pk"></div></div>`;
             const k = document.getElementById('pk'); for(let i=1;i<=9;i++) k.innerHTML+=`<button class="pin-btn" onclick="tapP('${i}')">${i}</button>`;
             k.innerHTML+=`<button class="pin-btn" onclick="tapP('C')">C</button><button class="pin-btn" onclick="tapP('0')">0</button><button class="pin-btn" onclick="tapP('del')">⌫</button>`;
         }
-        function tapP(v){ if(v==='C')enteredPin=""; else if(v==='del')enteredPin=enteredPin.slice(0,-1); else enteredPin+=v; const ds=document.querySelectorAll('.pin-dot'); ds.forEach((d,i)=>d.classList.toggle('active',i<enteredPin.length)); if(enteredPin===CONFIG.VAULT_PIN) renderVaultOpen();}
-        function renderVaultOpen(){ const m=document.getElementById('main-content'); m.innerHTML=`<div class="section-label">Hồ sơ bảo mật</div>`; vault.forEach((v,idx)=>m.innerHTML+=`<div class="card" style="display:flex;justify-content:space-between"><div><div style="font-size:10px;font-weight:800;color:#999">${v.title}</div><div style="font-weight:700;color:var(--ios-blue)">${v.val}</div></div><div onclick="delV(${idx})" style="color:var(--ios-red); cursor:pointer;">✕</div></div>`); m.innerHTML+=`<button class="btn-main" onclick="renderVaultLock()">Khóa tủ</button>`;}
-        async function delV(idx){ if(confirm("Xóa?")){vault.splice(idx,1); await _sb.from('jika_data').upsert({key:'jika_vault',value:JSON.stringify(vault)}); renderVaultOpen();} }
+        function tapP(v){
+            if(v==='C') enteredPin=""; else if(v==='del') enteredPin=enteredPin.slice(0,-1); else enteredPin+=v;
+            const ds=document.querySelectorAll('.pin-dot'); ds.forEach((d,i)=>d.classList.toggle('active',i<enteredPin.length));
+            if(enteredPin===CONFIG.VAULT_PIN) renderVaultOpen();
+        }
+        function renderVaultOpen(){
+            const m=document.getElementById('main-content');
+            m.innerHTML=`<div class="section-label">Hồ sơ & Mật mã</div>`;
+            vault.forEach((v,idx)=>m.innerHTML+=`<div class="card" style="display:flex;justify-content:space-between; align-items:center;"><div><div style="font-size:10px;font-weight:800;color:#999;text-transform:uppercase">${v.title}</div><div style="font-weight:700;color:var(--ios-blue); font-size:16px;">${v.val}</div></div><div onclick="delV(${idx})" style="color:var(--ios-red); padding:10px; cursor:pointer;">✕</div></div>`);
+            m.innerHTML+=`<button class="btn-main" style="background:var(--ios-grey)" onclick="renderVaultLock()">Đóng Ngăn Kéo</button>`;
+        }
+        async function delV(idx){ if(confirm("Xóa hồ sơ này?")){vault.splice(idx,1); await _sb.from('jika_data').upsert({key:'jika_vault', value:JSON.stringify(vault)});}}
 
+        // --- UTILS ---
+        function toggleHistory() { isHistoryView = !isHistoryView; renderTasks(); }
         function nav(p, el) { 
             currentTab=p; isHistoryView = false;
             document.querySelectorAll('.tab-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); 
@@ -333,20 +422,26 @@
         function showAddModal() { document.getElementById('add-task-modal').style.display='flex'; }
         function closeModal(id) { document.getElementById(id).style.display='none'; if(id==='task-detail-modal') currentDetailId=null; }
         function setupSegmentedControls() { document.querySelectorAll('.segmented-control button').forEach(b => b.onclick = function(){ this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active')); this.classList.add('active'); }); }
-        function checkMoodCheckin() { if(!localStorage.getItem('jika_mood_time') || Date.now() - localStorage.getItem('jika_mood_time') > 1800000) document.getElementById('mood-overlay').style.display='flex'; }
-        async function saveMood(m) { moods.push({u:currentUser,m,t:new Date().toISOString()}); localStorage.setItem('jika_mood_time', Date.now()); document.getElementById('mood-overlay').style.display='none'; await _sb.from('jika_data').upsert({key:'jika_moods', value:JSON.stringify(moods)}); }
-        function switchUserPrompt() { if(prompt("PIN 0000:")===CONFIG.SWITCH_PIN){currentUser=currentUser==='Chồng'?'Vợ':'Chồng'; localStorage.setItem('jika_user',currentUser); location.reload();} }
+        function checkMoodCheckin() { if(!localStorage.getItem('jika_mood_time') || Date.now() - localStorage.getItem('jika_mood_time') > 3600000) document.getElementById('mood-overlay').style.display='flex'; }
+        async function saveMood(m) { 
+            moods.push({u:currentUser, m, t:new Date().toISOString()});
+            localStorage.setItem('jika_mood_time', Date.now());
+            document.getElementById('mood-overlay').style.display='none';
+            await _sb.from('jika_data').upsert({key:'jika_moods', value:JSON.stringify(moods)});
+        }
+        function switchUserPrompt() { if(prompt("Nhập mã PIN:")===CONFIG.SWITCH_PIN){currentUser=currentUser==='Chồng'?'Vợ':'Chồng'; localStorage.setItem('jika_user',currentUser); location.reload();} }
         async function checkAlerts() {
             tasks.forEach(async t => {
                 if(t.completed || !t.deadline) return;
                 const dl = new Date(t.deadline).getTime();
-                const alertMs = (t.alertBefore.d*86400 + t.alertBefore.h*3600 + t.alertBefore.m*60)*1000;
-                if(Date.now() >= (dl - alertMs) && (Date.now() - (t.lastAlert||0) > 3600000)) {
-                    fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`🚨 CẢNH BÁO: ${t.title} sắp đến hạn!`)}&parse_mode=HTML`);
-                    t.lastAlert = Date.now(); await _sb.from('jika_data').upsert({key:'jika_tasks', value:JSON.stringify(tasks)});
+                if(Date.now() >= (dl - 3600000) && (Date.now() - (t.lastAlert||0) > 3600000)) {
+                    fetch(`https://api.telegram.org/bot${CONFIG.TG_TOKEN}/sendMessage?chat_id=${CONFIG.TG_CHAT_ID}&text=${encodeURIComponent(`🚨 SẮP ĐẾN HẠN: ${t.title}`)}&parse_mode=HTML`);
+                    t.lastAlert = Date.now();
+                    await _sb.from('jika_data').upsert({key: 'jika_tasks', value: JSON.stringify(tasks)});
                 }
             });
         }
+
         window.onload = init;
     </script>
 </body>
