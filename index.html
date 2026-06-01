@@ -7,111 +7,107 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --ios-blue: #007aff; --ios-red: #ff3b30; --ios-green: #34c759; }
-        body { font-family: -apple-system, sans-serif; background: #f5f7fa; margin: 0; padding: 0; }
-        .app-container { padding: 20px; padding-top: 60px; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .btn-main { width: 100%; background: var(--ios-blue); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; z-index: 1000; }
-        .modal-content { background: white; width: 100%; padding: 25px; border-radius: 25px 25px 0 0; }
-        header { position: fixed; top: 0; width: 100%; background: white; padding: 15px 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .task-item { border-left: 4px solid var(--ios-blue); padding: 10px; margin-bottom: 10px; background: #fafafa; border-radius: 5px; }
-        .status-dot { font-size: 10px; color: var(--ios-green); font-weight: bold; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; color: #1c1c1e; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 15px; }
+        .status { font-size: 12px; font-weight: bold; margin-bottom: 20px; padding: 10px; border-radius: 10px; text-align: center; }
+        .status.ok { background: #eaffea; color: var(--ios-green); }
+        .status.err { background: #ffeaea; color: var(--ios-red); }
+        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-blue { background: var(--ios-blue); color: white; }
+        .task-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 16px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <header>
-        <div><strong>Jika Family</strong> <span class="status-dot">● ONLINE</span></div>
-        <button onclick="testConnection()" style="font-size: 10px; padding: 5px;">Thử kết nối</button>
-    </header>
+    <div class="container">
+        <h2>Jika Family App</h2>
+        <div id="connection-status" class="status">Đang kiểm tra kết nối...</div>
 
-    <div class="app-container">
-        <div id="task-list">Đang tải dữ liệu...</div>
-        <button class="btn-main" onclick="showAdd()">+ Thêm việc mới</button>
-    </div>
+        <div class="card">
+            <h3>Thêm công việc mới</h3>
+            <input type="text" id="task-title" placeholder="Ví dụ: Mua tã cho Simba...">
+            <button class="btn btn-blue" id="save-btn" onclick="saveTask()">LƯU LẠI</button>
+        </div>
 
-    <div id="add-modal" class="modal" onclick="this.style.display='none'">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3>Việc cần làm</h3>
-            <input type="text" id="task-input" class="form-input" placeholder="Nội dung...">
-            <button class="btn-main" id="save-btn" onclick="saveNewTask()">LƯU LẠI</button>
+        <div class="card">
+            <h3>Danh sách việc cần làm</h3>
+            <div id="task-list">Đang tải...</div>
         </div>
     </div>
 
     <script>
+        // THÔNG TIN BẠN VỪA CUNG CẤP
         const SB_URL = "https://zxvlthyrahpfzmrnfbib.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4dmx0aHlyaGFwZnptcm5mYmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjM2MjYsImV4cCI6MjA5NTc5OTYyNn0.sjJcMt4RkP5nWF2wldAFV1bIp7i56B0EPXlMtEHMkss";
+        
         const _sb = supabase.createClient(SB_URL, SB_KEY);
         let tasks = [];
 
-        async function loadTasks() {
+        // 1. KIỂM TRA KẾT NỐI NGAY KHI MỞ APP
+        async function checkConnection() {
+            const statusDiv = document.getElementById('connection-status');
             try {
-                const { data, error } = await _sb.from('jika_data').select('*').eq('key', 'jika_tasks').single();
-                if (data) tasks = JSON.parse(data.value);
+                const { data, error } = await _sb.from('jika_data').select('key').limit(1);
+                if (error && error.message.includes("failed to fetch")) {
+                    throw new Error("ERR_NAME_NOT_RESOLVED");
+                }
+                statusDiv.innerText = "✅ KẾT NỐI DATABASE THÀNH CÔNG";
+                statusDiv.className = "status ok";
+                loadTasks();
+            } catch (err) {
+                statusDiv.innerText = "❌ LỖI: DATABASE ĐANG TẮT HOẶC BỊ CHẶN";
+                statusDiv.className = "status err";
+                console.error("Lỗi chi tiết:", err);
+                alert("Dự án của bạn có thể đang bị PAUSED.\n\nHãy vào trang quản trị Supabase bấm RESTORE PROJECT.");
+            }
+        }
+
+        // 2. TẢI DỮ LIỆU
+        async function loadTasks() {
+            const { data } = await _sb.from('jika_data').select('*').eq('key', 'jika_tasks').single();
+            if (data) {
+                tasks = JSON.parse(data.value);
                 renderTasks();
-            } catch (e) {
-                document.getElementById('task-list').innerText = "Chưa có dữ liệu trên Server.";
+            } else {
+                document.getElementById('task-list').innerText = "Chưa có công việc nào.";
             }
         }
 
         function renderTasks() {
             const list = document.getElementById('task-list');
-            list.innerHTML = tasks.length === 0 ? "Không có việc gì." : "";
+            list.innerHTML = tasks.length ? "" : "Trống.";
             tasks.forEach(t => {
-                list.innerHTML += `<div class="task-item"><strong>${t.title}</strong></div>`;
+                list.innerHTML += `<div class="task-item"><span>${t.title}</span></div>`;
             });
         }
 
-        async function saveNewTask() {
-            const input = document.getElementById('task-input');
+        // 3. LƯU DỮ LIỆU
+        async function saveTask() {
+            const input = document.getElementById('task-title');
             const btn = document.getElementById('save-btn');
             if (!input.value.trim()) return;
 
-            btn.disabled = true; btn.innerText = "ĐANG GỬI...";
-            const newList = [...tasks, { id: Date.now(), title: input.value.trim() }];
+            btn.disabled = true; btn.innerText = "ĐANG LƯU...";
+            const updatedTasks = [...tasks, { id: Date.now(), title: input.value.trim() }];
 
-            try {
-                // Sử dụng Fetch API trực tiếp để tránh lỗi Load Failed của thư viện
-                const response = await fetch(`${SB_URL}/rest/v1/jika_data?key=eq.jika_tasks`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SB_KEY,
-                        'Authorization': `Bearer ${SB_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'resolution=merge-duplicates'
-                    },
-                    body: JSON.stringify({ key: 'jika_tasks', value: JSON.stringify(newList) })
-                });
+            const { error } = await _sb.from('jika_data').upsert({
+                key: 'jika_tasks', 
+                value: JSON.stringify(updatedTasks)
+            });
 
-                if (response.ok) {
-                    tasks = newList;
-                    renderTasks();
-                    input.value = '';
-                    document.getElementById('add-modal').style.display = 'none';
-                } else {
-                    const errText = await response.text();
-                    alert("Database từ chối: " + errText);
-                }
-            } catch (err) {
-                alert("LỖI KẾT NỐI: Trình duyệt hoặc Mạng của bạn đã chặn lệnh gửi đi.\n\nHãy thử: Tắt Wifi dùng 4G.");
-            } finally {
-                btn.disabled = false; btn.innerText = "LƯU LẠI";
+            if (error) {
+                alert("Lỗi: " + error.message + "\n\nBạn đã chạy lệnh SQL tắt RLS chưa?");
+                console.error(error);
+            } else {
+                tasks = updatedTasks;
+                renderTasks();
+                input.value = "";
             }
+            btn.disabled = false; btn.innerText = "LƯU LẠI";
         }
 
-        async function testConnection() {
-            alert("Đang kiểm tra tới: " + SB_URL);
-            try {
-                const res = await fetch(SB_URL + "/rest/v1/", { headers: { 'apikey': SB_KEY } });
-                if (res.ok) alert("KẾT NỐI THÀNH CÔNG! Database của bạn đã sẵn sàng.");
-                else alert("KẾT NỐI THẤT BẠI: Database phản hồi lỗi.");
-            } catch (e) {
-                alert("KẾT NỐI BỊ CHẶN: Trình duyệt không thể gọi tới Supabase.");
-            }
-        }
-
-        function showAdd() { document.getElementById('add-modal').style.display = 'flex'; }
-        window.onload = loadTasks;
+        window.onload = checkConnection;
     </script>
 </body>
 </html>
