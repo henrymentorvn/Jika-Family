@@ -51,7 +51,11 @@ jobs:
             for (const t of tasks) {
               if (t.completed || !t.deadline || !t.alertBefore) continue;
               
-              const dl = new Date(t.deadline).getTime();
+              // Fix timezone: deadline lưu dạng 'YYYY-MM-DDTHH:mm' không có timezone
+              // App iOS parse là giờ địa phương (UTC+7), nhưng GitHub Actions dùng UTC
+              // => Cộng thêm 7*3600000 ms để align về UTC+7
+              const UTC_OFFSET = 7 * 3600000;
+              const dl = new Date(t.deadline).getTime() - UTC_OFFSET;
               const alertMs = (
                 (t.alertBefore.d || 0) * 86400000 +
                 (t.alertBefore.h || 0) * 3600000 +
@@ -62,21 +66,24 @@ jobs:
               
               const alertTime = dl - alertMs;
               const lastAlert = t.lastAlert || 0;
+              const diffMs = dl - now;
+              
+              // Bỏ qua task đã quá hạn hơn 2 giờ — không cần nhắc nữa
+              if (diffMs < -7200000) continue;
               
               // Chỉ nhắc nếu: đã đến giờ nhắc VÀ chưa nhắc trong 1 giờ qua
               if (now >= alertTime && (now - lastAlert) > 3600000) {
-                const diffMs = dl - now;
                 const diffH = Math.round(diffMs / 3600000);
                 const diffD = Math.round(diffMs / 86400000);
                 
                 let timeStr = '';
-                if (diffMs < 0) timeStr = 'ĐÃ QUÁ HẠN';
+                if (diffMs < 0) timeStr = 'ĐÃ QUÁ HẠN ⛔';
                 else if (diffH < 1) timeStr = 'Còn dưới 1 giờ ⚠️';
                 else if (diffH < 24) timeStr = 'Còn ' + diffH + ' giờ';
                 else timeStr = 'Còn ' + diffD + ' ngày';
 
                 const deadlineFormatted = t.deadline.replace('T', ' ').substring(0, 16).split('-').reverse().join('/').replace('/', '/').replace('2026/', '2026 lúc ').replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$1/$2/$3');
-                const dl2 = new Date(t.deadline);
+                const dl2 = new Date(new Date(t.deadline).getTime() - UTC_OFFSET + 7*3600000);
                 const dlStr = dl2.getDate().toString().padStart(2,'0') + '/' + (dl2.getMonth()+1).toString().padStart(2,'0') + '/' + dl2.getFullYear() + ' lúc ' + dl2.getHours().toString().padStart(2,'0') + ':' + dl2.getMinutes().toString().padStart(2,'0');
                 const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
                 const msg = '🚨 VIỆC CHƯA XONG — CẦN LÀM NGAY!\n\n📌 ' + t.title + '\n' + assigneeIcon + ' Người đảm nhận: ' + t.assignee + '\n📅 Deadline: ' + dlStr + '\n⏳ Thời gian còn lại: ' + timeStr + '\n\n👉 Mở app Jika Family để xử lý!';
