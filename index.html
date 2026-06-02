@@ -7,30 +7,29 @@
 <!-- Supabase SDK từ unpkg — Safari iOS compatible -->
 <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-/* ===== LIQUID GLASS LIGHT — iOS 26 ===== */
+/* ===== DARK GREEN — App Style ===== */
 :root {
-  --accent: #007aff;
-  --accent-glow: rgba(0,122,255,0.25);
-  --red: #ff3b30;
-  --green: #34c759;
-  --amber: #ff9500;
-  --grey: #8e8e93;
+  --accent: #39d353;
+  --accent-glow: rgba(57,211,83,0.30);
+  --red: #ff453a;
+  --green: #39d353;
+  --amber: #ffd60a;
+  --grey: #636366;
 
-  /* Light glass tokens — clean white iOS */
-  --glass-bg: rgba(255,255,255,0.70);
-  --glass-bg-strong: rgba(255,255,255,0.85);
-  --glass-bg-light: rgba(255,255,255,0.50);
-  --glass-border: rgba(0,0,0,0.06);
-  --glass-border-bright: rgba(255,255,255,0.95);
-  --glass-shine: rgba(255,255,255,0.70);
+  --glass-bg: rgba(20,30,20,0.72);
+  --glass-bg-strong: rgba(15,22,15,0.88);
+  --glass-bg-light: rgba(255,255,255,0.06);
+  --glass-border: rgba(57,211,83,0.15);
+  --glass-border-bright: rgba(57,211,83,0.25);
+  --glass-shine: rgba(57,211,83,0.05);
 
-  --text-primary: rgba(0,0,0,0.88);
-  --text-secondary: rgba(0,0,0,0.45);
-  --text-tertiary: rgba(0,0,0,0.25);
+  --text-primary: rgba(255,255,255,0.95);
+  --text-secondary: rgba(255,255,255,0.55);
+  --text-tertiary: rgba(255,255,255,0.30);
 
-  --blur-main: blur(32px) saturate(200%);
-  --blur-heavy: blur(52px) saturate(220%);
-  --blur-overlay: blur(60px) saturate(200%);
+  --blur-main: blur(32px) saturate(180%);
+  --blur-heavy: blur(52px) saturate(200%);
+  --blur-overlay: blur(60px) saturate(180%);
 
   --radius-sm: 14px;
   --radius-md: 20px;
@@ -38,8 +37,8 @@
   --radius-xl: 34px;
   --radius-full: 999px;
 
-  --shadow-card: 0 2px 20px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06);
-  --shadow-float: 0 8px 32px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
+  --shadow-card: 0 2px 20px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(57,211,83,0.12);
+  --shadow-float: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(57,211,83,0.15);
 }
 
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -47,25 +46,26 @@
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   font-family: -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, sans-serif;
-  background: #f2f2f7;
+  background: #0a0f0a;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== MESH BACKGROUND — CLEAN WHITE iOS ===== */
+/* ===== MESH BACKGROUND — DARK GREEN ===== */
 .mesh-bg {
   position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 0%,   rgba(200,220,255,0.50) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 35% at 80% 5%,   rgba(210,200,255,0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 40% at 50% 100%,  rgba(190,215,255,0.30) 0%, transparent 60%),
-    linear-gradient(180deg, #f0f4ff 0%, #f5f5fa 50%, #f2f2f7 100%);
-  animation: meshShift 30s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 50% at 15% 5%,  rgba(30,80,30,0.70) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 20%,  rgba(20,60,20,0.50) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 45% at 50% 90%,  rgba(25,70,25,0.45) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 5%  70%,  rgba(15,50,15,0.40) 0%, transparent 55%),
+    linear-gradient(160deg, #0d1a0d 0%, #0a120a 50%, #080f08 100%);
+  animation: meshShift 25s ease-in-out infinite alternate;
 }
 @keyframes meshShift {
   0%   { filter: hue-rotate(0deg)   brightness(1);    }
-  50%  { filter: hue-rotate(8deg)   brightness(1.02); }
-  100% { filter: hue-rotate(-5deg)  brightness(0.99); }
+  50%  { filter: hue-rotate(10deg)  brightness(1.05); }
+  100% { filter: hue-rotate(-5deg)  brightness(0.97); }
 }
 
 /* ===== APP SHELL ===== */
@@ -251,8 +251,16 @@ main::-webkit-scrollbar { display: none; }
   background: rgba(255,59,48,0.03);
 }
 
-/* Delay button trên card */
-.delay-card-btn {
+/* Delay count badge */
+.delay-count-badge {
+  font-size: 9px; font-weight: 700;
+  background: rgba(255,214,10,0.12);
+  border: 0.5px solid rgba(255,214,10,0.25);
+  border-radius: var(--radius-full);
+  padding: 3px 8px;
+  color: var(--amber);
+  white-space: nowrap;
+}
   font-size: 10px; font-weight: 700;
   background: rgba(255,149,0,0.12);
   border: 0.5px solid rgba(255,149,0,0.30);
@@ -290,7 +298,7 @@ main::-webkit-scrollbar { display: none; }
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; transition: background 0.2s, transform 0.15s;
 }
-.tab-item.active .tab-icon { background: rgba(0,122,255,0.10); transform: scale(1.08); }
+.tab-item.active .tab-icon { background: rgba(57,211,83,0.15); transform: scale(1.08); }
 
 /* ===== FAB ===== */
 .fab {
@@ -298,10 +306,10 @@ main::-webkit-scrollbar { display: none; }
   bottom: calc(78px + env(safe-area-inset-bottom, 16px));
   right: 18px;
   width: 54px; height: 54px; border-radius: 50%;
-  background: var(--accent); border: none; color: white;
+  background: var(--accent); border: none; color: #000;
   font-size: 28px; font-weight: 300;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 20px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.4);
   z-index: 40; cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -347,21 +355,21 @@ main::-webkit-scrollbar { display: none; }
 }
 .form-input {
   width: 100%; padding: 14px 16px;
-  background: rgba(255,255,255,0.7);
-  border: 0.5px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.07);
+  border: 0.5px solid rgba(57,211,83,0.20);
   border-radius: var(--radius-md);
   color: var(--text-primary); font-size: 15px; font-family: inherit;
   outline: none; transition: border-color 0.2s, background 0.2s;
-  -webkit-appearance: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  -webkit-appearance: none;
 }
-.form-input:focus { border-color: rgba(0,122,255,0.5); background: rgba(255,255,255,0.88); }
+.form-input:focus { border-color: rgba(57,211,83,0.5); background: rgba(57,211,83,0.05); }
 .form-input::placeholder { color: var(--text-tertiary); }
-input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; }
+input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 
 /* Segmented */
 .seg-control {
-  display: flex; background: rgba(0,0,0,0.06);
-  border: 0.5px solid rgba(0,0,0,0.07);
+  display: flex; background: rgba(0,0,0,0.40);
+  border: 0.5px solid rgba(57,211,83,0.15);
   border-radius: var(--radius-md); padding: 3px; gap: 2px;
 }
 .seg-btn {
@@ -374,14 +382,15 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 .seg-btn .seg-sub { font-size: 8.5px; font-weight: 400; opacity: 0; transition: opacity 0.18s; }
 .seg-btn.active .seg-sub { opacity: 0.75; }
 .zone-seg .seg-btn[data-val="red"].active   { background: var(--red); color: white; }
-.zone-seg .seg-btn[data-val="green"].active { background: var(--green); color: white; }
+.zone-seg .seg-btn[data-val="green"].active { background: var(--green); color: #000; }
 .zone-seg .seg-btn[data-val="grey"].active  { background: var(--grey); color: white; }
-.assign-seg .seg-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+.assign-seg .seg-btn.active { background: var(--accent); color: #000; font-weight: 800; }
 
 /* Picker */
 .picker-row { display: flex; gap: 8px; }
 .picker-cell {
-  flex: 1; background: rgba(255,255,255,0.7); border: 0.5px solid rgba(0,0,0,0.09);
+  flex: 1; background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(57,211,83,0.15);
   border-radius: var(--radius-md); padding: 8px 10px;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
@@ -395,7 +404,7 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 
 /* Buttons */
 .btn-primary {
-  width: 100%; padding: 16px; background: var(--accent); color: white;
+  width: 100%; padding: 16px; background: var(--accent); color: #000;
   border: none; border-radius: var(--radius-md);
   font-size: 16px; font-weight: 700; font-family: inherit;
   cursor: pointer; transition: opacity 0.15s, transform 0.1s; margin-top: 4px;
@@ -404,15 +413,15 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
 .btn-secondary {
   padding: 10px 18px;
-  background: rgba(0,0,0,0.05); color: var(--text-secondary);
-  border: 0.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.08); color: var(--text-secondary);
+  border: 0.5px solid rgba(255,255,255,0.12); border-radius: var(--radius-full);
   font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
 }
-.btn-secondary:active { background: rgba(0,0,0,0.10); }
+.btn-secondary:active { background: rgba(255,255,255,0.14); }
 .btn-danger {
   padding: 10px 18px;
-  background: rgba(255,59,48,0.08); color: var(--red);
-  border: 0.5px solid rgba(255,59,48,0.2); border-radius: var(--radius-full);
+  background: rgba(255,69,58,0.15); color: var(--red);
+  border: 0.5px solid rgba(255,69,58,0.3); border-radius: var(--radius-full);
   font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
 }
 
@@ -489,24 +498,24 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 .chat-input-row {
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   display: flex; align-items: center; gap: 8px;
-  border-top: 0.5px solid rgba(0,0,0,0.07);
-  background: rgba(242,242,247,0.95);
+  border-top: 0.5px solid rgba(57,211,83,0.15);
+  background: rgba(10,18,10,0.95);
   -webkit-backdrop-filter: var(--blur-main); backdrop-filter: var(--blur-main);
   flex-shrink: 0;
 }
 .chat-text-input {
   flex: 1; padding: 11px 16px;
-  background: rgba(255,255,255,0.8); border: 0.5px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.07);
+  border: 0.5px solid rgba(57,211,83,0.20);
   border-radius: var(--radius-full);
   color: var(--text-primary); font-size: 15px; font-family: inherit;
   outline: none; transition: border-color 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
-.chat-text-input:focus { border-color: rgba(0,122,255,0.4); }
+.chat-text-input:focus { border-color: rgba(57,211,83,0.5); }
 .chat-text-input::placeholder { color: var(--text-tertiary); }
 .chat-send-btn {
   width: 38px; height: 38px; border-radius: 50%;
-  background: var(--accent); border: none; color: white; font-size: 17px;
+  background: var(--accent); border: none; color: #000; font-size: 17px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s;
   box-shadow: 0 3px 10px var(--accent-glow);
@@ -539,12 +548,12 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
   display: none; align-items: center; justify-content: center;
 }
 .mood-card {
-  background: rgba(255,255,255,0.88);
+  background: rgba(10,20,10,0.92);
   -webkit-backdrop-filter: var(--blur-heavy); backdrop-filter: var(--blur-heavy);
-  border: 0.5px solid rgba(255,255,255,0.95);
+  border: 0.5px solid rgba(57,211,83,0.25);
   border-radius: var(--radius-xl); padding: 36px 28px 32px;
   text-align: center; width: 88%; max-width: 300px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.06);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 .mood-greeting { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
 .mood-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
@@ -582,29 +591,29 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 .pin-keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; max-width: 260px; margin: 0 auto; }
 .pin-key {
   aspect-ratio: 1; border-radius: 50%;
-  background: rgba(255,255,255,0.70); border: 0.5px solid rgba(0,0,0,0.08);
+  background: rgba(57,211,83,0.08);
+  border: 0.5px solid rgba(57,211,83,0.20);
   color: var(--text-primary); font-size: 24px; font-weight: 400;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: background 0.1s, transform 0.1s; font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 }
-.pin-key:active { background: rgba(0,122,255,0.12); transform: scale(0.92); }
+.pin-key:active { background: rgba(57,211,83,0.20); transform: scale(0.92); }
 .vault-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 17px; border-bottom: 0.5px solid var(--glass-border); }
 .vault-item:last-child { border-bottom: none; }
 .vault-item-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
 .vault-item-val { font-size: 15px; font-weight: 600; color: var(--accent); margin-top: 2px; }
 
-/* ===== SHEET trong suốt iOS 26 ===== */
+/* ===== SHEET dark green ===== */
 .sheet {
   width: 100%; max-height: 96dvh;
-  background: rgba(235,240,250,0.88);
+  background: rgba(10,18,10,0.95);
   -webkit-backdrop-filter: var(--blur-heavy);
   backdrop-filter: var(--blur-heavy);
-  border-top: 0.5px solid rgba(255,255,255,0.85);
+  border-top: 0.5px solid rgba(57,211,83,0.25);
   border-radius: 32px 32px 0 0;
   display: flex; flex-direction: column; overflow: hidden;
   animation: sheetUp 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
-  box-shadow: 0 -4px 40px rgba(80,100,200,0.12);
+  box-shadow: 0 -4px 40px rgba(57,211,83,0.08);
 }
 
 /* ===== TASK COUNT BADGE ===== */
@@ -1029,6 +1038,7 @@ function renderTasks() {
             <div class="task-right">
               <div class="chat-badge ${badgeClass}">💬 ${chatCount}</div>
               ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">⏰ Delay</button>` : ''}
+              ${(t.delayCount||0) > 0 ? `<div class="delay-count-badge">🔁 Delay ${String(t.delayCount).padStart(2,'0')} lần</div>` : ''}
             </div>
           </div>`;
       });
@@ -1072,7 +1082,7 @@ async function saveNewTask() {
       h: parseInt(document.getElementById('alert-h').value) || 0,
       m: parseInt(document.getElementById('alert-m').value) || 0
     },
-    completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0
+    completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0, delayCount: 0
   };
   tasks.push(newTask);
   document.getElementById('task-title-input').value = '';
@@ -1161,6 +1171,7 @@ async function confirmDelay() {
 
   t.deadline = newDeadlineStr;
   t.lastAlert = 0; // reset để workflow nhắc lại theo deadline mới
+  t.delayCount = (t.delayCount || 0) + 1; // tăng số lần delay
 
   // Ẩn picker
   document.getElementById('delay-picker').style.display = 'none';
