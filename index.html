@@ -504,7 +504,14 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
 .chat-send-btn:active { opacity: 0.8; transform: scale(0.92); }
 .chat-send-btn:disabled { background: var(--grey); opacity: 0.4; cursor: default; box-shadow: none; }
 
-.chat-action-row { padding: 10px 16px 2px; display: flex; gap: 8px; flex-shrink: 0; }
+.btn-delay {
+  padding: 10px 16px;
+  background: rgba(255,149,0,0.10); color: var(--amber);
+  border: 0.5px solid rgba(255,149,0,0.3); border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-delay:active { background: rgba(255,149,0,0.20); }
 
 /* ===== ARCHIVE SHEET ===== */
 .archive-task-row {
@@ -746,6 +753,16 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: light; 
     </div>
     <div class="chat-action-row">
       <button class="btn-secondary" onclick="closeSheet('task-detail-modal')">← Quay lại</button>
+      <button class="btn-delay" id="delay-btn" onclick="openDelayPicker()" style="display:none">⏰ Delay</button>
+    </div>
+    <div id="delay-picker" style="display:none;padding:12px 16px;background:rgba(255,149,0,0.08);border-bottom:0.5px solid rgba(255,149,0,0.2);flex-shrink:0;">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">⏰ Báo lại sau</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="picker-cell" style="flex:1"><select class="picker-select" id="delay-d" style="color:var(--amber)"></select><div class="picker-lbl">Ngày</div></div>
+        <div class="picker-cell" style="flex:1"><select class="picker-select" id="delay-h" style="color:var(--amber)"></select><div class="picker-lbl">Giờ</div></div>
+        <div class="picker-cell" style="flex:1"><select class="picker-select" id="delay-m" style="color:var(--amber)"></select><div class="picker-lbl">Phút</div></div>
+        <button onclick="confirmDelay()" style="flex:1.2;padding:12px 8px;background:var(--amber);color:white;border:none;border-radius:var(--radius-md);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">Xác nhận</button>
+      </div>
     </div>
     <div id="chat-limit-warn" class="chat-limit-warn">⚠️ Còn 1 câu cuối — nên gọi điện trực tiếp!</div>
     <div id="chat-limit-banner" class="chat-limit-banner">🔒 Đã đủ 10 câu. Hãy gọi điện cho nhau!</div>
@@ -1072,10 +1089,77 @@ function openDetail(id) {
   doneBtn.className = 'chat-zone-badge zone-badge-' + t.zone;
   doneBtn.innerText = 'Hoàn thành ✓';
   doneBtn.onclick = () => finishTask(id);
-  // Đánh dấu đã đọc: ghi nhận user hiện tại đã xem task này
+
+  // Hiện nút Delay chỉ khi task quá hạn
+  const isOverdue = t.deadline && new Date(t.deadline).getTime() < Date.now();
+  const delayBtn = document.getElementById('delay-btn');
+  const delayPicker = document.getElementById('delay-picker');
+  delayBtn.style.display = isOverdue ? 'block' : 'none';
+  delayPicker.style.display = 'none'; // ẩn picker mặc định
+
+  // Fill picker delay
+  fillDelayPickers();
+
   markRead(id);
   openSheet('task-detail-modal');
   renderChat(id);
+}
+
+function fillDelayPickers() {
+  const dd = document.getElementById('delay-d');
+  const dh = document.getElementById('delay-h');
+  const dm = document.getElementById('delay-m');
+  if (dd.options.length === 0) {
+    for (let i = 0; i <= 30; i++) dd.innerHTML += `<option value="${i}">${i}</option>`;
+    for (let i = 0; i <= 23; i++) dh.innerHTML += `<option value="${i}">${i}</option>`;
+    for (let i = 0; i <= 55; i += 5) dm.innerHTML += `<option value="${i}">${i}</option>`;
+    dh.value = 1; // default 1 giờ
+  }
+}
+
+function openDelayPicker() {
+  const picker = document.getElementById('delay-picker');
+  picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+  picker.style.flexDirection = 'column';
+}
+
+async function confirmDelay() {
+  const t = tasks.find(x => x.id === currentDetailId);
+  if (!t) return;
+
+  const d = parseInt(document.getElementById('delay-d').value) || 0;
+  const h = parseInt(document.getElementById('delay-h').value) || 0;
+  const m = parseInt(document.getElementById('delay-m').value) || 0;
+
+  if (d === 0 && h === 0 && m === 0) {
+    toast('⚠️ Chọn thời gian delay trước!', 'rgba(255,149,0,0.9)');
+    return;
+  }
+
+  // Tính deadline mới = bây giờ + delay
+  const delayMs = (d * 86400 + h * 3600 + m * 60) * 1000;
+  const newDeadline = new Date(Date.now() + delayMs);
+  const pad = n => n.toString().padStart(2, '0');
+  const newDeadlineStr = `${newDeadline.getFullYear()}-${pad(newDeadline.getMonth()+1)}-${pad(newDeadline.getDate())}T${pad(newDeadline.getHours())}:${pad(newDeadline.getMinutes())}`;
+
+  t.deadline = newDeadlineStr;
+  t.lastAlert = 0; // reset để workflow nhắc lại theo deadline mới
+
+  // Ẩn picker
+  document.getElementById('delay-picker').style.display = 'none';
+  document.getElementById('delay-btn').style.display = 'none';
+
+  // Cập nhật header info
+  document.getElementById('dt-info').innerText = `👤 ${t.assignee} | ⏱ ${newDeadlineStr.replace('T', ' ')}`;
+
+  const ok = await saveTasks();
+  if (ok) {
+    const dlStr = `${pad(newDeadline.getDate())}/${pad(newDeadline.getMonth()+1)}/${newDeadline.getFullYear()} lúc ${pad(newDeadline.getHours())}:${pad(newDeadline.getMinutes())}`;
+    toast(`✅ Đã delay đến ${dlStr}`, 'rgba(255,149,0,0.9)');
+    const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
+    sendTelegram(`⏰ TASK ĐÃ ĐƯỢC DỜI DEADLINE\n\n📌 ${t.title}\n${assigneeIcon} ${t.assignee}\n📅 Deadline mới: ${dlStr}`);
+    renderTasks();
+  }
 }
 
 async function markRead(id) {
@@ -1459,18 +1543,10 @@ function sendWeeklyMoodReport() {
 
 /* ===== ALERTS ===== */
 async function checkAlerts() {
-  const now = Date.now(); let changed = false;
-  tasks.forEach(t => {
-    if (t.completed || !t.deadline || !t.alertBefore) return;
-    const dl = new Date(t.deadline).getTime();
-    const alertMs = ((t.alertBefore.d||0)*86400 + (t.alertBefore.h||0)*3600 + (t.alertBefore.m||0)*60)*1000;
-    if (alertMs > 0 && now >= (dl - alertMs) && (now - (t.lastAlert||0) > 3600000)) {
-      const diffH = Math.round((dl - now)/3600000);
-      sendTelegram(`🚨 <b>NHẮC VIỆC CHƯA XONG</b>\n📌 ${t.title}\n👤 ${t.assignee}\n⏰ Còn khoảng ${diffH}h`);
-      t.lastAlert = now; changed = true;
-    }
-  });
-  if (changed) { try { await _sb.from('jika_data').upsert({ key: 'jika_tasks', value: JSON.stringify(tasks) }, { onConflict: 'key' }); } catch(e) {} }
+  // Telegram alert đã được GitHub Actions xử lý mỗi 30 phút — app không gửi nữa để tránh spam
+  // Chỉ refresh UI để cập nhật trạng thái overdue
+  renderTasks();
+  updateTaskBadge();
 }
 
 /* ===== TELEGRAM ===== */
