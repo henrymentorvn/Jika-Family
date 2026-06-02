@@ -71,8 +71,8 @@ jobs:
               // Bỏ qua task đã quá hạn hơn 2 giờ — không cần nhắc nữa
               if (diffMs < -7200000) continue;
               
-              // Chỉ nhắc nếu: đã đến giờ nhắc VÀ chưa nhắc trong 1 giờ qua
-              if (now >= alertTime && (now - lastAlert) > 3600000) {
+              // Chỉ nhắc nếu: đã đến giờ nhắc VÀ chưa nhắc trong 30 phút qua
+              if (now >= alertTime && (now - lastAlert) > 1800000) {
                 const diffH = Math.round(diffMs / 3600000);
                 const diffD = Math.round(diffMs / 86400000);
                 
