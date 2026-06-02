@@ -16,13 +16,13 @@
   --amber: #ff9500;
   --grey: #8e8e93;
 
-  /* Light glass tokens */
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-bg-strong: rgba(255,255,255,0.72);
-  --glass-bg-light: rgba(255,255,255,0.40);
-  --glass-border: rgba(0,0,0,0.07);
-  --glass-border-bright: rgba(255,255,255,0.90);
-  --glass-shine: rgba(255,255,255,0.60);
+  /* Light glass tokens — clean white iOS */
+  --glass-bg: rgba(255,255,255,0.70);
+  --glass-bg-strong: rgba(255,255,255,0.85);
+  --glass-bg-light: rgba(255,255,255,0.50);
+  --glass-border: rgba(0,0,0,0.06);
+  --glass-border-bright: rgba(255,255,255,0.95);
+  --glass-shine: rgba(255,255,255,0.70);
 
   --text-primary: rgba(0,0,0,0.88);
   --text-secondary: rgba(0,0,0,0.45);
@@ -47,27 +47,25 @@
 html, body {
   width: 100%; height: 100%; overflow: hidden;
   font-family: -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, sans-serif;
-  background: #e8edf5;
+  background: #f2f2f7;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== MESH BACKGROUND — LIGHT ===== */
+/* ===== MESH BACKGROUND — CLEAN WHITE iOS ===== */
 .mesh-bg {
   position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 70% 55% at 15% 5%,  rgba(180,210,255,0.60) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 45% at 85% 15%,  rgba(200,180,255,0.45) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 50% at 55% 90%,  rgba(160,220,255,0.40) 0%, transparent 55%),
-    radial-gradient(ellipse 45% 40% at 5%  75%,  rgba(180,200,240,0.35) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 60% at 90% 70%,  rgba(210,190,255,0.30) 0%, transparent 55%),
-    linear-gradient(155deg, #dce8f8 0%, #e4dff8 40%, #d8eaf8 100%);
-  animation: meshShift 25s ease-in-out infinite alternate;
+    radial-gradient(ellipse 60% 40% at 20% 0%,   rgba(200,220,255,0.50) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 80% 5%,   rgba(210,200,255,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 50% 100%,  rgba(190,215,255,0.30) 0%, transparent 60%),
+    linear-gradient(180deg, #f0f4ff 0%, #f5f5fa 50%, #f2f2f7 100%);
+  animation: meshShift 30s ease-in-out infinite alternate;
 }
 @keyframes meshShift {
   0%   { filter: hue-rotate(0deg)   brightness(1);    }
-  50%  { filter: hue-rotate(12deg)  brightness(1.03); }
-  100% { filter: hue-rotate(-8deg)  brightness(0.98); }
+  50%  { filter: hue-rotate(8deg)   brightness(1.02); }
+  100% { filter: hue-rotate(-5deg)  brightness(0.99); }
 }
 
 /* ===== APP SHELL ===== */
@@ -249,8 +247,20 @@ main::-webkit-scrollbar { display: none; }
 
 /* Overdue card */
 .task-card.overdue-card {
-  border-color: rgba(255,59,48,0.35);
-  background: rgba(255,59,48,0.05);
+  border-color: rgba(255,59,48,0.20);
+  background: rgba(255,59,48,0.03);
+}
+
+/* Delay button trên card */
+.delay-card-btn {
+  font-size: 10px; font-weight: 700;
+  background: rgba(255,149,0,0.12);
+  border: 0.5px solid rgba(255,149,0,0.30);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  color: var(--amber);
+  cursor: pointer; font-family: inherit;
+  white-space: nowrap;
 }
 
 /* Empty state */
@@ -1018,6 +1028,7 @@ function renderTasks() {
             </div>
             <div class="task-right">
               <div class="chat-badge ${badgeClass}">💬 ${chatCount}</div>
+              ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">⏰ Delay</button>` : ''}
             </div>
           </div>`;
       });
@@ -1103,6 +1114,12 @@ function openDetail(id) {
   markRead(id);
   openSheet('task-detail-modal');
   renderChat(id);
+}
+
+// Quick delay từ card — mở detail rồi bật picker luôn
+function quickDelay(id) {
+  openDetail(id);
+  setTimeout(() => openDelayPicker(), 300);
 }
 
 function fillDelayPickers() {
