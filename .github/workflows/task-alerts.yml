@@ -2,8 +2,8 @@ name: Jika Family — Task Alert
 
 on:
   schedule:
-    # Chạy mỗi 30 phút
-    - cron: '*/30 * * * *'
+    # Chạy mỗi 10 phút
+    - cron: '*/10 * * * *'
   workflow_dispatch: # Cho phép chạy thủ công để test
 
 jobs:
