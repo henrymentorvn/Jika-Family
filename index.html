@@ -561,13 +561,78 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 .mood-btn { font-size: 46px; background: none; border: none; cursor: pointer; transition: transform 0.15s; padding: 8px; border-radius: 16px; }
 .mood-btn:active { transform: scale(0.86); }
 
-/* ===== EVENT ITEMS ===== */
-.event-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 17px; border-bottom: 0.5px solid var(--glass-border); }
+/* ===== EVENT MODULE — ORANGE/YELLOW THEME ===== */
+:root {
+  --evt-accent: #ff9500;
+  --evt-accent2: #ff6b00;
+  --evt-glow: rgba(255,149,0,0.30);
+  --evt-star: #ffd60a;
+}
+
+.event-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 17px; border-bottom: 0.5px solid var(--glass-border);
+  position: relative;
+}
 .event-row:last-child { border-bottom: none; }
-.event-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.event-countdown { font-size: 13px; font-weight: 700; color: var(--accent); }
-.event-countdown.soon { color: var(--amber); }
+.event-name { font-size: 14px; font-weight: 600; color: var(--text-primary); flex: 1; min-width: 0; }
+.event-name-sub { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+.event-countdown { font-size: 13px; font-weight: 700; color: var(--evt-accent); flex-shrink: 0; margin: 0 10px; }
+.event-countdown.soon  { color: var(--evt-accent); }
 .event-countdown.today { color: var(--green); }
+.event-countdown.past  { color: var(--grey); }
+
+.event-star-badge {
+  font-size: 14px; margin-right: 4px;
+}
+.event-edit-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,149,0,0.12);
+  border: 0.5px solid rgba(255,149,0,0.25);
+  color: var(--evt-accent); font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
+.event-priority-bar {
+  width: 3px; height: 100%; border-radius: 2px;
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--evt-star);
+}
+
+/* Stats block */
+.evt-stats {
+  background: rgba(255,149,0,0.08);
+  border: 0.5px solid rgba(255,149,0,0.20);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.evt-stats-title { font-size: 11px; font-weight: 700; color: var(--evt-accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.evt-stats-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Event FAB orange */
+#fab-btn.evt-fab { background: var(--evt-accent); box-shadow: 0 6px 20px var(--evt-glow), 0 2px 8px rgba(0,0,0,0.4); }
+
+/* Add event sheet fields */
+.lunar-display {
+  font-size: 12px; color: var(--evt-accent);
+  background: rgba(255,149,0,0.08);
+  border: 0.5px solid rgba(255,149,0,0.20);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px; margin-top: 6px;
+}
+.cal-toggle {
+  display: flex; background: rgba(0,0,0,0.30);
+  border: 0.5px solid rgba(255,149,0,0.20);
+  border-radius: var(--radius-md); padding: 3px; gap: 2px;
+}
+.cal-btn {
+  flex: 1; border: none; background: transparent;
+  color: var(--text-secondary); font-size: 13px; font-weight: 600;
+  padding: 9px; border-radius: calc(var(--radius-md) - 4px);
+  cursor: pointer; transition: background 0.18s, color 0.18s; font-family: inherit;
+}
+.cal-btn.active { background: var(--evt-accent); color: white; }
 
 /* ===== FINANCE ===== */
 .finance-summary { padding: 20px; text-align: center; }
@@ -795,8 +860,64 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   </div>
 </div>
 
-<!-- SHEET: ARCHIVE -->
-<div class="modal-overlay" id="archive-modal" onclick="closeSheet('archive-modal')">
+<!-- SHEET: ADD/EDIT EVENT -->
+<div class="modal-overlay" id="add-event-modal" onclick="closeSheet('add-event-modal')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="event-modal-title">Sự kiện mới</span>
+      <div class="sheet-close" onclick="closeSheet('add-event-modal')">✕</div>
+    </div>
+    <div class="sheet-scroll">
+      <input type="hidden" id="event-edit-id" value="">
+      <div class="form-group">
+        <label class="form-label">Tên sự kiện ★</label>
+        <input type="text" id="evt-name" class="form-input" placeholder="VD: Sinh nhật Vợ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon / Emoji</label>
+        <input type="text" id="evt-icon" class="form-input" placeholder="VD: 🎂 ❤️ 🎉">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Loại lịch</label>
+        <div class="cal-toggle">
+          <button class="cal-btn active" data-cal="solar" onclick="selectCal('solar',this)">☀️ Dương lịch</button>
+          <button class="cal-btn" data-cal="lunar" onclick="selectCal('lunar',this)">🌙 Âm lịch</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày (<span id="cal-label">Dương lịch</span>)</label>
+        <input type="date" id="evt-date" class="form-input" onchange="onDateChange()">
+        <div class="lunar-display" id="lunar-display" style="display:none"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">⭐ Quan trọng đặc biệt</label>
+        <div class="seg-control" style="max-width:200px">
+          <button class="seg-btn" data-val="0" onclick="selectPriority(0,this)">Bình thường</button>
+          <button class="seg-btn active" data-val="1" onclick="selectPriority(1,this)">⭐ Quan trọng</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhắc trước</label>
+        <div class="picker-row">
+          <div class="picker-cell"><select class="picker-select" id="evt-alert-d" style="color:var(--evt-accent)"></select><div class="picker-lbl">Ngày</div></div>
+          <div class="picker-cell"><select class="picker-select" id="evt-alert-h" style="color:var(--evt-accent)"></select><div class="picker-lbl">Giờ</div></div>
+          <div class="picker-cell"><select class="picker-select" id="evt-alert-m" style="color:var(--evt-accent)"></select><div class="picker-lbl">Phút</div></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhắc lại mỗi (sau khi đến hạn)</label>
+        <div class="picker-row">
+          <div class="picker-cell"><select class="picker-select" id="evt-repeat-h" style="color:var(--evt-accent)"></select><div class="picker-lbl">Giờ</div></div>
+          <div class="picker-cell"><select class="picker-select" id="evt-repeat-m" style="color:var(--evt-accent)"></select><div class="picker-lbl">Phút</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px">Chọn 0/0 nếu không cần nhắc lại</div>
+      </div>
+      <button class="btn-primary" style="background:var(--evt-accent);box-shadow:0 4px 16px var(--evt-glow)" onclick="saveEvent()">Lưu sự kiện ✓</button>
+      <button id="evt-delete-btn" class="btn-danger" style="width:100%;margin-top:10px;display:none" onclick="deleteEvent()">Xoá sự kiện</button>
+    </div>
+  </div>
+</div> onclick="closeSheet('archive-modal')">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
     <div class="sheet-header">
@@ -993,6 +1114,7 @@ function renderCurrentTab() {
 
 function onFabClick() {
   if (currentTab === 'tasks') openSheet('add-task-modal');
+  else if (currentTab === 'events') openAddEvent();
   else if (currentTab === 'vault') alert('Thêm mục (đang phát triển)');
 }
 
@@ -1323,33 +1445,276 @@ async function restoreTask(id) {
   renderTasks(); updateTaskBadge(); openArchive();
 }
 
-/* ===== EVENTS ===== */
+/* ===== ÂM LỊCH CONVERT (đơn giản hóa) ===== */
+function solarToLunar(date) {
+  // Dùng thư viện offset đơn giản — âm lịch Việt Nam
+  // Trả về string "DD/MM âm lịch"
+  try {
+    // Tính offset âm lịch xấp xỉ
+    const jd = Math.floor((date.getTime() / 86400000) + 2440588);
+    const l = jd - 1721119;
+    const n = Math.floor((4 * l + 3) / 146097);
+    const r1 = l - Math.floor(146097 * n / 4);
+    const i = Math.floor((4 * r1 + 3) / 1461);
+    const r2 = r1 - Math.floor(1461 * i / 4);
+    const j = Math.floor((5 * r2 + 2) / 153);
+    const day = r2 - Math.floor((153 * j + 2) / 5) + 1;
+    const month = j + 3 - 12 * Math.floor(j / 10);
+    // Đây là dương lịch Julius — dùng Intl để convert sang âm lịch thật
+    const lunar = new Intl.DateTimeFormat('vi-VN-u-ca-chinese', {
+      year: 'numeric', month: 'numeric', day: 'numeric'
+    }).format(date);
+    return lunar;
+  } catch(e) {
+    return '---';
+  }
+}
+
+function lunarToSolar(lunarDay, lunarMonth, lunarYear) {
+  // Tính gần đúng: âm lịch thường trễ dương lịch ~20-50 ngày
+  // Dùng Intl API để detect
+  const now = new Date();
+  const year = lunarYear || now.getFullYear();
+  // Thử từng ngày dương để tìm khớp âm
+  for (let offset = -60; offset <= 60; offset++) {
+    const d = new Date(year, lunarMonth - 1, lunarDay + offset);
+    const lunar = new Intl.DateTimeFormat('vi-VN-u-ca-chinese', {
+      month: 'numeric', day: 'numeric'
+    }).format(d);
+    // parse month/day từ lunar string
+    const parts = lunar.match(/(\d+)/g);
+    if (parts && parseInt(parts[0]) === lunarMonth && parseInt(parts[1]) === lunarDay) {
+      return d;
+    }
+  }
+  return null;
+}
+
+/* ===== RENDER EVENTS ===== */
 function renderEvents() {
   const m = document.getElementById('main-content');
-  const fixed = [
-    { n: "Sinh nhật Vợ ❤️", d: "12-27" },
-    { n: "Sinh nhật Simba 🦁", d: "11-25" },
-    { n: "Sinh nhật Lisa 🌸", d: "08-28" }
-  ];
   const now = new Date();
-  const rows = [...fixed, ...events].map(e => {
-    const raw = e.d || e.date;
+  const currentMonth = now.getMonth() + 1;
+
+  // Sự kiện cố định
+  const fixed = [
+    { id: 'fixed_1', n: "Sinh nhật Vợ ❤️",   d: "12-27", calType: 'solar', priority: 1, alertBefore: {d:7,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 },
+    { id: 'fixed_2', n: "Sinh nhật Simba 🦁", d: "11-25", calType: 'solar', priority: 0, alertBefore: {d:3,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 },
+    { id: 'fixed_3', n: "Sinh nhật Lisa 🌸",  d: "08-28", calType: 'solar', priority: 0, alertBefore: {d:3,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 }
+  ];
+
+  const allEvents = [...fixed, ...events].map(e => {
+    const raw = e.d || e.date || '';
     let t;
-    if (raw.length === 5) {
+    if (raw.length === 5) { // MM-DD
       const [mo, dy] = raw.split('-');
       t = new Date(now.getFullYear(), parseInt(mo)-1, parseInt(dy));
       if (t < now) t.setFullYear(now.getFullYear() + 1);
-    } else { t = new Date(raw); }
+    } else if (raw.length === 10) { // YYYY-MM-DD
+      t = new Date(raw);
+      if (t < now) t.setFullYear(t.getFullYear() + 1);
+    } else { t = new Date(); }
+
     const days = Math.ceil((t - now) / 86400000);
+    return { ...e, _date: t, _days: days };
+  });
+
+  // Sort: priority=1 lên đầu, sau đó sort theo ngày gần nhất
+  allEvents.sort((a, b) => {
+    if (b.priority !== a.priority) return (b.priority||0) - (a.priority||0);
+    return a._days - b._days;
+  });
+
+  // Thống kê tháng này
+  const thisMonthEvents = allEvents.filter(e => {
+    return e._date.getMonth() + 1 === currentMonth;
+  });
+  const statsText = thisMonthEvents.length > 0
+    ? `Tháng ${currentMonth} có <b>${thisMonthEvents.length} sự kiện</b>: ` + thisMonthEvents.map(e => {
+        const d = e._date.getDate();
+        return `ngày ${d}`;
+      }).join(', ')
+    : `Tháng ${currentMonth} không có sự kiện nào`;
+
+  // Render rows
+  const rows = allEvents.map(e => {
+    const days = e._days;
     let cls = '', label = `Còn ${days} ngày`;
-    if (days === 0) { cls = 'today'; label = 'Hôm nay! 🎉'; }
+    if (days <= 0) { cls = 'past'; label = 'Hôm nay! 🎉'; }
     else if (days <= 7) { cls = 'soon'; label = `Còn ${days} ngày ⚡`; }
-    return `<div class="event-row"><div class="event-name">${e.n || e.name}</div><div class="event-countdown ${cls}">${label}</div></div>`;
+
+    const priorityBar = (e.priority === 1) ? `<div class="event-priority-bar"></div>` : '';
+    const starIcon = (e.priority === 1) ? `<span class="event-star-badge">⭐</span>` : '';
+    const isFixed = (e.id || '').startsWith('fixed_');
+    const lunarStr = (() => {
+      try {
+        return new Intl.DateTimeFormat('vi-VN-u-ca-chinese', { month: 'numeric', day: 'numeric' }).format(e._date);
+      } catch(ex) { return ''; }
+    })();
+
+    return `<div class="event-row" style="padding-left:${e.priority===1?'20px':'17px'}">
+      ${priorityBar}
+      <div style="flex:1;min-width:0">
+        <div class="event-name">${starIcon}${escHtml(e.n || e.name)}</div>
+        <div class="event-name-sub">${e._date.getDate()}/${e._date.getMonth()+1} dương • ${lunarStr} âm</div>
+      </div>
+      <div class="event-countdown ${cls}">${label}</div>
+      ${!isFixed ? `<button class="event-edit-btn" onclick="openEditEvent('${e.id}')">✏️</button>` : ''}
+    </div>`;
   }).join('');
+
   m.innerHTML = `
-    <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Đếm ngược</div>
-    <div class="glass-card" style="overflow:hidden">${rows}</div>
-    <div style="margin-top:16px"><button class="btn-primary" onclick="alert('Sắp có — đang phát triển 🚧')">+ Thêm sự kiện</button></div>`;
+    <div class="evt-stats">
+      <div class="evt-stats-title">📅 Thống kê sự kiện</div>
+      <div class="evt-stats-body">${statsText}</div>
+    </div>
+    <div class="section-label"><div class="zone-dot" style="background:var(--evt-accent)"></div>Đếm ngược <span style="color:var(--text-tertiary);font-weight:400">(${allEvents.length})</span></div>
+    <div class="glass-card" style="overflow:hidden;border-color:rgba(255,149,0,0.20)">${rows}</div>`;
+}
+
+/* ===== ADD/EDIT EVENT ===== */
+let _evtCalType = 'solar';
+let _evtPriority = 1;
+let _evtEditId = null;
+
+function fillEventPickers() {
+  const d = document.getElementById('evt-alert-d');
+  const h = document.getElementById('evt-alert-h');
+  const m = document.getElementById('evt-alert-m');
+  const rh = document.getElementById('evt-repeat-h');
+  const rm = document.getElementById('evt-repeat-m');
+  if (d.options.length === 0) {
+    for (let i = 0; i <= 30; i++) d.innerHTML += `<option value="${i}">${i}</option>`;
+    for (let i = 0; i <= 23; i++) { h.innerHTML += `<option value="${i}">${i}</option>`; rh.innerHTML += `<option value="${i}">${i}</option>`; }
+    for (let i = 0; i <= 59; i += 5) { m.innerHTML += `<option value="${i}">${i}</option>`; rm.innerHTML += `<option value="${i}">${i}</option>`; }
+    d.value = 1; // default báo trước 1 ngày
+  }
+}
+
+function openAddEvent() {
+  _evtEditId = null;
+  _evtCalType = 'solar';
+  _evtPriority = 1;
+  document.getElementById('event-modal-title').innerText = 'Sự kiện mới';
+  document.getElementById('evt-name').value = '';
+  document.getElementById('evt-icon').value = '';
+  document.getElementById('evt-date').value = '';
+  document.getElementById('evt-delete-btn').style.display = 'none';
+  document.getElementById('lunar-display').style.display = 'none';
+  document.getElementById('cal-label').innerText = 'Dương lịch';
+  document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === 'solar'));
+  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val === '1'));
+  fillEventPickers();
+  openSheet('add-event-modal');
+}
+
+function openEditEvent(id) {
+  const e = events.find(x => x.id === id);
+  if (!e) return;
+  _evtEditId = id;
+  _evtCalType = e.calType || 'solar';
+  _evtPriority = e.priority || 0;
+  document.getElementById('event-modal-title').innerText = 'Sửa sự kiện';
+  document.getElementById('evt-name').value = e.n || e.name || '';
+  document.getElementById('evt-icon').value = e.icon || '';
+  // Set date
+  const raw = e.d || e.date || '';
+  if (raw.length === 10) document.getElementById('evt-date').value = raw;
+  else if (raw.length === 5) {
+    const [mo, dy] = raw.split('-');
+    document.getElementById('evt-date').value = `${new Date().getFullYear()}-${mo}-${dy}`;
+  }
+  document.getElementById('evt-delete-btn').style.display = 'block';
+  document.getElementById('cal-label').innerText = _evtCalType === 'lunar' ? 'Âm lịch' : 'Dương lịch';
+  document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === _evtCalType));
+  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val == String(_evtPriority)));
+  fillEventPickers();
+  if (e.alertBefore) {
+    document.getElementById('evt-alert-d').value = e.alertBefore.d || 0;
+    document.getElementById('evt-alert-h').value = e.alertBefore.h || 0;
+    document.getElementById('evt-alert-m').value = e.alertBefore.m || 0;
+  }
+  if (e.repeatH !== undefined) document.getElementById('evt-repeat-h').value = e.repeatH || 0;
+  if (e.repeatM !== undefined) document.getElementById('evt-repeat-m').value = e.repeatM || 0;
+  onDateChange();
+  openSheet('add-event-modal');
+}
+
+function selectCal(type, btn) {
+  _evtCalType = type;
+  document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === type));
+  document.getElementById('cal-label').innerText = type === 'lunar' ? 'Âm lịch' : 'Dương lịch';
+  onDateChange();
+}
+
+function selectPriority(val, btn) {
+  _evtPriority = val;
+  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val == String(val)));
+}
+
+function onDateChange() {
+  const dateVal = document.getElementById('evt-date').value;
+  if (!dateVal) { document.getElementById('lunar-display').style.display = 'none'; return; }
+  const d = new Date(dateVal);
+  const lunarDisplay = document.getElementById('lunar-display');
+  try {
+    const lunarStr = new Intl.DateTimeFormat('vi-VN-u-ca-chinese', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    }).format(d);
+    if (_evtCalType === 'solar') {
+      lunarDisplay.innerHTML = `🌙 Âm lịch tương ứng: <b>${lunarStr}</b>`;
+    } else {
+      lunarDisplay.innerHTML = `☀️ Dương lịch tương ứng: <b>${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}</b>`;
+    }
+    lunarDisplay.style.display = 'block';
+  } catch(e) { lunarDisplay.style.display = 'none'; }
+}
+
+async function saveEvent() {
+  const name = document.getElementById('evt-name').value.trim();
+  const icon = document.getElementById('evt-icon').value.trim();
+  const dateVal = document.getElementById('evt-date').value;
+  if (!name || !dateVal) { toast('⚠️ Nhập tên và ngày!', 'rgba(255,149,0,0.9)'); return; }
+
+  const fullName = icon ? `${icon} ${name}` : name;
+  const alertBefore = {
+    d: parseInt(document.getElementById('evt-alert-d').value) || 0,
+    h: parseInt(document.getElementById('evt-alert-h').value) || 0,
+    m: parseInt(document.getElementById('evt-alert-m').value) || 0
+  };
+  const repeatH = parseInt(document.getElementById('evt-repeat-h').value) || 0;
+  const repeatM = parseInt(document.getElementById('evt-repeat-m').value) || 0;
+
+  if (_evtEditId) {
+    // Sửa
+    const idx = events.findIndex(x => x.id === _evtEditId);
+    if (idx !== -1) {
+      events[idx] = { ...events[idx], n: fullName, name: fullName, d: dateVal, date: dateVal, calType: _evtCalType, priority: _evtPriority, alertBefore, repeatH, repeatM, lastAlert: 0 };
+    }
+  } else {
+    // Thêm mới
+    events.push({
+      id: 'e' + Date.now(), n: fullName, name: fullName,
+      d: dateVal, date: dateVal, calType: _evtCalType,
+      priority: _evtPriority, alertBefore, repeatH, repeatM, lastAlert: 0
+    });
+  }
+
+  closeSheet('add-event-modal');
+  await _sb.from('jika_data').upsert({ key: 'jika_events', value: JSON.stringify(events) }, { onConflict: 'key' });
+  const d = new Date(dateVal);
+  sendTelegram(`📅 SỰ KIỆN ${_evtEditId ? 'ĐÃ CẬP NHẬT' : 'MỚI'}\n\n${fullName}\n📆 ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}\n${_evtPriority ? '⭐ Quan trọng đặc biệt' : ''}`);
+  renderEvents();
+  toast('✅ Đã lưu sự kiện', 'rgba(255,149,0,0.9)');
+}
+
+async function deleteEvent() {
+  if (!_evtEditId) return;
+  if (!confirm('Xoá sự kiện này?')) return;
+  events = events.filter(x => x.id !== _evtEditId);
+  await _sb.from('jika_data').upsert({ key: 'jika_events', value: JSON.stringify(events) }, { onConflict: 'key' });
+  closeSheet('add-event-modal');
+  renderEvents();
 }
 
 /* ===== FINANCE ===== */
