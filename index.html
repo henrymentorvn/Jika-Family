@@ -634,6 +634,24 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 }
 .cal-btn.active { background: var(--evt-accent); color: white; }
 
+/* Toggle switch */
+.toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0; border-radius: 28px;
+  background: rgba(255,255,255,0.15); cursor: pointer;
+  transition: background 0.25s;
+}
+.toggle-track::before {
+  content: ''; position: absolute;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: white; top: 3px; left: 3px;
+  transition: transform 0.25s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked + .toggle-track { background: var(--evt-accent); }
+.toggle-switch input:checked + .toggle-track::before { transform: translateX(22px); }
+
 /* ===== FINANCE ===== */
 .finance-summary { padding: 20px; text-align: center; }
 .finance-balance { font-size: 34px; font-weight: 700; letter-spacing: -1px; }
@@ -892,9 +910,12 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
       </div>
       <div class="form-group">
         <label class="form-label">⭐ Quan trọng đặc biệt</label>
-        <div class="seg-control" style="max-width:200px">
-          <button class="seg-btn" data-val="0" onclick="selectPriority(0,this)">Bình thường</button>
-          <button class="seg-btn active" data-val="1" onclick="selectPriority(1,this)">⭐ Quan trọng</button>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+          <label class="toggle-switch">
+            <input type="checkbox" id="evt-priority-toggle" onchange="selectPriority(this.checked?1:0)">
+            <span class="toggle-track"></span>
+          </label>
+          <span id="evt-priority-label" style="font-size:13px;color:var(--text-secondary)">Bình thường</span>
         </div>
       </div>
       <div class="form-group">
@@ -1496,13 +1517,8 @@ function renderEvents() {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
 
-  // Sự kiện cố định
-  const fixed = [
-    { id: 'fixed_1', n: "Sinh nhật Vợ ❤️",   d: "12-27", calType: 'solar', priority: 1, alertBefore: {d:7,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 },
-    { id: 'fixed_2', n: "Sinh nhật Simba 🦁", d: "11-25", calType: 'solar', priority: 0, alertBefore: {d:3,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 },
-    { id: 'fixed_3', n: "Sinh nhật Lisa 🌸",  d: "08-28", calType: 'solar', priority: 0, alertBefore: {d:3,h:0,m:0}, repeatH: 0, repeatM: 0, lastAlert: 0 }
-  ];
-
+  // Không có sự kiện cố định — tất cả do user tạo
+  const fixed = [];
   const allEvents = [...fixed, ...events].map(e => {
     const raw = e.d || e.date || '';
     let t;
@@ -1603,7 +1619,8 @@ function openAddEvent() {
   document.getElementById('lunar-display').style.display = 'none';
   document.getElementById('cal-label').innerText = 'Dương lịch';
   document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === 'solar'));
-  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val === '1'));
+  const tog = document.getElementById('evt-priority-toggle');
+  if (tog) { tog.checked = true; selectPriority(1); } // default quan trọng
   fillEventPickers();
   openSheet('add-event-modal');
 }
@@ -1627,7 +1644,8 @@ function openEditEvent(id) {
   document.getElementById('evt-delete-btn').style.display = 'block';
   document.getElementById('cal-label').innerText = _evtCalType === 'lunar' ? 'Âm lịch' : 'Dương lịch';
   document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === _evtCalType));
-  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val == String(_evtPriority)));
+  const tog2 = document.getElementById('evt-priority-toggle');
+  if (tog2) { tog2.checked = !!_evtPriority; selectPriority(_evtPriority); }
   fillEventPickers();
   if (e.alertBefore) {
     document.getElementById('evt-alert-d').value = e.alertBefore.d || 0;
@@ -1647,9 +1665,10 @@ function selectCal(type, btn) {
   onDateChange();
 }
 
-function selectPriority(val, btn) {
+function selectPriority(val) {
   _evtPriority = val;
-  document.querySelectorAll('#add-event-modal .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val == String(val)));
+  const lbl = document.getElementById('evt-priority-label');
+  if (lbl) lbl.innerText = val ? '⭐ Quan trọng đặc biệt' : 'Bình thường';
 }
 
 function onDateChange() {
@@ -1947,10 +1966,11 @@ function sendWeeklyMoodReport() {
 
 /* ===== ALERTS ===== */
 async function checkAlerts() {
-  // Telegram alert đã được GitHub Actions xử lý mỗi 30 phút — app không gửi nữa để tránh spam
-  // Chỉ refresh UI để cập nhật trạng thái overdue
-  renderTasks();
-  updateTaskBadge();
+  // Chỉ refresh UI khi đang ở tab tasks — tránh nhảy tab
+  if (currentTab === 'tasks') {
+    renderTasks();
+    updateTaskBadge();
+  }
 }
 
 /* ===== TELEGRAM ===== */
