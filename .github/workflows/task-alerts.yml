@@ -125,7 +125,150 @@ jobs:
           main().catch(e => { console.error('Error:', e.message); process.exit(1); });
           "
 
-  weekly-mood-report:
+  check-events:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check event alerts & send Telegram
+        run: |
+          node -e "
+          const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
+          const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
+          const TG_TOKEN = '8914722655:AAHdKjzyLLQiOfA1zOQEWBFJTqLlJ1uEltc';
+          const TG_CHAT_ID = '-1002587798916';
+          const UTC_OFFSET = 7 * 3600000;
+
+          async function main() {
+            const res = await fetch(SB_URL + '/rest/v1/jika_data?key=eq.jika_events&select=value', {
+              headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+            });
+            if (!res.ok) { console.log('Supabase error:', res.status); return; }
+
+            const data = await res.json();
+            if (!data || !data.length) { console.log('Không có sự kiện'); return; }
+
+            let events = [];
+            try {
+              let val = data[0].value;
+              if (typeof val === 'string') val = JSON.parse(val);
+              if (Array.isArray(val)) events = val;
+            } catch(e) { console.log('Parse error:', e.message); return; }
+
+            console.log('Tổng sự kiện:', events.length);
+
+            const now = Date.now();
+            let changed = false;
+
+            for (const e of events) {
+              if (!e.alertBefore) continue;
+
+              const alertMs = (
+                (e.alertBefore.d || 0) * 86400000 +
+                (e.alertBefore.h || 0) * 3600000 +
+                (e.alertBefore.m || 0) * 60000
+              );
+              if (alertMs <= 0) continue;
+
+              // Tính ngày sự kiện năm nay (hoặc năm sau nếu đã qua)
+              const raw = e.d || e.date || '';
+              let eventDate;
+              const nowDate = new Date(now + UTC_OFFSET);
+              if (raw.length === 5) { // MM-DD
+                const [mo, dy] = raw.split('-');
+                eventDate = new Date(Date.UTC(nowDate.getUTCFullYear(), parseInt(mo)-1, parseInt(dy)));
+                if (eventDate.getTime() < now + UTC_OFFSET) {
+                  eventDate = new Date(Date.UTC(nowDate.getUTCFullYear() + 1, parseInt(mo)-1, parseInt(dy)));
+                }
+              } else if (raw.length === 10) { // YYYY-MM-DD
+                eventDate = new Date(raw + 'T00:00:00+07:00');
+                if (eventDate.getTime() < now) {
+                  eventDate = new Date((parseInt(raw.substring(0,4))+1) + raw.substring(4) + 'T00:00:00+07:00');
+                }
+              } else continue;
+
+              const dl = eventDate.getTime();
+              const alertTime = dl - alertMs;
+              const lastAlert = e.lastAlert || 0;
+              const diffMs = dl - now;
+
+              // Bỏ qua nếu còn quá xa (> 32 ngày) hoặc đã qua quá 2 giờ
+              if (diffMs > 32 * 86400000) continue;
+              if (diffMs < -7200000) continue;
+
+              const needRepeat = e.repeatH || e.repeatM;
+              const repeatMs = ((e.repeatH||0) * 3600 + (e.repeatM||0) * 60) * 1000;
+              const recurrence = e.recurrence || 'none';
+
+              // Tính recurrenceMs: chu kỳ lặp lại định kỳ
+              let recurrenceMs = 0;
+              if (recurrence === 'daily')   recurrenceMs = 86400000;
+              if (recurrence === 'weekly')  recurrenceMs = 7 * 86400000;
+              if (recurrence === 'monthly') recurrenceMs = 30 * 86400000;
+              if (recurrence === 'yearly')  recurrenceMs = 365 * 86400000;
+
+              let shouldAlert = false;
+              if (now >= alertTime) {
+                if (lastAlert === 0) {
+                  // Chưa nhắc lần nào
+                  shouldAlert = true;
+                } else if (recurrenceMs > 0 && (now - lastAlert) >= recurrenceMs) {
+                  // Nhắc lại theo định kỳ ngày/tuần/tháng/năm
+                  shouldAlert = true;
+                } else if (needRepeat && repeatMs > 0 && (now - lastAlert) >= repeatMs) {
+                  // Nhắc lại theo giờ/phút sau khi đến hạn
+                  shouldAlert = true;
+                } else if (!needRepeat && recurrenceMs === 0 && (now - lastAlert) > 1800000) {
+                  // Không cài repeat, chỉ nhắc 1 lần
+                  shouldAlert = true;
+                }
+              }
+
+              if (shouldAlert) {
+                const diffD = Math.round(diffMs / 86400000);
+                const diffH = Math.round(diffMs / 3600000);
+                let timeStr = '';
+                if (diffMs < 0) timeStr = 'ĐÃ DIỄN RA ⛔';
+                else if (diffD === 0) timeStr = 'HÔM NAY! 🎉';
+                else if (diffD === 1) timeStr = 'NGÀY MAI ⚡';
+                else if (diffH < 24) timeStr = 'Còn ' + diffH + ' giờ';
+                else timeStr = 'Còn ' + diffD + ' ngày';
+
+                const starIcon = e.priority === 1 ? '⭐ ' : '';
+                const msg = '📅 SỰ KIỆN SẮP DIỄN RA\n\n' + starIcon + (e.n || e.name) + '\n⏳ ' + timeStr + '\n\n👉 Đừng quên chuẩn bị nhé! 💑';
+
+                const tgRes = await fetch(
+                  'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg)
+                );
+                const tgData = await tgRes.json();
+
+                if (tgData.ok) {
+                  console.log('✅ Đã nhắc sự kiện:', e.n || e.name);
+                  e.lastAlert = now;
+                  changed = true;
+                } else {
+                  console.log('❌ Telegram lỗi:', tgData.description);
+                }
+              }
+            }
+
+            if (changed) {
+              const updateRes = await fetch(SB_URL + '/rest/v1/jika_data', {
+                method: 'POST',
+                headers: {
+                  'apikey': SB_KEY,
+                  'Authorization': 'Bearer ' + SB_KEY,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'resolution=merge-duplicates,return=minimal'
+                },
+                body: JSON.stringify({ key: 'jika_events', value: JSON.stringify(events) })
+              });
+              console.log('Cập nhật Supabase:', updateRes.ok ? 'OK' : 'FAIL ' + updateRes.status);
+            } else {
+              console.log('Không có sự kiện nào cần nhắc lúc này');
+            }
+          }
+
+          main().catch(e => { console.error('Error:', e.message); process.exit(1); });
+          "
     runs-on: ubuntu-latest
     # Chạy thứ 2 hàng tuần lúc 8h sáng (UTC+7 = 1h UTC)
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule')
