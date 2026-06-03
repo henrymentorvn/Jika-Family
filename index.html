@@ -768,11 +768,13 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
         <div class="chat-task-title" id="dt-title"></div>
         <div class="chat-task-sub" id="dt-info"></div>
       </div>
-      <button class="chat-zone-badge" id="dt-done-btn">Hoàn thành</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+        <button class="btn-delay" id="delay-btn" onclick="openDelayPicker()" style="display:none">⏰ Delay</button>
+        <button class="chat-zone-badge" id="dt-done-btn">Hoàn thành</button>
+      </div>
     </div>
     <div class="chat-action-row">
       <button class="btn-secondary" onclick="closeSheet('task-detail-modal')">← Quay lại</button>
-      <button class="btn-delay" id="delay-btn" onclick="openDelayPicker()" style="display:none">⏰ Delay</button>
     </div>
     <div id="delay-picker" style="display:none;padding:12px 16px;background:rgba(255,149,0,0.08);border-bottom:0.5px solid rgba(255,149,0,0.2);flex-shrink:0;">
       <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">⏰ Báo lại sau</div>
@@ -994,6 +996,11 @@ function onFabClick() {
   else if (currentTab === 'vault') alert('Thêm mục (đang phát triển)');
 }
 
+function renderDelayBtn(count) {
+  if (!count || count === 0) return '⏰ Delay';
+  return '⏰ Delay <span style="background:rgba(255,214,10,0.30);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:800">' + count + '</span>';
+}
+
 /* ===== RENDER TASKS ===== */
 function renderTasks() {
   const m = document.getElementById('main-content');
@@ -1037,7 +1044,7 @@ function renderTasks() {
             </div>
             <div class="task-right">
               <div class="chat-badge ${badgeClass}">💬 ${chatCount}</div>
-              ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">⏰ Delay${(t.delayCount||0) > 0 ? ' <span style="background:rgba(255,214,10,0.25);border-radius:10px;padding:1px 6px;font-size:9px">${t.delayCount}</span>' : ''}</button>` : ''}
+              ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">${renderDelayBtn(t.delayCount)}</button>` : ''}
             </div>
           </div>`;
       });
