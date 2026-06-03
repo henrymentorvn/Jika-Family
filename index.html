@@ -1037,8 +1037,7 @@ function renderTasks() {
             </div>
             <div class="task-right">
               <div class="chat-badge ${badgeClass}">💬 ${chatCount}</div>
-              ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">⏰ Delay</button>` : ''}
-              ${(t.delayCount||0) > 0 ? `<div class="delay-count-badge">🔁 Delay ${String(t.delayCount).padStart(2,'0')} lần</div>` : ''}
+              ${isOverdue ? `<button class="delay-card-btn" onclick="event.stopPropagation();quickDelay('${t.id}')">⏰ Delay${(t.delayCount||0) > 0 ? ' <span style="background:rgba(255,214,10,0.25);border-radius:10px;padding:1px 6px;font-size:9px">${t.delayCount}</span>' : ''}</button>` : ''}
             </div>
           </div>`;
       });
@@ -1052,7 +1051,12 @@ function formatDeadline(dl, overdue) {
   const diffMs = d - now;
   const diffH = Math.round(diffMs / 3600000);
   const diffD = Math.round(diffMs / 86400000);
-  if (overdue) return `Quá hạn ${Math.abs(diffD)}n`;
+  if (overdue) {
+    const absDiff = Math.abs(diffMs);
+    if (absDiff < 3600000) return `Quá hạn ${Math.round(absDiff/60000)} phút`;
+    if (absDiff < 86400000) return `Quá hạn ${Math.round(absDiff/3600000)} giờ`;
+    return `Quá hạn ${Math.round(absDiff/86400000)} ngày`;
+  }
   if (diffH < 2) return `Còn ~${Math.max(0,diffH)}h`;
   if (diffD < 1) return `Còn ${diffH}h`;
   if (diffD < 7) return `Còn ${diffD} ngày`;
