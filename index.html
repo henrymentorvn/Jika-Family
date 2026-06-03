@@ -632,7 +632,7 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   padding: 9px; border-radius: calc(var(--radius-md) - 4px);
   cursor: pointer; transition: background 0.18s, color 0.18s; font-family: inherit;
 }
-.cal-btn.active { background: var(--evt-accent); color: white; }
+#recur-selector .seg-btn.active { background: var(--evt-accent); color: white; }
 
 /* Toggle switch */
 .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
@@ -924,6 +924,16 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
           <div class="picker-cell"><select class="picker-select" id="evt-alert-d" style="color:var(--evt-accent)"></select><div class="picker-lbl">Ngày</div></div>
           <div class="picker-cell"><select class="picker-select" id="evt-alert-h" style="color:var(--evt-accent)"></select><div class="picker-lbl">Giờ</div></div>
           <div class="picker-cell"><select class="picker-select" id="evt-alert-m" style="color:var(--evt-accent)"></select><div class="picker-lbl">Phút</div></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔁 Lặp lại định kỳ</label>
+        <div class="seg-control" id="recur-selector" style="background:rgba(0,0,0,0.30);border-color:rgba(255,149,0,0.20)">
+          <button class="seg-btn active" data-val="none" style="font-size:11px">Không</button>
+          <button class="seg-btn" data-val="daily" style="font-size:11px">Ngày</button>
+          <button class="seg-btn" data-val="weekly" style="font-size:11px">Tuần</button>
+          <button class="seg-btn" data-val="monthly" style="font-size:11px">Tháng</button>
+          <button class="seg-btn" data-val="yearly" style="font-size:11px">Năm</button>
         </div>
       </div>
       <div class="form-group">
@@ -1568,10 +1578,13 @@ function renderEvents() {
       } catch(ex) { return ''; }
     })();
 
+    const recurLabel = {'daily':'Mỗi ngày','weekly':'Mỗi tuần','monthly':'Mỗi tháng','yearly':'Mỗi năm'}[e.recurrence] || '';
+    const recurBadge = recurLabel ? `<span style="font-size:9px;background:rgba(255,149,0,0.15);border:0.5px solid rgba(255,149,0,0.3);border-radius:10px;padding:2px 7px;color:var(--evt-accent);margin-left:4px">🔁 ${recurLabel}</span>` : '';
+
     return `<div class="event-row" style="padding-left:${e.priority===1?'20px':'17px'}">
       ${priorityBar}
       <div style="flex:1;min-width:0">
-        <div class="event-name">${starIcon}${escHtml(e.n || e.name)}</div>
+        <div class="event-name">${starIcon}${escHtml(e.n || e.name)}${recurBadge}</div>
         <div class="event-name-sub">${e._date.getDate()}/${e._date.getMonth()+1} dương • ${lunarStr} âm</div>
       </div>
       <div class="event-countdown ${cls}">${label}</div>
@@ -1621,6 +1634,8 @@ function openAddEvent() {
   document.querySelectorAll('.cal-btn').forEach(b => b.classList.toggle('active', b.dataset.cal === 'solar'));
   const tog = document.getElementById('evt-priority-toggle');
   if (tog) { tog.checked = true; selectPriority(1); } // default quan trọng
+  // Reset recurrence
+  document.querySelectorAll('#recur-selector .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val === 'none'));
   fillEventPickers();
   openSheet('add-event-modal');
 }
@@ -1654,6 +1669,9 @@ function openEditEvent(id) {
   }
   if (e.repeatH !== undefined) document.getElementById('evt-repeat-h').value = e.repeatH || 0;
   if (e.repeatM !== undefined) document.getElementById('evt-repeat-m').value = e.repeatM || 0;
+  // Restore recurrence
+  const recur = e.recurrence || 'none';
+  document.querySelectorAll('#recur-selector .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val === recur));
   onDateChange();
   openSheet('add-event-modal');
 }
@@ -1703,19 +1721,21 @@ async function saveEvent() {
   };
   const repeatH = parseInt(document.getElementById('evt-repeat-h').value) || 0;
   const repeatM = parseInt(document.getElementById('evt-repeat-m').value) || 0;
+  const recurBtn = document.querySelector('#recur-selector .seg-btn.active');
+  const recurrence = recurBtn ? recurBtn.dataset.val : 'none';
 
   if (_evtEditId) {
     // Sửa
     const idx = events.findIndex(x => x.id === _evtEditId);
     if (idx !== -1) {
-      events[idx] = { ...events[idx], n: fullName, name: fullName, d: dateVal, date: dateVal, calType: _evtCalType, priority: _evtPriority, alertBefore, repeatH, repeatM, lastAlert: 0 };
+      events[idx] = { ...events[idx], n: fullName, name: fullName, d: dateVal, date: dateVal, calType: _evtCalType, priority: _evtPriority, alertBefore, repeatH, repeatM, recurrence, lastAlert: 0 };
     }
   } else {
     // Thêm mới
     events.push({
       id: 'e' + Date.now(), n: fullName, name: fullName,
       d: dateVal, date: dateVal, calType: _evtCalType,
-      priority: _evtPriority, alertBefore, repeatH, repeatM, lastAlert: 0
+      priority: _evtPriority, alertBefore, repeatH, repeatM, recurrence, lastAlert: 0
     });
   }
 
