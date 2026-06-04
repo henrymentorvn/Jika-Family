@@ -269,6 +269,71 @@ jobs:
 
           main().catch(e => { console.error('Error:', e.message); process.exit(1); });
           "
+
+  check-fixed-expenses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check fixed expenses & send Telegram
+        run: |
+          node -e "
+          const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
+          const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
+          const TG_TOKEN = '8914722655:AAHdKjzyLLQiOfA1zOQEWBFJTqLlJ1uEltc';
+          const TG_CHAT_ID = '-1002587798916';
+          const UTC_OFFSET = 7 * 3600000;
+
+          async function main() {
+            const res = await fetch(SB_URL + '/rest/v1/jika_data?key=eq.jika_fixed_exps&select=value', {
+              headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+            });
+            if (!res.ok) { console.log('Supabase error:', res.status); return; }
+            const data = await res.json();
+            if (!data || !data.length) { console.log('Không có khoản cố định'); return; }
+            let fixedExps = [];
+            try {
+              let val = data[0].value;
+              if (typeof val === 'string') val = JSON.parse(val);
+              if (Array.isArray(val)) fixedExps = val;
+            } catch(e) { return; }
+            console.log('Tổng khoản cố định:', fixedExps.length);
+            const now = Date.now();
+            const nowVN = new Date(now + UTC_OFFSET);
+            let changed = false;
+            for (const f of fixedExps) {
+              if (!f.payDay || !f.alertBefore) continue;
+              const alertMs = ((f.alertBefore.d||0)*86400000 + (f.alertBefore.h||0)*3600000 + (f.alertBefore.m||0)*60000);
+              if (alertMs <= 0) continue;
+              let payDate = new Date(Date.UTC(nowVN.getUTCFullYear(), nowVN.getUTCMonth(), f.payDay));
+              if (payDate.getTime() < now + UTC_OFFSET) {
+                payDate = new Date(Date.UTC(nowVN.getUTCFullYear(), nowVN.getUTCMonth()+1, f.payDay));
+              }
+              const dl = payDate.getTime() - UTC_OFFSET;
+              const alertTime = dl - alertMs;
+              const lastAlert = f.lastAlert || 0;
+              const diffMs = dl - now;
+              if (diffMs < -86400000) continue;
+              if (now < alertTime) continue;
+              if ((now - lastAlert) < 1800000) continue;
+              const diffD = Math.round(diffMs / 86400000);
+              const timeStr = diffD === 0 ? 'HÔM NAY! 🔴' : diffD === 1 ? 'NGÀY MAI ⚠️' : 'Còn ' + diffD + ' ngày';
+              const msg = '💳 NHẮC THANH TOÁN CỐ ĐỊNH\n\n📌 ' + f.name + '\n💰 ' + parseInt(f.amount).toLocaleString('vi') + 'đ\n📅 Ngày ' + f.payDay + ' hàng tháng\n⏳ ' + timeStr + '\n\n👉 Đừng quên thanh toán nhé!';
+              const tgRes = await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg));
+              const tgData = await tgRes.json();
+              if (tgData.ok) { console.log('✅ Đã nhắc:', f.name); f.lastAlert = now; changed = true; }
+              else { console.log('❌ Lỗi:', tgData.description); }
+            }
+            if (changed) {
+              await fetch(SB_URL + '/rest/v1/jika_data', {
+                method: 'POST',
+                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+                body: JSON.stringify({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) })
+              });
+            } else { console.log('Không có khoản nào cần nhắc'); }
+          }
+          main().catch(e => { console.error('Error:', e.message); process.exit(1); });
+          "
+
+  weekly-mood-report:
     runs-on: ubuntu-latest
     # Chạy thứ 2 hàng tuần lúc 8h sáng (UTC+7 = 1h UTC)
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule')
