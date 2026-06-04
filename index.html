@@ -829,6 +829,48 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 .due-badge.soon { background: rgba(255,149,0,0.15); color: var(--amber); }
 .due-badge.ok { background: rgba(57,211,83,0.15); color: var(--green); }
 
+/* Vault item detail view */
+.vault-item-list-row {
+  display: flex; align-items: center; padding: 13px 16px;
+  border-bottom: 0.5px solid var(--glass-border); gap: 12px;
+  cursor: pointer; transition: background 0.15s;
+}
+.vault-item-list-row:last-child { border-bottom: none; }
+.vault-item-list-row:active { background: rgba(255,255,255,0.04); }
+.vault-item-list-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.vault-item-list-body { flex: 1; min-width: 0; }
+.vault-item-list-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.vault-item-list-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.vault-item-list-chevron { color: var(--text-tertiary); font-size: 14px; flex-shrink: 0; }
+
+/* Item detail sheet action row */
+.vault-detail-actions {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-bottom: 0.5px solid var(--glass-border); flex-shrink: 0;
+}
+.vault-action-btn {
+  flex: 1; padding: 10px 8px; border: none; border-radius: var(--radius-md);
+  font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: opacity 0.15s;
+}
+.vault-action-btn:active { opacity: 0.75; }
+.vault-action-edit { background: var(--vault-light); color: var(--vault); border: 0.5px solid var(--vault-border); }
+.vault-action-copy { background: rgba(57,211,83,0.12); color: var(--green); border: 0.5px solid rgba(57,211,83,0.2); }
+.vault-action-delete { background: rgba(255,59,48,0.10); color: var(--red); border: 0.5px solid rgba(255,59,48,0.2); }
+
+/* Detail field display */
+.vault-detail-field {
+  padding: 12px 16px; border-bottom: 0.5px solid var(--glass-border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.vault-detail-field:last-child { border-bottom: none; }
+.vault-detail-field-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+.vault-detail-field-val { font-size: 14px; color: var(--text-primary); line-height: 1.45; word-break: break-word; }
+
 /* SOS button */
 .sos-btn {
   width: 100%; padding: 16px;
@@ -1154,6 +1196,25 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
       <button class="btn-primary" onclick="saveFixedExp()">Lưu khoản cố định ✓</button>
       <button id="fexp-delete-btn" class="btn-danger" style="width:100%;margin-top:10px;display:none" onclick="deleteFixedExp()">Xoá khoản này</button>
     </div>
+  </div>
+</div>
+
+<!-- SHEET: VAULT ITEM DETAIL -->
+<div class="modal-overlay" id="vault-detail-modal" onclick="closeSheet('vault-detail-modal')">
+  <div class="sheet" style="max-height:92dvh;height:auto" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header" id="vault-detail-header">
+      <div>
+        <div class="sheet-title" id="vault-detail-title">Chi tiết</div>
+        <div style="font-size:11px;color:var(--text-secondary)" id="vault-detail-subtitle"></div>
+      </div>
+    </div>
+    <div class="vault-detail-actions">
+      <button class="vault-action-btn vault-action-edit" id="vault-detail-edit-btn">✏️ Sửa</button>
+      <button class="vault-action-btn vault-action-copy" id="vault-detail-copy-btn">📋 Copy</button>
+      <button class="vault-action-btn vault-action-delete" id="vault-detail-delete-btn">🗑️ Xoá</button>
+    </div>
+    <div class="sheet-scroll" id="vault-detail-body"></div>
   </div>
 </div>
 
@@ -2494,63 +2555,111 @@ function renderVaultCat(catId) {
   const color = schema.color;
   const m = document.getElementById('main-content');
 
-  const itemCards = items.map((item, idx) => {
+  // Danh sách items dạng list row — bấm vào xem chi tiết
+  const itemRows = items.map((item, idx) => {
     const title = item[schema.titleField] || '—';
     const sub = item[schema.subtitleField] || '';
-    // Preview 3 fields chính
-    const previewFields = schema.sections[0]?.fields?.slice(0,3) || [];
-    const fieldPreview = previewFields
-      .filter(f => item[f.key] && f.key !== schema.titleField)
-      .map(f => `<div class="vault-field-row">
-        <div class="vault-field-label">${f.label}</div>
-        <div class="vault-field-val">${escHtml(item[f.key])}</div>
-      </div>`).join('');
-    
-    // Due date badge cho misc
     let dueBadge = '';
     if (catId === 'misc' && item.dueDate) {
       const diff = Math.ceil((new Date(item.dueDate) - new Date()) / 86400000);
-      if (diff < 0) dueBadge = `<span class="due-badge overdue">Quá hạn</span>`;
-      else if (diff <= 7) dueBadge = `<span class="due-badge soon">Còn ${diff} ngày</span>`;
-      else dueBadge = `<span class="due-badge ok">Còn ${diff} ngày</span>`;
+      if (diff < 0) dueBadge = ` <span class="due-badge overdue">Quá hạn</span>`;
+      else if (diff <= 7) dueBadge = ` <span class="due-badge soon">Còn ${diff}n</span>`;
     }
-
-    return `<div class="vault-item-card">
-      <div class="vault-item-card-header">
-        <div>
-          <div class="vault-item-title">${escHtml(title)}${dueBadge}</div>
-          ${sub ? `<div class="vault-item-subtitle">${escHtml(sub)}</div>` : ''}
-        </div>
-        <div class="vault-item-edit-btn" onclick="openEditVaultItem(${idx})">✏️</div>
+    return `<div class="vault-item-list-row" onclick="openVaultItemDetail(${idx})">
+      <div class="vault-item-list-icon" style="background:${color}22">${schema.icon}</div>
+      <div class="vault-item-list-body">
+        <div class="vault-item-list-title">${escHtml(title)}${dueBadge}</div>
+        ${sub ? `<div class="vault-item-list-sub">${escHtml(sub)}</div>` : ''}
       </div>
-      ${fieldPreview ? `<div class="vault-item-fields">${fieldPreview}</div>` : ''}
+      <div class="vault-item-list-chevron">›</div>
     </div>`;
   }).join('');
 
   const emptyState = items.length === 0
-    ? `<div style="padding:20px;text-align:center">
-        <div style="font-size:36px;margin-bottom:8px;opacity:0.3">${schema.icon}</div>
-        <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px">Chưa có hồ sơ nào</div>
+    ? `<div style="padding:32px 20px;text-align:center">
+        <div style="font-size:40px;margin-bottom:10px;opacity:0.25">${schema.icon}</div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">Chưa có mục nào</div>
         <div style="font-size:11px;color:var(--text-tertiary)">${schema.emptyHint || ''}</div>
+        <button onclick="openAddVaultItem()" style="margin-top:16px;padding:10px 20px;background:${color}22;color:${color};border:0.5px solid ${color}44;border-radius:var(--radius-full);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">+ Thêm mục đầu tiên</button>
       </div>` : '';
 
   m.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="renderVaultHome()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:4px">←</button>
+      <button onclick="renderVaultHome()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:4px 8px">←</button>
       <span style="font-size:26px">${schema.icon}</span>
-      <div>
+      <div style="flex:1">
         <div style="font-size:18px;font-weight:700">${schema.title}</div>
-        <div style="font-size:11px;color:var(--text-secondary)">${schema.description}</div>
+        <div style="font-size:11px;color:var(--text-secondary)">${items.length} mục • ${schema.securityLevel}</div>
       </div>
     </div>
-    ${emptyState}
-    ${itemCards}
+    ${schema.securityWarning ? `<div class="security-warning" style="margin-bottom:12px">⚠️ ${schema.securityWarning}</div>` : ''}
+    <div class="glass-card" style="overflow:hidden;margin-bottom:14px;border-color:${color}33">
+      ${itemRows || emptyState}
+    </div>
     <div style="height:20px"></div>`;
 
   const fab = document.getElementById('fab-btn');
   fab.style.display = 'flex';
   fab.style.background = color;
   fab.style.boxShadow = '0 6px 20px ' + color + '55, 0 2px 8px rgba(0,0,0,0.4)';
+}
+
+/* ===== VAULT ITEM DETAIL — xem chi tiết, rồi mới sửa/xoá ===== */
+let _vaultDetailIdx = null;
+
+function openVaultItemDetail(idx) {
+  const catId = _vaultCurrentCat;
+  const schema = VAULT_SCHEMAS[catId];
+  if (!schema) return;
+  const item = (vault[catId] || [])[idx];
+  if (!item) return;
+  _vaultDetailIdx = idx;
+
+  const title = item[schema.titleField] || '—';
+  const sub = item[schema.subtitleField] || '';
+  document.getElementById('vault-detail-title').innerText = title;
+  document.getElementById('vault-detail-subtitle').innerText = sub ? (schema.title + ' • ' + sub) : schema.title;
+
+  // Render tất cả fields có giá trị
+  let fieldsHtml = '';
+  schema.sections.forEach(section => {
+    const sectionFields = section.fields.filter(f => item[f.key]);
+    if (!sectionFields.length) return;
+    fieldsHtml += `<div style="padding:10px 16px 4px;font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px">${section.title}</div>`;
+    sectionFields.forEach(f => {
+      fieldsHtml += `<div class="vault-detail-field">
+        <div class="vault-detail-field-label">${f.label}</div>
+        <div class="vault-detail-field-val">${escHtml(item[f.key])}</div>
+      </div>`;
+    });
+  });
+  document.getElementById('vault-detail-body').innerHTML = fieldsHtml || '<div class="empty-state">Chưa có thông tin</div>';
+
+  // Gán action buttons
+  document.getElementById('vault-detail-edit-btn').onclick = () => {
+    closeSheet('vault-detail-modal');
+    setTimeout(() => openEditVaultItem(idx), 200);
+  };
+  document.getElementById('vault-detail-delete-btn').onclick = () => {
+    closeSheet('vault-detail-modal');
+    setTimeout(() => deleteVaultItemConfirm(idx, catId), 200);
+  };
+  document.getElementById('vault-detail-copy-btn').onclick = () => {
+    const text = Object.entries(item).map(([k,v]) => `${k}: ${v}`).join('\n');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => toast('📋 Đã copy!', 'rgba(57,211,83,0.9)'));
+    }
+  };
+
+  openSheet('vault-detail-modal');
+}
+
+async function deleteVaultItemConfirm(idx, catId) {
+  if (!confirm('Xoá mục này?')) return;
+  if (vault[catId]) vault[catId].splice(parseInt(idx), 1);
+  await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' });
+  toast('Đã xoá', 'rgba(255,59,48,0.9)');
+  renderVaultCat(catId);
 }
 
 /* ===== DYNAMIC FORM ===== */
@@ -2666,11 +2775,8 @@ async function saveVaultItem(idx, catId) {
 
 async function deleteVaultItem(idx, catId) {
   catId = catId || _vaultCurrentCat;
-  if (!confirm('Xoá mục này?')) return;
-  if (vault[catId]) vault[catId].splice(parseInt(idx), 1);
-  await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' });
   closeSheet('vault-item-modal');
-  renderVaultCat(catId);
+  setTimeout(() => deleteVaultItemConfirm(idx, catId), 150);
 }
 
 function testSOSTelegram() {
