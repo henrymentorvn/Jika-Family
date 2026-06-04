@@ -710,28 +710,138 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 
 /* Vault categories */
 .vault-cat-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px;
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;
 }
-.vault-cat-btn {
+
+/* Card ngoài vault — layout ngang */
+.vault-cat-card {
   background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--blur-main); backdrop-filter: var(--blur-main);
   border: 0.5px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  padding: 18px 14px;
+  padding: 16px;
   cursor: pointer; text-align: left;
-  transition: transform 0.15s, background 0.15s;
+  transition: transform 0.15s;
   position: relative; overflow: hidden;
 }
-.vault-cat-btn::before {
+.vault-cat-card::before {
   content:''; position:absolute; inset:0;
-  background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, transparent 60%);
   pointer-events:none;
 }
-.vault-cat-btn:active { transform: scale(0.97); }
-.vault-cat-icon { font-size: 28px; margin-bottom: 8px; display: block; }
-.vault-cat-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.vault-cat-count { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+.vault-cat-card:active { transform: scale(0.985); }
+.vault-cat-card-header { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.vault-cat-icon { font-size: 32px; flex-shrink:0; }
+.vault-cat-info { flex:1; min-width:0; }
+.vault-cat-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.vault-cat-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.vault-cat-meta { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.vault-cat-count-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: var(--radius-full); 
+}
+.vault-security-badge {
+  font-size: 9px; font-weight: 700; padding: 2px 8px;
+  border-radius: var(--radius-full); 
+}
+.vault-cat-preview {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 0.5px solid var(--glass-border);
+}
+.vault-cat-preview-item {
+  font-size: 11px; color: var(--text-secondary);
+  padding: 2px 0; display:flex; align-items:center; gap:6px;
+}
+.vault-cat-empty-hint {
+  font-size: 11px; color: var(--text-tertiary); font-style: italic;
+}
 
-/* Vault item */
+/* Vault item bên trong */
+.vault-item-card {
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.vault-item-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.vault-item-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.vault-item-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.vault-item-edit-btn {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  background: var(--vault-light); border: 0.5px solid var(--vault-border);
+  color: var(--vault); font-size: 14px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.vault-item-fields { margin-top: 10px; display:flex; flex-direction:column; gap:6px; }
+.vault-field-row { display:flex; gap:8px; }
+.vault-field-label { font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform:uppercase; letter-spacing:0.4px; min-width:80px; flex-shrink:0; padding-top:2px; }
+.vault-field-val { font-size: 13px; color: var(--text-primary); flex:1; word-break:break-word; }
+
+/* Search bar */
+.vault-search {
+  width: 100%; padding: 11px 16px;
+  background: var(--glass-bg-light);
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  color: var(--text-primary); font-size: 14px; font-family: inherit;
+  outline: none; margin-bottom: 12px;
+}
+.vault-search:focus { border-color: rgba(124,58,237,0.4); }
+.vault-search::placeholder { color: var(--text-tertiary); }
+
+/* Filter chips */
+.vault-filter-row { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; }
+.vault-filter-row::-webkit-scrollbar { display:none; }
+.vault-filter-chip {
+  flex-shrink:0; padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 600; font-family: inherit;
+  background: var(--glass-bg-light); border: 0.5px solid var(--glass-border);
+  color: var(--text-secondary); cursor: pointer;
+  transition: background 0.15s;
+}
+.vault-filter-chip.active {
+  background: var(--vault-light); border-color: var(--vault-border); color: var(--vault);
+}
+
+/* Form sections */
+.form-section-title {
+  font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  margin: 20px 0 10px; padding-bottom: 6px;
+  border-bottom: 0.5px solid var(--glass-border);
+}
+.security-warning {
+  background: rgba(255,59,48,0.08); border: 0.5px solid rgba(255,59,48,0.25);
+  border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px;
+  font-size: 12px; color: var(--red); line-height: 1.5;
+}
+
+/* Due date badge */
+.due-badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: var(--radius-full);
+  margin-left: 6px;
+}
+.due-badge.overdue { background: rgba(255,59,48,0.15); color: var(--red); }
+.due-badge.soon { background: rgba(255,149,0,0.15); color: var(--amber); }
+.due-badge.ok { background: rgba(57,211,83,0.15); color: var(--green); }
+
+/* SOS button */
+.sos-btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #ff3b30, #ff6b35);
+  border: none; border-radius: var(--radius-lg);
+  color: white; font-size: 17px; font-weight: 800;
+  cursor: pointer; margin-bottom: 14px;
+  box-shadow: 0 6px 20px rgba(255,59,48,0.35);
+  transition: transform 0.1s; font-family: inherit;
+}
+.sos-btn:active { transform: scale(0.98); }
+
+/* Vault item row cũ (giữ cho backward compat) */
 .vault-item-row {
   display: flex; align-items: flex-start; padding: 13px 16px;
   border-bottom: 0.5px solid var(--glass-border); gap: 10px;
@@ -746,19 +856,6 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   color: var(--vault); font-size: 13px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
-
-/* SOS button */
-.sos-btn {
-  width: 100%; padding: 18px;
-  background: linear-gradient(135deg, #ff3b30, #ff6b35);
-  border: none; border-radius: var(--radius-lg);
-  color: white; font-size: 18px; font-weight: 800;
-  cursor: pointer; margin-bottom: 14px;
-  box-shadow: 0 6px 20px rgba(255,59,48,0.35);
-  transition: transform 0.1s;
-  font-family: inherit;
-}
-.sos-btn:active { transform: scale(0.98); }
 
 /* ===== SHEET dark green ===== */
 .sheet {
@@ -1060,27 +1157,16 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   </div>
 </div>
 
-<!-- SHEET: VAULT ITEM ADD/EDIT -->
+<!-- SHEET: VAULT DYNAMIC FORM -->
 <div class="modal-overlay" id="vault-item-modal" onclick="closeSheet('vault-item-modal')">
-  <div class="sheet" onclick="event.stopPropagation()">
+  <div class="sheet" style="max-height:96dvh" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
     <div class="sheet-header">
       <span class="sheet-title" id="vault-item-title">Thêm mục mới</span>
       <div class="sheet-close" onclick="closeSheet('vault-item-modal')">✕</div>
     </div>
-    <div class="sheet-scroll">
-      <input type="hidden" id="vault-edit-idx" value="">
-      <input type="hidden" id="vault-edit-cat" value="">
-      <div class="form-group">
-        <label class="form-label">Nhãn / Tên trường</label>
-        <input type="text" id="vault-field-label" class="form-input" placeholder="VD: Số CCCD, Biển số xe...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nội dung</label>
-        <textarea id="vault-field-val" class="form-input" rows="4" placeholder="Nhập thông tin..." style="resize:none;height:auto;min-height:100px"></textarea>
-      </div>
-      <button class="btn-primary" style="background:var(--vault);box-shadow:0 4px 16px var(--vault-glow)" onclick="saveVaultItem()">Lưu ✓</button>
-      <button id="vault-delete-btn" class="btn-danger" style="width:100%;margin-top:10px;display:none" onclick="deleteVaultItem()">Xoá mục này</button>
+    <div class="sheet-scroll" id="vault-form-body">
+      <!-- Được render động bởi JS -->
     </div>
   </div>
 </div>
@@ -2069,18 +2155,212 @@ async function addFin(type) {
 }
 
 /* ===== VAULT MODULE ===== */
-const VAULT_CATS = [
-  { id: 'family',    icon: '👨‍👩‍👧', name: 'Gia đình',    color: '#34c759' },
-  { id: 'assets',    icon: '🏠',     name: 'Tài sản',     color: '#ff9500' },
-  { id: 'finance',   icon: '💳',     name: 'Tài chính',   color: '#ff3b30' },
-  { id: 'work',      icon: '💼',     name: 'Công việc',   color: '#007aff' },
-  { id: 'emergency', icon: '🚨',     name: 'Khẩn cấp',   color: '#ff453a' },
-  { id: 'legacy',    icon: '📜',     name: 'Di chúc số',  color: '#636366' },
-  { id: 'memories',  icon: '❤️',    name: 'Kỷ niệm',    color: '#ff2d92' },
-  { id: 'misc',      icon: '🗝️',   name: 'Điều dễ quên',color: '#ffd60a' }
-];
+
+/* ===== SCHEMAS ===== */
+const VAULT_SCHEMAS = {
+  family: {
+    title: 'Hồ sơ gia đình',
+    sections: [
+      { title: '👤 Thông tin cơ bản', fields: [
+        { key: 'fullName',      label: 'Họ tên',         type: 'text', placeholder: 'Nguyễn Văn A' },
+        { key: 'relationship',  label: 'Quan hệ',         type: 'text', placeholder: 'Vợ / Con gái / Cha...' },
+        { key: 'birthday',      label: 'Ngày sinh',       type: 'date' },
+        { key: 'phone',         label: 'Số điện thoại',   type: 'tel',  placeholder: '09xxxxxxxx' },
+      ]},
+      { title: '📄 Giấy tờ', fields: [
+        { key: 'idNumber',        label: 'CCCD / Mã định danh', type: 'text' },
+        { key: 'healthInsurance', label: 'Mã BHYT',             type: 'text' },
+      ]},
+      { title: '🏥 Y tế', fields: [
+        { key: 'bloodType',    label: 'Nhóm máu',    type: 'text', placeholder: 'O+, A-, B+...' },
+        { key: 'allergies',    label: 'Dị ứng',      type: 'text', placeholder: 'Penicillin...' },
+        { key: 'medicalNotes', label: 'Bệnh nền',    type: 'textarea' },
+      ]},
+      { title: '📝 Ghi chú', fields: [
+        { key: 'importantNotes', label: 'Ghi chú quan trọng', type: 'textarea' },
+      ]},
+    ],
+    titleField: 'fullName', subtitleField: 'relationship',
+    securityLevel: 'Riêng tư',
+    description: 'Lưu hồ sơ người thân, giấy tờ, thông tin y tế.',
+    emptyHint: 'Gợi ý: Thêm Vợ/Chồng, Con cái, Cha mẹ, Người liên hệ khẩn cấp',
+    color: '#34c759', icon: '👨\u200d👩\u200d👧'
+  },
+  assets: {
+    title: 'Tài sản',
+    sections: [
+      { title: '🏠 Thông tin tài sản', fields: [
+        { key: 'assetName',      label: 'Tên tài sản',     type: 'text', placeholder: 'Xe Kia Carnival, Đất Demahi...' },
+        { key: 'assetType',      label: 'Loại tài sản',    type: 'select', options: ['Đất đai','Xe cộ','Vàng','Thiết bị','Khác'] },
+        { key: 'owner',          label: 'Chủ sở hữu',      type: 'text' },
+        { key: 'estimatedValue', label: 'Giá trị ước tính',type: 'text', placeholder: '2,000,000,000đ' },
+      ]},
+      { title: '⚖️ Pháp lý', fields: [
+        { key: 'legalStatus',      label: 'Tình trạng pháp lý', type: 'text', placeholder: 'Sổ đỏ / Đang thế chấp...' },
+        { key: 'documentLocation', label: 'Giấy tờ đang ở đâu', type: 'text' },
+      ]},
+      { title: '📍 Vị trí & Ghi chú', fields: [
+        { key: 'location', label: 'Địa chỉ / Vị trí', type: 'text' },
+        { key: 'note',     label: 'Ghi chú thêm',     type: 'textarea' },
+      ]},
+    ],
+    titleField: 'assetName', subtitleField: 'assetType',
+    securityLevel: 'Tuyệt mật',
+    description: 'Đất đai, xe cộ, vàng, tài sản giá trị.',
+    emptyHint: 'Gợi ý: Thêm thông tin nhà đất, xe, tài sản giá trị',
+    color: '#ffd60a', icon: '🏠'
+  },
+  finance: {
+    title: 'Tài chính',
+    securityWarning: 'Không nên lưu mật khẩu trực tiếp tại đây. Hãy lưu trong Khoá Tủ hoặc trình quản lý mật khẩu.',
+    sections: [
+      { title: '💳 Thông tin', fields: [
+        { key: 'financeName', label: 'Tên',      type: 'text', placeholder: 'Tài khoản MB Bank...' },
+        { key: 'financeType', label: 'Loại',     type: 'select', options: ['Tài khoản ngân hàng','Khoản vay','Công nợ','Bảo hiểm','Khác'] },
+        { key: 'institution', label: 'Tổ chức',  type: 'text', placeholder: 'MB Bank, Sacombank...' },
+        { key: 'accountNumber', label: 'Số tài khoản', type: 'text' },
+        { key: 'amount',      label: 'Số tiền',  type: 'text', placeholder: '28,000,000đ' },
+        { key: 'dueDate',     label: 'Ngày đóng',type: 'text', placeholder: 'Ngày 25 hàng tháng' },
+        { key: 'interestRate',label: 'Lãi suất', type: 'text' },
+        { key: 'collateral',  label: 'Tài sản thế chấp', type: 'text' },
+        { key: 'note',        label: 'Ghi chú',  type: 'textarea' },
+      ]},
+    ],
+    titleField: 'financeName', subtitleField: 'financeType',
+    securityLevel: 'Tuyệt mật',
+    description: 'Tài khoản ngân hàng, khoản vay, công nợ.',
+    emptyHint: 'Gợi ý: Thêm tài khoản ngân hàng, khoản vay',
+    color: '#ff9500', icon: '💳',
+    passwordWarningFields: ['note','accountNumber']
+  },
+  work: {
+    title: 'Công việc',
+    sections: [
+      { title: '💼 Dự án / Công việc', fields: [
+        { key: 'projectName',  label: 'Tên',        type: 'text', placeholder: 'TimeMaster, Demahi...' },
+        { key: 'workType',     label: 'Loại',       type: 'select', options: ['Dự án','Đối tác','Hợp đồng','Ý tưởng','Việc cần làm'] },
+        { key: 'status',       label: 'Trạng thái', type: 'select', options: ['Ý tưởng','Đang làm','Tạm dừng','Hoàn tất'] },
+        { key: 'contactPerson',label: 'Người liên hệ', type: 'text' },
+        { key: 'deadline',     label: 'Deadline',   type: 'date' },
+        { key: 'links',        label: 'Link tài liệu', type: 'text', placeholder: 'https://...' },
+        { key: 'note',         label: 'Ghi chú',    type: 'textarea' },
+      ]},
+    ],
+    titleField: 'projectName', subtitleField: 'status',
+    securityLevel: 'Riêng tư',
+    description: 'Dự án, hợp đồng, đối tác, đầu việc quan trọng.',
+    emptyHint: 'Gợi ý: Thêm các dự án đang triển khai',
+    color: '#007aff', icon: '💼'
+  },
+  emergency: {
+    title: 'Khẩn cấp',
+    sections: [
+      { title: '🚨 Thông tin SOS', fields: [
+        { key: 'emergencyName', label: 'Tên / Mục', type: 'text', placeholder: 'SOS chính, Bảo hiểm...' },
+        { key: 'emergencyType', label: 'Loại',      type: 'select', options: ['Người liên hệ','Y tế','Bảo hiểm','SOS Telegram','Khác'] },
+        { key: 'primaryContact',label: 'Người liên hệ chính', type: 'text' },
+        { key: 'phone',         label: 'Số điện thoại', type: 'tel' },
+        { key: 'telegramId',    label: 'Telegram ID', type: 'text' },
+        { key: 'bloodType',     label: 'Nhóm máu',  type: 'text' },
+        { key: 'allergies',     label: 'Dị ứng',    type: 'text' },
+        { key: 'medicalCondition', label: 'Bệnh nền', type: 'textarea' },
+        { key: 'insuranceInfo', label: 'Bảo hiểm',  type: 'text' },
+        { key: 'note',          label: 'Ghi chú',   type: 'textarea' },
+      ]},
+    ],
+    titleField: 'emergencyName', subtitleField: 'emergencyType',
+    securityLevel: 'Tuyệt mật',
+    description: 'Người liên hệ khẩn cấp, thông tin y tế, bảo hiểm.',
+    emptyHint: 'Gợi ý: Thêm người liên hệ và thông tin y tế khẩn cấp',
+    color: '#ff453a', icon: '🚨'
+  },
+  legacy: {
+    title: 'Di chúc số',
+    securityWarning: 'Không lưu mật khẩu, seed phrase hoặc mã OTP trực tiếp. Chỉ lưu vị trí truy cập hoặc người được ủy quyền.',
+    sections: [
+      { title: '📜 Tài sản số', fields: [
+        { key: 'itemName',      label: 'Tên tài khoản', type: 'text', placeholder: 'Gmail, Facebook...' },
+        { key: 'digitalType',   label: 'Loại',          type: 'select', options: ['Email','Facebook','Ngân hàng','Crypto','Hosting','Tên miền','Khác'] },
+        { key: 'owner',         label: 'Chủ sở hữu',    type: 'text' },
+        { key: 'accessLocation',label: 'Vị trí truy cập', type: 'text', placeholder: 'Két A, 1Password...' },
+        { key: 'trustedPerson', label: 'Người được ủy quyền', type: 'text' },
+        { key: 'instruction',   label: 'Hướng dẫn',     type: 'textarea' },
+        { key: 'note',          label: 'Ghi chú',       type: 'textarea' },
+      ]},
+    ],
+    titleField: 'itemName', subtitleField: 'digitalType',
+    securityLevel: 'Tuyệt mật',
+    description: 'Chỉ dẫn tài sản số, không lưu mật khẩu trực tiếp.',
+    emptyHint: 'Gợi ý: Liệt kê tài khoản email, mạng xã hội, ngân hàng',
+    color: '#7c3aed', icon: '📜'
+  },
+  memories: {
+    title: 'Kỷ niệm',
+    sections: [
+      { title: '❤️ Kỷ niệm', fields: [
+        { key: 'memoryTitle',    label: 'Tiêu đề',      type: 'text', placeholder: 'Lisa biết đi, Ngày cưới...' },
+        { key: 'memoryDate',     label: 'Ngày',         type: 'date' },
+        { key: 'peopleInvolved', label: 'Người liên quan', type: 'text' },
+        { key: 'location',       label: 'Địa điểm',    type: 'text' },
+        { key: 'emotion',        label: 'Cảm xúc',     type: 'select', options: ['Vui','Biết ơn','Tự hào','Xúc động','Khác'] },
+        { key: 'story',          label: 'Câu chuyện',  type: 'textarea', placeholder: 'Kể lại kỷ niệm...' },
+      ]},
+    ],
+    titleField: 'memoryTitle', subtitleField: 'emotion',
+    securityLevel: 'Riêng tư',
+    description: 'Nhật ký gia đình, những khoảnh khắc đáng nhớ.',
+    emptyHint: 'Gợi ý: Ghi lại những kỷ niệm quý giá của gia đình',
+    color: '#ff2d92', icon: '❤️'
+  },
+  misc: {
+    title: 'Điều dễ quên',
+    sections: [
+      { title: '🗝️ Nhắc nhở', fields: [
+        { key: 'reminderTitle', label: 'Tiêu đề',   type: 'text', placeholder: 'Hộ chiếu cất ở đâu, Đóng học phí...' },
+        { key: 'reminderType',  label: 'Loại',      type: 'select', options: ['Đồ vật','Giấy tờ','Ngày hạn','Việc định kỳ','Khác'] },
+        { key: 'location',      label: 'Vị trí',   type: 'text', placeholder: 'Ngăn kéo tủ, Két A...' },
+        { key: 'dueDate',       label: 'Ngày hạn', type: 'date' },
+        { key: 'repeat',        label: 'Lặp lại',  type: 'select', options: ['Không lặp','Hàng tuần','Hàng tháng','Hàng năm'] },
+        { key: 'note',          label: 'Ghi chú',  type: 'textarea' },
+      ]},
+    ],
+    titleField: 'reminderTitle', subtitleField: 'reminderType',
+    securityLevel: 'Riêng tư',
+    description: 'Đồ vật, giấy tờ, ngày hạn, việc định kỳ.',
+    emptyHint: 'Gợi ý: Cất hộ chiếu ở đâu, Đăng kiểm xe, Đóng học phí',
+    color: '#ffd60a', icon: '🗝️'
+  },
+  vault: {
+    title: 'Khoá Tủ',
+    securityWarning: 'Khu vực bảo mật cao. Không lưu mật khẩu sống nếu chưa có mã hóa. Chỉ lưu gợi ý hoặc vị trí két sắt.',
+    sections: [
+      { title: '🔐 Thông tin bí mật', fields: [
+        { key: 'secretName',    label: 'Tên mục',      type: 'text' },
+        { key: 'secretType',    label: 'Loại',         type: 'select', options: ['Gợi ý mật khẩu','Vị trí két sắt','Mã khoá','Thông tin bí mật','Khác'] },
+        { key: 'securityLevel', label: 'Mức bảo mật', type: 'select', options: ['Riêng tư','Tuyệt mật'] },
+        { key: 'content',       label: 'Nội dung',    type: 'textarea' },
+        { key: 'recoveryPerson',label: 'Người khôi phục', type: 'text' },
+        { key: 'note',          label: 'Ghi chú',     type: 'textarea' },
+      ]},
+    ],
+    titleField: 'secretName', subtitleField: 'secretType',
+    securityLevel: 'Tuyệt mật',
+    description: 'Thông tin cực kỳ nhạy cảm, bảo mật cao nhất.',
+    emptyHint: 'Gợi ý: Gợi ý mật khẩu, vị trí két sắt',
+    color: '#636366', icon: '🔐'
+  }
+};
+
+const VAULT_CAT_ORDER = ['family','assets','finance','work','emergency','legacy','memories','misc','vault'];
+
+const VAULT_SCHEMA_COLORS = {
+  family:'#34c759', assets:'#ffd60a', finance:'#ff9500', work:'#007aff',
+  emergency:'#ff453a', legacy:'#7c3aed', memories:'#ff2d92', misc:'#ffd60a', vault:'#636366'
+};
 
 let _vaultCurrentCat = null;
+let _vaultFilter = 'all';
+let _vaultSearch = '';
 
 function renderVaultLock() {
   enteredPin = '';
@@ -2090,7 +2370,7 @@ function renderVaultLock() {
   m.innerHTML = `
     <div style="text-align:center;padding-top:40px">
       <div style="font-size:64px;margin-bottom:12px">🔐</div>
-      <div style="font-size:22px;font-weight:700;margin-bottom:6px;color:var(--text-primary)">Ngăn Kéo Bảo Mật</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:6px">Ngăn Kéo Bảo Mật</div>
       <div style="font-size:13px;color:var(--text-secondary);margin-bottom:32px">Nhập mã PIN để mở kho lưu trữ</div>
       <div class="pin-display">${'<div class="pin-dot"></div>'.repeat(dotCount)}</div>
       <div class="pin-keypad">
@@ -2113,88 +2393,270 @@ function renderVaultHome() {
   _vaultCurrentCat = null;
   document.getElementById('fab-btn').style.display = 'none';
   const m = document.getElementById('main-content');
-  const catGrid = VAULT_CATS.map(cat => {
-    const items = vault[cat.id] || [];
-    return `<div class="vault-cat-btn" onclick="renderVaultCat('${cat.id}')" style="border-color:${cat.color}44">
-      <span class="vault-cat-icon">${cat.icon}</span>
-      <div class="vault-cat-name">${cat.name}</div>
-      <div class="vault-cat-count">${items.length} mục</div>
+
+  // Build category cards
+  const catCards = VAULT_CAT_ORDER.map(catId => {
+    const schema = VAULT_SCHEMAS[catId];
+    if (!schema) return '';
+    const items = vault[catId] || [];
+    const color = schema.color;
+    const recent3 = items.slice(-3).reverse();
+    const secBadgeColor = schema.securityLevel === 'Tuyệt mật' ? 'rgba(255,59,48,0.15);color:var(--red)' : 'rgba(57,211,83,0.12);color:var(--green)';
+
+    let previewHtml = '';
+    if (items.length > 0) {
+      const tf = schema.titleField;
+      previewHtml = `<div class="vault-cat-preview">` +
+        recent3.map(item => `<div class="vault-cat-preview-item"><span style="color:${color}">•</span> ${escHtml(item[tf] || '—')}</div>`).join('') +
+        `</div>`;
+    } else {
+      previewHtml = `<div class="vault-cat-preview"><div class="vault-cat-empty-hint">${schema.emptyHint || ''}</div></div>`;
+    }
+
+    return `<div class="vault-cat-card" onclick="renderVaultCat('${catId}')" style="border-left: 3px solid ${color}">
+      <div class="vault-cat-card-header">
+        <span class="vault-cat-icon">${schema.icon}</span>
+        <div class="vault-cat-info">
+          <div class="vault-cat-name">${schema.title}</div>
+          <div class="vault-cat-desc">${schema.description}</div>
+          <div class="vault-cat-meta">
+            <span class="vault-cat-count-badge" style="background:${color}22;color:${color}">${items.length} mục</span>
+            <span class="vault-security-badge" style="background:${secBadgeColor}">${schema.securityLevel}</span>
+          </div>
+        </div>
+      </div>
+      ${previewHtml}
+    </div>`;
+  }).join('');
+
+  m.innerHTML = `
+    <button class="sos-btn" onclick="triggerSOS()">🆘 SOS KHẨN CẤP</button>
+    <input class="vault-search" placeholder="🔍 Tìm trong Ngăn Kéo..." 
+      oninput="_vaultSearch=this.value;renderVaultSearch()" value="${_vaultSearch}">
+    <div class="vault-filter-row">
+      <button class="vault-filter-chip ${_vaultFilter==='all'?'active':''}" onclick="setVaultFilter('all')">Tất cả</button>
+      <button class="vault-filter-chip ${_vaultFilter==='private'?'active':''}" onclick="setVaultFilter('private')">Riêng tư</button>
+      <button class="vault-filter-chip ${_vaultFilter==='secret'?'active':''}" onclick="setVaultFilter('secret')">Tuyệt mật</button>
+      <button class="vault-filter-chip ${_vaultFilter==='due'?'active':''}" onclick="setVaultFilter('due')">Sắp đến hạn</button>
+    </div>
+    <div class="vault-cat-grid" id="vault-cat-grid">${catCards}</div>
+    <button class="btn-secondary" style="margin-top:8px;width:100%" onclick="renderVaultLock()">🔒 Khoá tủ</button>`;
+}
+
+function setVaultFilter(f) {
+  _vaultFilter = f;
+  renderVaultHome();
+}
+
+function renderVaultSearch() {
+  const q = _vaultSearch.trim().toLowerCase();
+  if (!q) { renderVaultHome(); return; }
+  if (!vault || Array.isArray(vault)) vault = {};
+  const results = [];
+  VAULT_CAT_ORDER.forEach(catId => {
+    const schema = VAULT_SCHEMAS[catId];
+    const items = vault[catId] || [];
+    items.forEach((item, idx) => {
+      const str = JSON.stringify(item).toLowerCase();
+      if (str.includes(q)) {
+        results.push({ catId, idx, item, schema });
+      }
+    });
+  });
+  const m = document.getElementById('main-content');
+  const rows = results.map(r => {
+    const color = r.schema.color;
+    const title = r.item[r.schema.titleField] || '—';
+    const sub = r.item[r.schema.subtitleField] || '';
+    return `<div class="vault-item-card" onclick="renderVaultCat('${r.catId}');setTimeout(()=>openEditVaultItem(${r.idx}),200)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:18px">${r.schema.icon}</span>
+        <span style="font-size:10px;color:${color};font-weight:700">${r.schema.title}</span>
+      </div>
+      <div class="vault-item-title">${escHtml(title)}</div>
+      ${sub ? `<div class="vault-item-subtitle">${escHtml(sub)}</div>` : ''}
     </div>`;
   }).join('');
   m.innerHTML = `
-    <button class="sos-btn" onclick="triggerSOS()">🆘 SOS KHẨN CẤP — Bấm để gửi cảnh báo</button>
-    <div class="section-label" style="margin-top:0"><div class="zone-dot" style="background:var(--vault)"></div>Kho lưu trữ gia đình</div>
-    <div class="vault-cat-grid">${catGrid}</div>
-    <button class="btn-secondary" style="margin-top:8px" onclick="renderVaultLock()">🔒 Khoá tủ</button>`;
+    <input class="vault-search" placeholder="🔍 Tìm trong Ngăn Kéo..." 
+      oninput="_vaultSearch=this.value;renderVaultSearch()" value="${escHtml(q)}">
+    <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px">Tìm thấy ${results.length} kết quả</div>
+    ${rows || '<div class="empty-state">Không tìm thấy kết quả nào</div>'}
+    <button class="btn-secondary" style="margin-top:12px;width:100%" onclick="_vaultSearch=\'\';renderVaultHome()">← Quay lại</button>`;
 }
 
 function renderVaultCat(catId) {
   if (!vault || Array.isArray(vault)) vault = {};
   _vaultCurrentCat = catId;
-  const cat = VAULT_CATS.find(c => c.id === catId);
-  if (!cat) return;
+  const schema = VAULT_SCHEMAS[catId];
+  if (!schema) return;
   const items = vault[catId] || [];
+  const color = schema.color;
   const m = document.getElementById('main-content');
-  const rows = items.map((item, idx) => `
-    <div class="vault-item-row">
-      <div class="vault-item-left">
-        <div class="vault-item-label">${escHtml(item.label)}</div>
-        <div class="vault-item-val">${escHtml(item.val)}</div>
+
+  const itemCards = items.map((item, idx) => {
+    const title = item[schema.titleField] || '—';
+    const sub = item[schema.subtitleField] || '';
+    // Preview 3 fields chính
+    const previewFields = schema.sections[0]?.fields?.slice(0,3) || [];
+    const fieldPreview = previewFields
+      .filter(f => item[f.key] && f.key !== schema.titleField)
+      .map(f => `<div class="vault-field-row">
+        <div class="vault-field-label">${f.label}</div>
+        <div class="vault-field-val">${escHtml(item[f.key])}</div>
+      </div>`).join('');
+    
+    // Due date badge cho misc
+    let dueBadge = '';
+    if (catId === 'misc' && item.dueDate) {
+      const diff = Math.ceil((new Date(item.dueDate) - new Date()) / 86400000);
+      if (diff < 0) dueBadge = `<span class="due-badge overdue">Quá hạn</span>`;
+      else if (diff <= 7) dueBadge = `<span class="due-badge soon">Còn ${diff} ngày</span>`;
+      else dueBadge = `<span class="due-badge ok">Còn ${diff} ngày</span>`;
+    }
+
+    return `<div class="vault-item-card">
+      <div class="vault-item-card-header">
+        <div>
+          <div class="vault-item-title">${escHtml(title)}${dueBadge}</div>
+          ${sub ? `<div class="vault-item-subtitle">${escHtml(sub)}</div>` : ''}
+        </div>
+        <div class="vault-item-edit-btn" onclick="openEditVaultItem(${idx})">✏️</div>
       </div>
-      <div class="vault-item-edit" onclick="openEditVaultItem(${idx})">✏️</div>
-    </div>`).join('');
+      ${fieldPreview ? `<div class="vault-item-fields">${fieldPreview}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const emptyState = items.length === 0
+    ? `<div style="padding:20px;text-align:center">
+        <div style="font-size:36px;margin-bottom:8px;opacity:0.3">${schema.icon}</div>
+        <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px">Chưa có hồ sơ nào</div>
+        <div style="font-size:11px;color:var(--text-tertiary)">${schema.emptyHint || ''}</div>
+      </div>` : '';
+
   m.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="renderVaultHome()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;padding:4px">←</button>
-      <span style="font-size:24px">${cat.icon}</span>
-      <span style="font-size:18px;font-weight:700">${cat.name}</span>
+      <span style="font-size:26px">${schema.icon}</span>
+      <div>
+        <div style="font-size:18px;font-weight:700">${schema.title}</div>
+        <div style="font-size:11px;color:var(--text-secondary)">${schema.description}</div>
+      </div>
     </div>
-    <div class="glass-card" style="overflow:hidden;margin-bottom:14px;border-color:${cat.color}44">
-      ${rows || '<div class="empty-state">Chưa có mục nào — bấm + để thêm</div>'}
-    </div>
-    <button onclick="renderVaultHome()" class="btn-secondary">← Quay lại</button>`;
+    ${emptyState}
+    ${itemCards}
+    <div style="height:20px"></div>`;
+
   const fab = document.getElementById('fab-btn');
   fab.style.display = 'flex';
-  fab.style.background = cat.color;
-  fab.style.boxShadow = '0 6px 20px ' + cat.color + '55, 0 2px 8px rgba(0,0,0,0.4)';
+  fab.style.background = color;
+  fab.style.boxShadow = '0 6px 20px ' + color + '55, 0 2px 8px rgba(0,0,0,0.4)';
 }
 
+/* ===== DYNAMIC FORM ===== */
 function openAddVaultItem() {
   if (!_vaultCurrentCat) return;
-  document.getElementById('vault-item-title').innerText = 'Thêm mục mới';
-  document.getElementById('vault-field-label').value = '';
-  document.getElementById('vault-field-val').value = '';
-  document.getElementById('vault-edit-idx').value = '';
-  document.getElementById('vault-edit-cat').value = _vaultCurrentCat;
-  document.getElementById('vault-delete-btn').style.display = 'none';
-  openSheet('vault-item-modal');
+  renderVaultForm(null, null);
 }
 
 function openEditVaultItem(idx) {
   if (!vault || !_vaultCurrentCat) return;
   const item = (vault[_vaultCurrentCat] || [])[idx];
   if (!item) return;
-  document.getElementById('vault-item-title').innerText = 'Sửa mục';
-  document.getElementById('vault-field-label').value = item.label || '';
-  document.getElementById('vault-field-val').value = item.val || '';
-  document.getElementById('vault-edit-idx').value = idx;
-  document.getElementById('vault-edit-cat').value = _vaultCurrentCat;
-  document.getElementById('vault-delete-btn').style.display = 'block';
+  renderVaultForm(item, idx);
+}
+
+function renderVaultForm(item, idx) {
+  const catId = _vaultCurrentCat;
+  const schema = VAULT_SCHEMAS[catId];
+  if (!schema) return;
+  const isEdit = idx !== null && idx !== undefined;
+  
+  document.getElementById('vault-item-title').innerText = isEdit ? ('Sửa — ' + schema.title) : ('Thêm ' + schema.title);
+
+  let formHtml = '';
+
+  // Warning bảo mật nếu có
+  if (schema.securityWarning) {
+    formHtml += `<div class="security-warning">⚠️ ${schema.securityWarning}</div>`;
+  }
+
+  // SOS Telegram test button (chỉ hiện với emergency type = SOS Telegram)
+  if (catId === 'emergency') {
+    formHtml += `<div id="sos-test-wrap" style="display:none;margin-bottom:14px">
+      <button onclick="testSOSTelegram()" style="width:100%;padding:12px;background:rgba(255,59,48,0.12);color:var(--red);border:0.5px solid rgba(255,59,48,0.3);border-radius:var(--radius-md);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">📨 Test gửi Telegram</button>
+    </div>`;
+  }
+
+  // Render sections và fields
+  schema.sections.forEach(section => {
+    formHtml += `<div class="form-section-title">${section.title}</div>`;
+    section.fields.forEach(field => {
+      const val = item ? (item[field.key] || '') : '';
+      formHtml += `<div class="form-group">
+        <label class="form-label">${field.label}</label>`;
+      
+      if (field.type === 'textarea') {
+        formHtml += `<textarea id="vf_${field.key}" class="form-input" rows="3" placeholder="${field.placeholder||''}" style="resize:none;min-height:80px" oninput="vaultPasswordCheck(this)">${escHtml(val)}</textarea>`;
+      } else if (field.type === 'select') {
+        const opts = field.options.map(o => `<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('');
+        formHtml += `<select id="vf_${field.key}" class="form-input" onchange="onVaultSelectChange('${field.key}','${catId}')">${opts}</select>`;
+      } else {
+        formHtml += `<input type="${field.type||'text'}" id="vf_${field.key}" class="form-input" placeholder="${field.placeholder||''}" value="${escHtml(val)}" oninput="vaultPasswordCheck(this)">`;
+      }
+      formHtml += `<div id="vpw_${field.key}" class="security-warning" style="display:none;margin-top:6px">⚠️ Không nên lưu mật khẩu trực tiếp tại đây. Hãy lưu gợi ý hoặc vị trí két mật khẩu.</div>`;
+      formHtml += `</div>`;
+    });
+  });
+
+  formHtml += `
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button onclick="saveVaultItem(${JSON.stringify(idx)},'${catId}')" class="btn-primary" style="background:${schema.color};box-shadow:0 4px 16px ${schema.color}44">Lưu ✓</button>
+    </div>`;
+  
+  if (isEdit) {
+    formHtml += `<button onclick="deleteVaultItem(${idx},'${catId}')" class="btn-danger" style="width:100%;margin-top:10px">Xoá mục này</button>`;
+  }
+
+  document.getElementById('vault-form-body').innerHTML = formHtml;
   openSheet('vault-item-modal');
 }
 
-async function saveVaultItem() {
-  const label = document.getElementById('vault-field-label').value.trim();
-  const val = document.getElementById('vault-field-val').value.trim();
-  const catId = document.getElementById('vault-edit-cat').value;
-  const idxStr = document.getElementById('vault-edit-idx').value;
-  if (!label || !val) { toast('⚠️ Nhập đủ nhãn và nội dung!', 'rgba(255,59,48,0.9)'); return; }
+function vaultPasswordCheck(el) {
+  const val = el.value.toLowerCase();
+  const pwKeys = ['mật khẩu','password','pass','pin','otp','seed'];
+  const fieldKey = el.id.replace('vf_','');
+  const warn = document.getElementById('vpw_' + fieldKey);
+  if (warn) warn.style.display = pwKeys.some(k => val.includes(k)) ? 'block' : 'none';
+}
+
+function onVaultSelectChange(fieldKey, catId) {
+  if (catId === 'emergency' && fieldKey === 'emergencyType') {
+    const val = document.getElementById('vf_emergencyType')?.value;
+    const wrap = document.getElementById('sos-test-wrap');
+    if (wrap) wrap.style.display = val === 'SOS Telegram' ? 'block' : 'none';
+  }
+}
+
+async function saveVaultItem(idx, catId) {
+  catId = catId || _vaultCurrentCat;
+  const schema = VAULT_SCHEMAS[catId];
+  if (!schema) return;
+  const item = {};
+  let allFields = [];
+  schema.sections.forEach(s => allFields = allFields.concat(s.fields));
+  allFields.forEach(f => {
+    const el = document.getElementById('vf_' + f.key);
+    if (el) item[f.key] = el.value.trim();
+  });
+  const titleField = schema.titleField;
+  if (!item[titleField]) { toast('⚠️ Nhập ' + schema.sections[0].fields.find(f=>f.key===titleField)?.label + '!', 'rgba(255,59,48,0.9)'); return; }
   if (!vault || Array.isArray(vault)) vault = {};
   if (!vault[catId]) vault[catId] = [];
-  if (idxStr !== '') {
-    vault[catId][parseInt(idxStr)] = { label, val };
+  if (idx !== null && idx !== undefined && idx !== 'null' && idx !== 'undefined') {
+    vault[catId][parseInt(idx)] = item;
   } else {
-    vault[catId].push({ label, val });
+    vault[catId].push(item);
   }
   closeSheet('vault-item-modal');
   await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' });
@@ -2202,25 +2664,35 @@ async function saveVaultItem() {
   renderVaultCat(catId);
 }
 
-async function deleteVaultItem() {
-  const catId = document.getElementById('vault-edit-cat').value;
-  const idxStr = document.getElementById('vault-edit-idx').value;
-  if (!catId || idxStr === '') return;
+async function deleteVaultItem(idx, catId) {
+  catId = catId || _vaultCurrentCat;
   if (!confirm('Xoá mục này?')) return;
-  (vault[catId] || []).splice(parseInt(idxStr), 1);
+  if (vault[catId]) vault[catId].splice(parseInt(idx), 1);
   await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' });
   closeSheet('vault-item-modal');
   renderVaultCat(catId);
+}
+
+function testSOSTelegram() {
+  const phone = document.getElementById('vf_phone')?.value || 'Chưa nhập';
+  const name = document.getElementById('vf_emergencyName')?.value || currentUser;
+  const blood = document.getElementById('vf_bloodType')?.value || 'Chưa cập nhật';
+  sendTelegram('📨 TEST SOS\n\n👤 ' + name + '\n📞 ' + phone + '\n🩸 Nhóm máu: ' + blood + '\n\n(Đây là tin nhắn test)');
+  toast('✅ Đã gửi test Telegram!', 'rgba(255,59,48,0.9)');
 }
 
 /* ===== SOS KHẨN CẤP ===== */
 async function triggerSOS() {
   if (!confirm('🆘 Bạn có chắc muốn gửi SOS khẩn cấp đến nhóm gia đình?')) return;
   const familyItems = (vault && vault['family']) || [];
-  const bloodType = familyItems.find(i => i.label && i.label.toLowerCase().includes('nhóm máu'))?.val || 'Chưa cập nhật';
-  const allergy = familyItems.find(i => i.label && i.label.toLowerCase().includes('dị ứng'))?.val || 'Không';
-  const disease = familyItems.find(i => i.label && i.label.toLowerCase().includes('bệnh'))?.val || 'Không';
-  const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const emergencyItems = (vault && vault['emergency']) || [];
+  const bloodType = familyItems.find(i => i.bloodType)?.bloodType
+    || emergencyItems.find(i => i.bloodType)?.bloodType || 'Chưa cập nhật';
+  const allergies = familyItems.find(i => i.allergies)?.allergies || 'Không';
+  const medical = emergencyItems.find(i => i.medicalCondition)?.medicalCondition || 'Không';
+  const primaryContact = emergencyItems.find(i => i.primaryContact)?.primaryContact || '';
+  const phone = emergencyItems.find(i => i.phone)?.phone || '';
+  const time = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
   const date = new Date().toLocaleDateString('vi-VN');
   let locationStr = 'Đang xác định...';
   try {
@@ -2229,12 +2701,12 @@ async function triggerSOS() {
     );
     locationStr = 'https://maps.google.com/?q=' + pos.coords.latitude + ',' + pos.coords.longitude;
   } catch(e) { locationStr = 'Không lấy được vị trí'; }
-  const msg = '🚨 SOS KHẨN CẤP\n\n👤 Người gửi: ' + currentUser + '\n🕐 Thời gian: ' + time + ' ngày ' + date + '\n📍 Vị trí: ' + locationStr + '\n\n🩸 Nhóm máu: ' + bloodType + '\n💊 Dị ứng: ' + allergy + '\n🏥 Bệnh nền: ' + disease + '\n\n⚠️ Vui lòng liên hệ ngay khi nhận được tin này!';
+  const msg = '🚨 SOS KHẨN CẤP\n\n👤 Người gửi: ' + currentUser + '\n🕐 Thời gian: ' + time + ' ngày ' + date + '\n📍 Vị trí: ' + locationStr + (phone ? '\n📞 SĐT: ' + phone : '') + (primaryContact ? '\n👥 Liên hệ: ' + primaryContact : '') + '\n\n🩸 Nhóm máu: ' + bloodType + '\n💊 Dị ứng: ' + allergies + '\n🏥 Bệnh nền: ' + medical + '\n\n⚠️ Vui lòng liên hệ ngay!';
   sendTelegram(msg);
-  toast('✅ Đã gửi SOS đến nhóm!', 'rgba(255,59,48,0.9)');
+  toast('✅ Đã gửi SOS!', 'rgba(255,59,48,0.9)');
   if (!vault || Array.isArray(vault)) vault = {};
   if (!vault['emergency']) vault['emergency'] = [];
-  vault['emergency'].unshift({ label: 'SOS ' + date + ' ' + time, val: 'Vị trí: ' + locationStr });
+  vault['emergency'].unshift({ emergencyName: 'SOS ' + date + ' ' + time, emergencyType: 'SOS Telegram', note: 'Vị trí: ' + locationStr });
   await _sb.from('jika_data').upsert({ key: 'jika_vault', value: JSON.stringify(vault) }, { onConflict: 'key' });
 }
 
