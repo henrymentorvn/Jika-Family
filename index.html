@@ -577,7 +577,7 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
   gap: 1px; padding: 0 4px 8px;
 }
 .cal-cell {
-  min-height: 52px; padding: 4px 2px;
+  min-height: 60px; padding: 4px 2px;
   border-radius: 8px; position: relative;
 }
 .cal-cell.cal-empty { }
@@ -596,9 +596,10 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 .cal-evt-label {
   font-size: 8px; font-weight: 600;
   border-radius: 3px; padding: 1px 3px;
-  margin-bottom: 1px; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  line-height: 1.4;
+  margin-bottom: 1px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
 }
 :root {
   --evt-accent: #ff9500;
@@ -1874,16 +1875,25 @@ function renderEvents() {
     return a._days - b._days;
   });
 
-  // Thống kê tháng này
-  const thisMonthEvents = allEvents.filter(e => {
-    return e._date.getMonth() + 1 === currentMonth;
-  });
-  const statsText = thisMonthEvents.length > 0
-    ? `Tháng ${currentMonth} có <b>${thisMonthEvents.length} sự kiện</b>: ` + thisMonthEvents.map(e => {
-        const d = e._date.getDate();
-        return `ngày ${d}`;
-      }).join(', ')
-    : `Tháng ${currentMonth} không có sự kiện nào`;
+  // Thống kê tháng này — hiện đủ tên + ngày
+  const thisMonthEvents = allEvents.filter(e => e._date.getMonth() + 1 === currentMonth);
+  let statsText = '';
+  if (thisMonthEvents.length > 0) {
+    // Sort theo ngày trong tháng
+    const sorted = [...thisMonthEvents].sort((a,b) => a._date.getDate() - b._date.getDate());
+    const lines = sorted.map(e => {
+      const d = e._date.getDate();
+      const name = e.n || e.name || '';
+      const star = e.priority === 1 ? '⭐ ' : '• ';
+      return `<div style="padding:3px 0;border-bottom:0.5px solid rgba(255,149,0,0.10);display:flex;gap:8px;align-items:baseline">
+        <span style="font-size:13px;font-weight:700;color:var(--evt-accent);min-width:52px;flex-shrink:0">Ngày ${d}</span>
+        <span style="font-size:13px;color:var(--text-primary)">${star}${escHtml(name)}</span>
+      </div>`;
+    }).join('');
+    statsText = `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Tháng ${currentMonth} có <b style="color:var(--evt-accent)">${thisMonthEvents.length} sự kiện</b></div>${lines}`;
+  } else {
+    statsText = `<span style="font-size:13px;color:var(--text-secondary)">Tháng ${currentMonth} không có sự kiện nào</span>`;
+  }
 
   // Render rows
   const rows = allEvents.map(e => {
@@ -1951,15 +1961,13 @@ function renderEventCalendar(allEventsArg) {
       evtDate = new Date(yr, parseInt(em)-1, parseInt(ed));
     } else if (raw.length === 10) {
       evtDate = new Date(raw);
-      // Nếu là sự kiện hàng năm thì xét năm hiện đang xem
       if (evtDate.getFullYear() !== yr) evtDate = new Date(yr, evtDate.getMonth(), evtDate.getDate());
     }
     if (evtDate && evtDate.getFullYear() === yr && evtDate.getMonth() === mo) {
       const d = evtDate.getDate();
       if (!eventsByDay[d]) eventsByDay[d] = [];
       const name = e.n || e.name || '';
-      const shortName = name.length > 8 ? name.substring(0,7)+'…' : name;
-      eventsByDay[d].push({ name: shortName, priority: e.priority, color: e.priority===1 ? 'var(--evt-accent)' : 'rgba(255,149,0,0.7)' });
+      eventsByDay[d].push({ name, priority: e.priority });
     }
   });
 
@@ -1973,9 +1981,12 @@ function renderEventCalendar(allEventsArg) {
     const isToday = today.getFullYear()===yr && today.getMonth()===mo && today.getDate()===d;
     const evts = eventsByDay[d] || [];
     const hasEvt = evts.length > 0;
-    const evtDots = evts.slice(0,2).map(ev =>
-      `<div class="cal-evt-label" style="background:${ev.priority===1?'rgba(255,149,0,0.25)':'rgba(255,149,0,0.12)'};color:${ev.color}">${escHtml(ev.name)}</div>`
-    ).join('');
+    // Hiện tất cả sự kiện trong ô, không giới hạn số lượng
+    const evtDots = evts.map(ev => {
+      const bg = ev.priority===1 ? 'rgba(255,149,0,0.28)' : 'rgba(255,149,0,0.12)';
+      const col = ev.priority===1 ? 'var(--evt-accent)' : 'rgba(255,149,0,0.85)';
+      return `<div class="cal-evt-label" style="background:${bg};color:${col}">${escHtml(ev.name)}</div>`;
+    }).join('');
     cells += `<div class="cal-cell ${isToday?'cal-today':''} ${hasEvt?'cal-has-evt':''}">
       <div class="cal-day-num ${isToday?'cal-today-num':''}">${d}</div>
       ${evtDots}
