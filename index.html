@@ -664,8 +664,28 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
 .finance-val.income { color: var(--green); }
 .finance-val.expense { color: var(--red); }
 .type-btn { flex: 1; padding: 13px; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
-.type-btn.income-btn { background: rgba(52,199,89,0.12); color: var(--green); border: 0.5px solid rgba(52,199,89,0.2); }
+.type-btn.income-btn { background: rgba(57,211,83,0.12); color: var(--green); border: 0.5px solid rgba(57,211,83,0.2); }
 .type-btn.expense-btn { background: rgba(255,59,48,0.10); color: var(--red); border: 0.5px solid rgba(255,59,48,0.2); }
+
+/* Fixed expense item */
+.fixed-exp-row {
+  display: flex; align-items: center; padding: 13px 17px;
+  border-bottom: 0.5px solid var(--glass-border); gap: 10px;
+}
+.fixed-exp-row:last-child { border-bottom: none; }
+.fixed-exp-left { flex: 1; min-width: 0; }
+.fixed-exp-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.fixed-exp-due { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+.fixed-exp-due.urgent { color: var(--red); font-weight: 700; }
+.fixed-exp-amount { font-size: 14px; font-weight: 700; color: var(--red); flex-shrink: 0; margin-right: 8px; }
+.fixed-exp-edit {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  color: var(--text-secondary); font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+}
 
 /* ===== VAULT ===== */
 .pin-display { display: flex; justify-content: center; gap: 12px; margin: 24px 0 28px; }
@@ -948,7 +968,45 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
       <button id="evt-delete-btn" class="btn-danger" style="width:100%;margin-top:10px;display:none" onclick="deleteEvent()">Xoá sự kiện</button>
     </div>
   </div>
-</div> onclick="closeSheet('archive-modal')">
+</div>
+
+<!-- SHEET: ADD/EDIT FIXED EXPENSE -->
+<div class="modal-overlay" id="fixed-exp-modal" onclick="closeSheet('fixed-exp-modal')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="fixed-exp-modal-title">Khoản cố định mới</span>
+      <div class="sheet-close" onclick="closeSheet('fixed-exp-modal')">✕</div>
+    </div>
+    <div class="sheet-scroll">
+      <input type="hidden" id="fixed-exp-edit-id" value="">
+      <div class="form-group">
+        <label class="form-label">Tên khoản ★</label>
+        <input type="text" id="fexp-name" class="form-input" placeholder="VD: Lãi Sacombank">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Số tiền (VND) ★</label>
+        <input type="number" id="fexp-amount" class="form-input" placeholder="VD: 28000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ngày thanh toán hàng tháng</label>
+        <input type="number" id="fexp-day" class="form-input" placeholder="VD: 25 (ngày 25 hàng tháng)" min="1" max="31">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhắc trước</label>
+        <div class="picker-row">
+          <div class="picker-cell"><select class="picker-select" id="fexp-alert-d"></select><div class="picker-lbl">Ngày</div></div>
+          <div class="picker-cell"><select class="picker-select" id="fexp-alert-h"></select><div class="picker-lbl">Giờ</div></div>
+          <div class="picker-cell"><select class="picker-select" id="fexp-alert-m"></select><div class="picker-lbl">Phút</div></div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveFixedExp()">Lưu khoản cố định ✓</button>
+      <button id="fexp-delete-btn" class="btn-danger" style="width:100%;margin-top:10px;display:none" onclick="deleteFixedExp()">Xoá khoản này</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="archive-modal" onclick="closeSheet('archive-modal')">>
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
     <div class="sheet-header">
@@ -1012,7 +1070,7 @@ function setupRealtime() {
     }).subscribe();
 }
 let currentUser = localStorage.getItem('jika_user') || 'Chồng';
-let tasks = [], finances = [], events = [], vault = [], moods = [];
+let tasks = [], finances = [], events = [], vault = [], moods = [], fixedExps = [];
 let currentDetailId = null, currentTab = 'tasks', enteredPin = "";
 
 /* ===== INIT ===== */
@@ -1084,11 +1142,12 @@ async function loadAll() {
         try {
           let val = row.value;
           if (typeof val === 'string') val = JSON.parse(val);
-          if (row.key === 'jika_tasks'    && Array.isArray(val)) tasks    = val;
-          if (row.key === 'jika_finances' && Array.isArray(val)) finances = val;
-          if (row.key === 'jika_events'   && Array.isArray(val)) events   = val;
-          if (row.key === 'jika_vault'    && Array.isArray(val)) vault    = val;
-          if (row.key === 'jika_moods'    && Array.isArray(val)) moods    = val;
+          if (row.key === 'jika_tasks'      && Array.isArray(val)) tasks     = val;
+          if (row.key === 'jika_finances'   && Array.isArray(val)) finances  = val;
+          if (row.key === 'jika_events'     && Array.isArray(val)) events    = val;
+          if (row.key === 'jika_vault'      && Array.isArray(val)) vault     = val;
+          if (row.key === 'jika_moods'      && Array.isArray(val)) moods     = val;
+          if (row.key === 'jika_fixed_exps' && Array.isArray(val)) fixedExps = val;
         } catch(e) { console.warn('Parse error:', row.key, e); }
       });
     }
@@ -1763,13 +1822,51 @@ function renderFinance() {
   finances.forEach(f => { const a = parseInt(f.amount)||0; if(f.type==='in') tin+=a; else tout+=a; });
   const bal = tin - tout;
   const recent = [...finances].reverse().slice(0, 10);
-  const rows = recent.map(f => {
+
+  // Tính ngày đến hạn cho fixed expenses — sort theo ngày gần nhất
+  const now = new Date();
+  const currentDay = now.getDate();
+  const fixedRows = [...fixedExps].map(f => {
+    const payDay = parseInt(f.payDay) || 0;
+    // Tính số ngày còn lại đến ngày thanh toán
+    let daysLeft;
+    if (payDay === 0) {
+      daysLeft = 999;
+    } else if (payDay >= currentDay) {
+      daysLeft = payDay - currentDay;
+    } else {
+      // Đã qua ngày này tháng này → tính cho tháng sau
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, payDay);
+      daysLeft = Math.ceil((nextMonth - now) / 86400000);
+    }
+    return { ...f, daysLeft };
+  }).sort((a, b) => a.daysLeft - b.daysLeft);
+
+  const totalFixed = fixedExps.reduce((s, f) => s + (parseInt(f.amount)||0), 0);
+
+  const fixedRowsHtml = fixedRows.map(f => {
+    const urgent = f.daysLeft <= 3;
+    const dueText = f.payDay
+      ? (f.daysLeft === 0 ? 'Hôm nay! 🔴' : f.daysLeft === 1 ? 'Ngày mai ⚠️' : `Còn ${f.daysLeft} ngày (ngày ${f.payDay})`)
+      : 'Chưa cài ngày';
+    return `<div class="fixed-exp-row">
+      <div class="fixed-exp-left">
+        <div class="fixed-exp-name">${escHtml(f.name)}</div>
+        <div class="fixed-exp-due ${urgent?'urgent':''}">${dueText}</div>
+      </div>
+      <div class="fixed-exp-amount">${parseInt(f.amount).toLocaleString('vi-VN')}đ</div>
+      <div class="fixed-exp-edit" onclick="openEditFixedExp('${f.id}')">✏️</div>
+    </div>`;
+  }).join('');
+
+  const recentRows = recent.map(f => {
     const isIn = f.type === 'in';
     return `<div class="finance-row">
       <div><div class="finance-label">${escHtml(f.name)}</div><div style="font-size:10px;color:var(--text-tertiary)">${f.date?new Date(f.date).toLocaleDateString('vi-VN'):''}</div></div>
       <div class="finance-val ${isIn?'income':'expense'}">${isIn?'+':'−'}${parseInt(f.amount).toLocaleString('vi-VN')}đ</div>
     </div>`;
   }).join('');
+
   m.innerHTML = `
     <div class="glass-card" style="margin-bottom:14px">
       <div class="finance-summary">
@@ -1782,12 +1879,18 @@ function renderFinance() {
         </div>
       </div>
     </div>
-    <div class="glass-card" style="margin-bottom:14px;overflow:hidden">
-      <div class="finance-row" style="background:rgba(255,59,48,0.04)">
-        <div><div class="finance-label" style="font-weight:700">⚠️ Lãi Sacombank</div><div style="font-size:10px;color:var(--text-tertiary)">Ngày 25 hàng tháng</div></div>
-        <div class="finance-val expense">28.000.000đ</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:0 4px 9px">
+      <div class="section-label" style="margin:0"><div class="zone-dot" style="background:var(--red)"></div>Chi phí cố định tháng này</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--red)">${totalFixed.toLocaleString('vi-VN')}đ/tháng</span>
+        <button onclick="openAddFixedExp()" style="width:26px;height:26px;border-radius:50%;background:rgba(255,59,48,0.15);border:0.5px solid rgba(255,59,48,0.3);color:var(--red);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer">+</button>
       </div>
     </div>
+    <div class="glass-card" style="overflow:hidden;margin-bottom:14px">
+      ${fixedRowsHtml || '<div class="empty-state">Chưa có khoản cố định — bấm + để thêm</div>'}
+    </div>
+
     <div class="section-label"><div class="zone-dot" style="background:var(--accent)"></div>Nhập giao dịch</div>
     <div class="glass-card" style="padding:16px;margin-bottom:14px">
       <input id="fn" class="form-input" placeholder="Nội dung giao dịch" style="margin-bottom:10px">
@@ -1797,7 +1900,82 @@ function renderFinance() {
         <button class="type-btn expense-btn" onclick="addFin('out')">− Chi tiêu</button>
       </div>
     </div>
-    ${recent.length?`<div class="section-label"><div class="zone-dot" style="background:var(--grey)"></div>Gần đây</div><div class="glass-card" style="overflow:hidden">${rows}</div>`:''}`;
+    ${recent.length?`<div class="section-label"><div class="zone-dot" style="background:var(--grey)"></div>Gần đây</div><div class="glass-card" style="overflow:hidden">${recentRows}</div>`:''}`;
+}
+
+/* ===== FIXED EXPENSES ===== */
+let _fexpEditId = null;
+
+function fillFexpPickers() {
+  const d = document.getElementById('fexp-alert-d');
+  if (d.options.length === 0) {
+    const h = document.getElementById('fexp-alert-h');
+    const mm = document.getElementById('fexp-alert-m');
+    for (let i = 0; i <= 30; i++) d.innerHTML += `<option value="${i}">${i}</option>`;
+    for (let i = 0; i <= 23; i++) h.innerHTML += `<option value="${i}">${i}</option>`;
+    for (let i = 0; i <= 59; i += 5) mm.innerHTML += `<option value="${i}">${i}</option>`;
+    d.value = 3; // default nhắc 3 ngày trước
+  }
+}
+
+function openAddFixedExp() {
+  _fexpEditId = null;
+  document.getElementById('fixed-exp-modal-title').innerText = 'Khoản cố định mới';
+  document.getElementById('fexp-name').value = '';
+  document.getElementById('fexp-amount').value = '';
+  document.getElementById('fexp-day').value = '';
+  document.getElementById('fexp-delete-btn').style.display = 'none';
+  fillFexpPickers();
+  openSheet('fixed-exp-modal');
+}
+
+function openEditFixedExp(id) {
+  const f = fixedExps.find(x => x.id === id);
+  if (!f) return;
+  _fexpEditId = id;
+  document.getElementById('fixed-exp-modal-title').innerText = 'Sửa khoản cố định';
+  document.getElementById('fexp-name').value = f.name || '';
+  document.getElementById('fexp-amount').value = f.amount || '';
+  document.getElementById('fexp-day').value = f.payDay || '';
+  document.getElementById('fexp-delete-btn').style.display = 'block';
+  fillFexpPickers();
+  if (f.alertBefore) {
+    document.getElementById('fexp-alert-d').value = f.alertBefore.d || 3;
+    document.getElementById('fexp-alert-h').value = f.alertBefore.h || 0;
+    document.getElementById('fexp-alert-m').value = f.alertBefore.m || 0;
+  }
+  openSheet('fixed-exp-modal');
+}
+
+async function saveFixedExp() {
+  const name = document.getElementById('fexp-name').value.trim();
+  const amount = document.getElementById('fexp-amount').value;
+  if (!name || !amount) { toast('⚠️ Nhập tên và số tiền!', 'rgba(255,59,48,0.9)'); return; }
+  const alertBefore = {
+    d: parseInt(document.getElementById('fexp-alert-d').value) || 0,
+    h: parseInt(document.getElementById('fexp-alert-h').value) || 0,
+    m: parseInt(document.getElementById('fexp-alert-m').value) || 0
+  };
+  const payDay = parseInt(document.getElementById('fexp-day').value) || 0;
+  if (_fexpEditId) {
+    const idx = fixedExps.findIndex(x => x.id === _fexpEditId);
+    if (idx !== -1) fixedExps[idx] = { ...fixedExps[idx], name, amount: parseInt(amount), payDay, alertBefore, lastAlert: 0 };
+  } else {
+    fixedExps.push({ id: 'fe' + Date.now(), name, amount: parseInt(amount), payDay, alertBefore, lastAlert: 0 });
+  }
+  closeSheet('fixed-exp-modal');
+  await _sb.from('jika_data').upsert({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) }, { onConflict: 'key' });
+  toast('✅ Đã lưu', 'rgba(57,211,83,0.9)');
+  renderFinance();
+}
+
+async function deleteFixedExp() {
+  if (!_fexpEditId) return;
+  if (!confirm('Xoá khoản này?')) return;
+  fixedExps = fixedExps.filter(x => x.id !== _fexpEditId);
+  await _sb.from('jika_data').upsert({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) }, { onConflict: 'key' });
+  closeSheet('fixed-exp-modal');
+  renderFinance();
 }
 
 async function addFin(type) {
