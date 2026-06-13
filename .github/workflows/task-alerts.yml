@@ -10,101 +10,134 @@ jobs:
   check-alerts:
     runs-on: ubuntu-latest
     steps:
-      - name: Check task deadlines & send Telegram
+      - name: Check task deadlines & send Telegram (3 loai canh bao)
         run: |
           node -e "
           const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
           const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua2t6aGd5eW5ybG1jZWx2bm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTUxNjgsImV4cCI6MjA5NTg5MTE2OH0.t7yBuf940BfinFGSKkiqss932yhukDVr8zRvGQpBB0A';
           const TG_TOKEN = '8914722655:AAHdKjzyLLQiOfA1zOQEWBFJTqLlJ1uEltc';
           const TG_CHAT_ID = '-1002587798916';
+          const UTC_OFFSET = 7 * 3600000;
+
+          // Deadline luu dang 'YYYY-MM-DDTHH:mm' khong co timezone (gio VN)
+          // GitHub Actions chay UTC -> can tru UTC_OFFSET de doi ve UTC dung
+          function toUTC(localStr) {
+            return new Date(localStr).getTime() - UTC_OFFSET;
+          }
+
+          // Format hien thi: HH:mm ngay DD/MM/YYYY (theo gio VN)
+          function fmtVN(utcMs) {
+            const d = new Date(utcMs + UTC_OFFSET);
+            const pad = n => n.toString().padStart(2,'0');
+            return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' ngay ' + pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth()+1) + '/' + d.getUTCFullYear();
+          }
+
+          function zoneInfo(zone) {
+            if (zone === 'red') return '🔥 Khẩn cấp';
+            if (zone === 'green') return '📅 Đã lên lịch';
+            return '⏳ Để sau';
+          }
+
+          function repeatLabel(mins) {
+            if (mins % 60 === 0) return (mins/60) + ' giờ';
+            return mins + ' phút';
+          }
+
+          async function sendTG(msg) {
+            const tgRes = await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg));
+            const tgData = await tgRes.json();
+            return tgData.ok;
+          }
 
           async function main() {
-            // 1. Lấy tasks từ Supabase
             const res = await fetch(SB_URL + '/rest/v1/jika_data?key=eq.jika_tasks&select=value', {
-              headers: {
-                'apikey': SB_KEY,
-                'Authorization': 'Bearer ' + SB_KEY
-              }
+              headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
             });
-            
-            if (!res.ok) {
-              console.log('Supabase error:', res.status, await res.text());
-              return;
-            }
-            
+            if (!res.ok) { console.log('Supabase error:', res.status, await res.text()); return; }
+
             const data = await res.json();
             if (!data || !data.length) { console.log('Không có dữ liệu'); return; }
-            
+
             let tasks = [];
             try {
               let val = data[0].value;
               if (typeof val === 'string') val = JSON.parse(val);
               if (Array.isArray(val)) tasks = val;
             } catch(e) { console.log('Parse error:', e.message); return; }
-            
+
             console.log('Tổng tasks:', tasks.length);
-            
+
             const now = Date.now();
             let changed = false;
-            const updates = [];
 
             for (const t of tasks) {
-              if (t.completed || !t.deadline || !t.alertBefore) continue;
-              
-              // Fix timezone: deadline lưu dạng 'YYYY-MM-DDTHH:mm' không có timezone
-              // App iOS parse là giờ địa phương (UTC+7), nhưng GitHub Actions dùng UTC
-              // => Cộng thêm 7*3600000 ms để align về UTC+7
-              const UTC_OFFSET = 7 * 3600000;
-              const dl = new Date(t.deadline).getTime() - UTC_OFFSET;
-              const alertMs = (
-                (t.alertBefore.d || 0) * 86400000 +
-                (t.alertBefore.h || 0) * 3600000 +
-                (t.alertBefore.m || 0) * 60000
-              );
-              
-              if (alertMs <= 0) continue;
-              
-              const alertTime = dl - alertMs;
-              const lastAlert = t.lastAlert || 0;
-              const diffMs = dl - now;
-              
-              // Bỏ qua task đã quá hạn hơn 2 giờ — không cần nhắc nữa
-              if (diffMs < -7200000) continue;
-              
-              // Chỉ nhắc nếu: đã đến giờ nhắc VÀ chưa nhắc trong 30 phút qua
-              if (now >= alertTime && (now - lastAlert) > 1800000) {
-                const diffH = Math.round(diffMs / 3600000);
-                const diffD = Math.round(diffMs / 86400000);
-                
-                let timeStr = '';
-                if (diffMs < 0) timeStr = 'ĐÃ QUÁ HẠN ⛔';
-                else if (diffH < 1) timeStr = 'Còn dưới 1 giờ ⚠️';
-                else if (diffH < 24) timeStr = 'Còn ' + diffH + ' giờ';
-                else timeStr = 'Còn ' + diffD + ' ngày';
+              // Task hoan thanh hoac khong co deadline -> khong canh bao gi nua
+              if (t.completed || !t.deadline) continue;
 
-                const deadlineFormatted = t.deadline.replace('T', ' ').substring(0, 16).split('-').reverse().join('/').replace('/', '/').replace('2026/', '2026 lúc ').replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$1/$2/$3');
-                const dl2 = new Date(new Date(t.deadline).getTime() - UTC_OFFSET + 7*3600000);
-                const dlStr = dl2.getDate().toString().padStart(2,'0') + '/' + (dl2.getMonth()+1).toString().padStart(2,'0') + '/' + dl2.getFullYear() + ' lúc ' + dl2.getHours().toString().padStart(2,'0') + ':' + dl2.getMinutes().toString().padStart(2,'0');
-                const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
-                const msg = '🚨 VIỆC CHƯA XONG — CẦN LÀM NGAY!\n\n📌 ' + t.title + '\n' + assigneeIcon + ' Người đảm nhận: ' + t.assignee + '\n📅 Deadline: ' + dlStr + '\n⏳ Thời gian còn lại: ' + timeStr + '\n\n👉 Mở app Jika Family để xử lý!';
-                
-                // Gửi Telegram
-                const tgRes = await fetch(
-                  'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg) + '&parse_mode=HTML'
-                );
-                const tgData = await tgRes.json();
-                
-                if (tgData.ok) {
-                  console.log('✅ Đã nhắc:', t.title);
-                  t.lastAlert = now;
+              const dl = toUTC(t.deadline); // UTC ms cua deadline
+              const alertBeforeMs = (
+                (t.alertBefore?.d || 0) * 86400000 +
+                (t.alertBefore?.h || 0) * 3600000 +
+                (t.alertBefore?.m || 0) * 60000
+              );
+              const repeatAfterOverdueMs = (t.repeatAfterOverdue || 120) * 60000;
+              const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
+              const zoneLabel = zoneInfo(t.zone);
+              const deadlineFmt = fmtVN(dl);
+
+              // ===== 1. CANH BAO TRUOC HAN =====
+              // deadline - alertBefore <= now < deadline, chua gui pre-alert
+              if (alertBeforeMs > 0 && !t.lastPreAlertAt) {
+                const alertTime = dl - alertBeforeMs;
+                if (now >= alertTime && now < dl) {
+                  const msg = '📋 BẠN CÓ 1 TASK CẦN CHUẨN BỊ\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Cần hoàn thành trước: ' + deadlineFmt + '\n\n👉 Hãy chuẩn bị để không bị trễ hạn.';
+                  if (await sendTG(msg)) {
+                    console.log('✅ Pre-alert:', t.title);
+                    t.lastPreAlertAt = new Date(now).toISOString();
+                    changed = true;
+                  }
+                }
+              }
+
+              // ===== 2. CANH BAO DEN HAN =====
+              // now >= deadline, chua gui due-alert
+              if (now >= dl && !t.lastDueAlertAt) {
+                const msg = '🚨 TASK ĐẾN HẠN\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Hạn hoàn thành: ' + deadlineFmt + '\n\n👉 Vui lòng hoàn thành hoặc bấm Delay nếu cần dời lịch.';
+                if (await sendTG(msg)) {
+                  console.log('✅ Due-alert:', t.title);
+                  t.lastDueAlertAt = new Date(now).toISOString();
                   changed = true;
-                } else {
-                  console.log('❌ Telegram lỗi:', tgData.description);
+                }
+              }
+
+              // ===== 3. CANH BAO QUA HAN LAP LAI =====
+              // now > deadline, chua hoan thanh, khong dang trong thoi gian delay
+              if (now > dl) {
+                let delayActive = false;
+                if (t.delayedUntil) {
+                  const delayedUntilUTC = toUTC(t.delayedUntil);
+                  if (now < delayedUntilUTC) delayActive = true;
+                }
+
+                if (!delayActive) {
+                  // baseline: lan nhac qua han gan nhat, hoac lan due-alert, hoac deadline
+                  let baseline;
+                  if (t.lastOverdueAlertAt) baseline = new Date(t.lastOverdueAlertAt).getTime();
+                  else if (t.lastDueAlertAt) baseline = new Date(t.lastDueAlertAt).getTime();
+                  else baseline = dl;
+
+                  if ((now - baseline) >= repeatAfterOverdueMs) {
+                    const msg = '⚠️ TASK ĐÃ TRỄ HẠN\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Đã quá hạn từ: ' + deadlineFmt + '\n🔁 Hệ thống sẽ nhắc lại mỗi: ' + repeatLabel(t.repeatAfterOverdue || 120) + '\n\n👉 Hãy hoàn thành hoặc bấm Delay để dời lịch nhắc.';
+                    if (await sendTG(msg)) {
+                      console.log('✅ Overdue-alert:', t.title);
+                      t.lastOverdueAlertAt = new Date(now).toISOString();
+                      changed = true;
+                    }
+                  }
                 }
               }
             }
-            
-            // 2. Cập nhật lastAlert lên Supabase nếu có thay đổi
+
             if (changed) {
               const updateRes = await fetch(SB_URL + '/rest/v1/jika_data', {
                 method: 'POST',
