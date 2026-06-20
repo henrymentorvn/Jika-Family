@@ -10,7 +10,7 @@ jobs:
   check-alerts:
     runs-on: ubuntu-latest
     steps:
-      - name: Check task deadlines & send Telegram (3 loai canh bao)
+      - name: Check task deadlines & send Telegram (cua so thoi gian, khong gui bu)
         run: |
           node -e "
           const SB_URL = 'https://onkkzhgyynrlmcelvnnz.supabase.co';
@@ -19,13 +19,15 @@ jobs:
           const TG_CHAT_ID = '-1002587798916';
           const UTC_OFFSET = 7 * 3600000;
 
-          // Deadline luu dang 'YYYY-MM-DDTHH:mm' khong co timezone (gio VN)
-          // GitHub Actions chay UTC -> can tru UTC_OFFSET de doi ve UTC dung
+          // Cua so quet cua workflow (~5 phut). Lon hon mot chut de bu lag/jitter cua GitHub Actions
+          const WINDOW_MS = 7 * 60000;
+          // Chong spam: khong gui cho 1 task neu vua gui bat ky loai canh bao nao trong X phut gan day
+          const MIN_GAP_MS = 5 * 60000;
+
           function toUTC(localStr) {
             return new Date(localStr).getTime() - UTC_OFFSET;
           }
 
-          // Format hien thi: HH:mm ngay DD/MM/YYYY (theo gio VN)
           function fmtVN(utcMs) {
             const d = new Date(utcMs + UTC_OFFSET);
             const pad = n => n.toString().padStart(2,'0');
@@ -33,9 +35,9 @@ jobs:
           }
 
           function zoneInfo(zone) {
-            if (zone === 'red') return '🔥 Khẩn cấp';
-            if (zone === 'green') return '📅 Đã lên lịch';
-            return '⏳ Để sau';
+            if (zone === 'red') return ['🔥','Khẩn cấp'];
+            if (zone === 'green') return ['📅','Đã lên lịch'];
+            return ['⏳','Để sau'];
           }
 
           function repeatLabel(mins) {
@@ -47,6 +49,12 @@ jobs:
             const tgRes = await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg));
             const tgData = await tgRes.json();
             return tgData.ok;
+          }
+
+          // Moc gan nhat ma task da tung duoc gui bat ky loai canh bao nao
+          function lastAnyAlert(t) {
+            const arr = [t.lastPreAlertAt, t.lastDueAlertAt, t.lastOverdueAlertAt].filter(Boolean).map(s => new Date(s).getTime());
+            return arr.length ? Math.max(...arr) : 0;
           }
 
           async function main() {
@@ -71,69 +79,86 @@ jobs:
             let changed = false;
 
             for (const t of tasks) {
-              // Task hoan thanh hoac khong co deadline -> khong canh bao gi nua
               if (t.completed || !t.deadline) continue;
 
-              const dl = toUTC(t.deadline); // UTC ms cua deadline
+              const dl = toUTC(t.deadline);
               const alertBeforeMs = (
                 (t.alertBefore?.d || 0) * 86400000 +
                 (t.alertBefore?.h || 0) * 3600000 +
                 (t.alertBefore?.m || 0) * 60000
               );
               const repeatAfterOverdueMs = (t.repeatAfterOverdue || 120) * 60000;
+              const [zoneIcon, zoneText] = zoneInfo(t.zone);
               const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
-              const zoneLabel = zoneInfo(t.zone);
               const deadlineFmt = fmtVN(dl);
 
-              // ===== 1. CANH BAO TRUOC HAN =====
-              // deadline - alertBefore <= now < deadline, chua gui pre-alert
+              // Chong spam toan cuc cho task nay: vua gui loai nao do gan day thi bo qua moi loai khac trong cua so nay
+              const lastAny = lastAnyAlert(t);
+              if (lastAny && (now - lastAny) < MIN_GAP_MS) continue;
+
+              // ===== 1. CANH BAO TRUOC HAN — chi gui dung trong cua so [alertTime, alertTime+WINDOW) =====
               if (alertBeforeMs > 0 && !t.lastPreAlertAt) {
                 const alertTime = dl - alertBeforeMs;
-                if (now >= alertTime && now < dl) {
-                  const msg = '📋 BẠN CÓ 1 TASK CẦN CHUẨN BỊ\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Cần hoàn thành trước: ' + deadlineFmt + '\n\n👉 Hãy chuẩn bị để không bị trễ hạn.';
+                if (now >= alertTime && now < alertTime + WINDOW_MS && now < dl) {
+                  const msg = '📋 BẠN CÓ 1 TASK CẦN CHUẨN BỊ\n\n' + zoneIcon + ' Mức độ: ' + zoneText + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Cần hoàn thành trước: ' + deadlineFmt + '\n\n👉 Hãy chuẩn bị để không bị trễ hạn.';
                   if (await sendTG(msg)) {
                     console.log('✅ Pre-alert:', t.title);
                     t.lastPreAlertAt = new Date(now).toISOString();
                     changed = true;
                   }
+                  continue; // 1 task = 1 message / lan chay
                 }
               }
 
-              // ===== 2. CANH BAO DEN HAN =====
-              // now >= deadline, chua gui due-alert
-              if (now >= dl && !t.lastDueAlertAt) {
-                const msg = '🚨 TASK ĐẾN HẠN\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Hạn hoàn thành: ' + deadlineFmt + '\n\n👉 Vui lòng hoàn thành hoặc bấm Delay nếu cần dời lịch.';
+              // ===== 2. CANH BAO DEN HAN — chi gui dung trong cua so [deadline, deadline+WINDOW) =====
+              if (!t.lastDueAlertAt && now >= dl && now < dl + WINDOW_MS) {
+                const msg = '🚨 TASK ĐẾN HẠN\n\n' + zoneIcon + ' Mức độ: ' + zoneText + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Hạn hoàn thành: ' + deadlineFmt + '\n\n👉 Vui lòng hoàn thành hoặc bấm Delay nếu cần dời lịch.';
                 if (await sendTG(msg)) {
                   console.log('✅ Due-alert:', t.title);
                   t.lastDueAlertAt = new Date(now).toISOString();
                   changed = true;
                 }
+                continue;
               }
 
               // ===== 3. CANH BAO QUA HAN LAP LAI =====
-              // now > deadline, chua hoan thanh, khong dang trong thoi gian delay
               if (now > dl) {
                 let delayActive = false;
                 if (t.delayedUntil) {
                   const delayedUntilUTC = toUTC(t.delayedUntil);
                   if (now < delayedUntilUTC) delayActive = true;
                 }
+                if (delayActive) continue;
 
-                if (!delayActive) {
-                  // baseline: lan nhac qua han gan nhat, hoac lan due-alert, hoac deadline
-                  let baseline;
-                  if (t.lastOverdueAlertAt) baseline = new Date(t.lastOverdueAlertAt).getTime();
-                  else if (t.lastDueAlertAt) baseline = new Date(t.lastDueAlertAt).getTime();
-                  else baseline = dl;
+                if (!t.lastOverdueAlertAt) {
+                  // Task qua han cu chua tung co moc overdue (vd: qua han tu truoc khi tinh nang nay ton tai,
+                  // hoac workflow bi gian doan lau ngay). KHONG gui bu ngay — chi set moc va bo qua lan nay.
+                  // Tu lan sau moi bat dau nhac theo repeatAfterOverdue.
+                  t.lastOverdueAlertAt = new Date(now).toISOString();
+                  changed = true;
+                  console.log('⏭️  Bỏ qua catch-up, set mốc:', t.title);
+                  continue;
+                }
 
-                  if ((now - baseline) >= repeatAfterOverdueMs) {
-                    const msg = '⚠️ TASK ĐÃ TRỄ HẠN\n\n' + zoneLabel.split(' ')[0] + ' Mức độ: ' + zoneLabel.split(' ').slice(1).join(' ') + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Đã quá hạn từ: ' + deadlineFmt + '\n🔁 Hệ thống sẽ nhắc lại mỗi: ' + repeatLabel(t.repeatAfterOverdue || 120) + '\n\n👉 Hãy hoàn thành hoặc bấm Delay để dời lịch nhắc.';
-                    if (await sendTG(msg)) {
-                      console.log('✅ Overdue-alert:', t.title);
-                      t.lastOverdueAlertAt = new Date(now).toISOString();
-                      changed = true;
-                    }
+                const baseline = new Date(t.lastOverdueAlertAt).getTime();
+                const sinceBaseline = now - baseline;
+
+                // Chi gui dung trong cua so cua chu ky lap lai, khong gui don don tich luy
+                if (sinceBaseline >= repeatAfterOverdueMs && sinceBaseline < repeatAfterOverdueMs + WINDOW_MS) {
+                  const msg = '⚠️ TASK ĐÃ TRỄ HẠN\n\n' + zoneIcon + ' Mức độ: ' + zoneText + '\n👤 Người phụ trách: ' + t.assignee + '\n📝 Task: ' + t.title + '\n⏰ Đã quá hạn từ: ' + deadlineFmt + '\n🔁 Hệ thống sẽ nhắc lại mỗi: ' + repeatLabel(t.repeatAfterOverdue || 120) + '\n\n👉 Hãy hoàn thành hoặc bấm Delay để dời lịch nhắc.';
+                  if (await sendTG(msg)) {
+                    console.log('✅ Overdue-alert:', t.title);
+                    t.lastOverdueAlertAt = new Date(now).toISOString();
+                    changed = true;
                   }
+                } else if (sinceBaseline >= repeatAfterOverdueMs + WINDOW_MS) {
+                  // Da troi qua nhieu chu ky (vd workflow bi gian doan). Khong gui bu dồn —
+                  // chi cap nhat lai moc ve 1 chu ky gan nhat de lan sau tiep tuc dung nhip, khong spam.
+                  const missedCycles = Math.floor(sinceBaseline / repeatAfterOverdueMs);
+                  const newBaseline = baseline + missedCycles * repeatAfterOverdueMs;
+                  t.lastOverdueAlertAt = new Date(newBaseline).toISOString();
+                  changed = true;
+                  console.log('⏭️  Bỏ qua chu kỳ đã trôi qua, resync mốc:', t.title);
                 }
               }
             }
@@ -157,6 +182,7 @@ jobs:
 
           main().catch(e => { console.error('Error:', e.message); process.exit(1); });
           "
+
 
   check-events:
     runs-on: ubuntu-latest
