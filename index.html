@@ -1089,18 +1089,6 @@ input[type="datetime-local"].form-input { font-size: 14px; color-scheme: dark; }
           <div class="picker-cell"><select class="picker-select" id="alert-m"></select><div class="picker-lbl">Phút</div></div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Nếu quá hạn chưa hoàn thành thì nhắc lại mỗi</label>
-        <select class="form-input" id="task-repeat-overdue">
-          <option value="30">30 phút</option>
-          <option value="60" selected>1 giờ</option>
-          <option value="120">2 giờ</option>
-          <option value="180">3 giờ</option>
-          <option value="360">6 giờ</option>
-          <option value="720">12 giờ</option>
-          <option value="1440">24 giờ</option>
-        </select>
-      </div>
       <button class="btn-primary" onclick="saveNewTask()">Lưu công việc ✓</button>
     </div>
   </div>
@@ -1515,8 +1503,8 @@ function renderTasks() {
       html += `<div class="empty-state">Không có việc nào — tốt lắm! 🎉</div>`;
     } else {
       zt.forEach(t => {
-        const isOverdue = t.deadline && new Date(t.deadline).getTime() < now && (!t.delayedUntil || new Date(t.delayedUntil).getTime() <= now);
-        const deadlineText = t.deadline ? formatDeadline(t.deadline, isOverdue, t.delayedUntil) : 'Không hạn';
+        const isOverdue = t.deadline && new Date(t.deadline).getTime() < now;
+        const deadlineText = t.deadline ? formatDeadline(t.deadline, isOverdue) : 'Không hạn';
         const chatCount = (t.chat || []).length;
         const assigneeIcon = (t.assignee === 'Chồng') ? '👨' : (t.assignee === 'Vợ') ? '👩' : '👤';
         const badgeClass = chatCount > 0 ? 'has-msg' : '';
@@ -1542,7 +1530,7 @@ function renderTasks() {
   m.innerHTML = html;
 }
 
-function formatDeadline(dl, overdue, delayedUntil) {
+function formatDeadline(dl, overdue) {
   const d = new Date(dl), now = new Date();
   const diffMs = d - now;
   const diffH = Math.round(diffMs / 3600000);
@@ -1552,11 +1540,6 @@ function formatDeadline(dl, overdue, delayedUntil) {
     if (absDiff < 3600000) return `Quá hạn ${Math.round(absDiff/60000)} phút`;
     if (absDiff < 86400000) return `Quá hạn ${Math.round(absDiff/3600000)} giờ`;
     return `Quá hạn ${Math.round(absDiff/86400000)} ngày`;
-  }
-  // Đang trong thời gian tạm hoãn nhắc (delay)
-  if (delayedUntil && new Date(delayedUntil).getTime() > now.getTime() && d.getTime() < now.getTime()) {
-    const du = new Date(delayedUntil);
-    return `Tạm hoãn đến ${du.getHours().toString().padStart(2,'0')}:${du.getMinutes().toString().padStart(2,'0')} ${du.getDate()}/${du.getMonth()+1}`;
   }
   if (diffH < 2) return `Còn ~${Math.max(0,diffH)}h`;
   if (diffD < 1) return `Còn ${diffH}h`;
@@ -1587,10 +1570,7 @@ async function saveNewTask() {
       h: parseInt(document.getElementById('alert-h').value) || 0,
       m: parseInt(document.getElementById('alert-m').value) || 0
     },
-    repeatAfterOverdue: parseInt(document.getElementById('task-repeat-overdue').value) || 120,
-    completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0, delayCount: 0,
-    delayedUntil: null, lastPreAlertAt: null, lastDueAlertAt: null, lastOverdueAlertAt: null,
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    completed: false, completedAt: null, chat: [], readBy: {}, lastAlert: 0, delayCount: 0
   };
   tasks.push(newTask);
   document.getElementById('task-title-input').value = '';
@@ -1620,7 +1600,7 @@ function openDetail(id) {
   doneBtn.onclick = () => finishTask(id);
 
   // Hiện nút Delay chỉ khi task quá hạn
-  const isOverdue = t.deadline && new Date(t.deadline).getTime() < Date.now() && (!t.delayedUntil || new Date(t.delayedUntil).getTime() <= Date.now());
+  const isOverdue = t.deadline && new Date(t.deadline).getTime() < Date.now();
   const delayBtn = document.getElementById('delay-btn');
   const delayPicker = document.getElementById('delay-picker');
   delayBtn.style.display = isOverdue ? 'block' : 'none';
@@ -1671,28 +1651,29 @@ async function confirmDelay() {
     return;
   }
 
-  // Tính delayedUntil = bây giờ + delay (KHÔNG đổi deadline gốc)
+  // Tính deadline mới = bây giờ + delay
   const delayMs = (d * 86400 + h * 3600 + m * 60) * 1000;
-  const delayedUntilDate = new Date(Date.now() + delayMs);
+  const newDeadline = new Date(Date.now() + delayMs);
   const pad = n => n.toString().padStart(2, '0');
-  const delayedUntilStr = `${delayedUntilDate.getFullYear()}-${pad(delayedUntilDate.getMonth()+1)}-${pad(delayedUntilDate.getDate())}T${pad(delayedUntilDate.getHours())}:${pad(delayedUntilDate.getMinutes())}`;
+  const newDeadlineStr = `${newDeadline.getFullYear()}-${pad(newDeadline.getMonth()+1)}-${pad(newDeadline.getDate())}T${pad(newDeadline.getHours())}:${pad(newDeadline.getMinutes())}`;
 
-  t.delayedUntil = delayedUntilStr;
+  t.deadline = newDeadlineStr;
+  t.lastAlert = 0; // reset để workflow nhắc lại theo deadline mới
   t.delayCount = (t.delayCount || 0) + 1; // tăng số lần delay
-  // Reset overdue alert tracking để khi hết hạn delay sẽ nhắc lại ngay
-  t.lastOverdueAlertAt = null;
-  t.updatedAt = new Date().toISOString();
 
   // Ẩn picker
   document.getElementById('delay-picker').style.display = 'none';
   document.getElementById('delay-btn').style.display = 'none';
 
+  // Cập nhật header info
+  document.getElementById('dt-info').innerText = `👤 ${t.assignee} | ⏱ ${newDeadlineStr.replace('T', ' ')}`;
+
   const ok = await saveTasks();
   if (ok) {
-    const dlStr = `${pad(delayedUntilDate.getDate())}/${pad(delayedUntilDate.getMonth()+1)}/${delayedUntilDate.getFullYear()} lúc ${pad(delayedUntilDate.getHours())}:${pad(delayedUntilDate.getMinutes())}`;
-    toast(`✅ Đã dời nhắc đến ${dlStr}`, 'rgba(255,149,0,0.9)');
+    const dlStr = `${pad(newDeadline.getDate())}/${pad(newDeadline.getMonth()+1)}/${newDeadline.getFullYear()} lúc ${pad(newDeadline.getHours())}:${pad(newDeadline.getMinutes())}`;
+    toast(`✅ Đã delay đến ${dlStr}`, 'rgba(255,149,0,0.9)');
     const assigneeIcon = t.assignee === 'Chồng' ? '👨' : '👩';
-    sendTelegram(`⏰ TASK ĐÃ ĐƯỢC DỜI LỊCH NHẮC\n\n📌 ${t.title}\n${assigneeIcon} ${t.assignee}\n📅 Deadline gốc: ${t.deadline ? t.deadline.replace('T',' ') : '—'}\n🔁 Tạm ngưng nhắc đến: ${dlStr}`);
+    sendTelegram(`⏰ TASK ĐÃ ĐƯỢC DỜI DEADLINE\n\n📌 ${t.title}\n${assigneeIcon} ${t.assignee}\n📅 Deadline mới: ${dlStr}`);
     renderTasks();
   }
 }
@@ -2223,17 +2204,23 @@ function renderFinance() {
 
   const totalFixed = fixedExps.reduce((s, f) => s + (parseInt(f.amount)||0), 0);
 
+  const thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   const fixedRowsHtml = fixedRows.map(f => {
     const urgent = f.daysLeft <= 3;
+    const isPaid = f.paidThisMonth === thisMonth;
     const dueText = f.payDay
-      ? (f.daysLeft === 0 ? 'Hôm nay! 🔴' : f.daysLeft === 1 ? 'Ngày mai ⚠️' : `Còn ${f.daysLeft} ngày (ngày ${f.payDay})`)
+      ? (isPaid ? '✅ Đã thanh toán tháng này' : f.daysLeft === 0 ? 'Hôm nay! 🔴' : f.daysLeft === 1 ? 'Ngày mai ⚠️' : `Còn ${f.daysLeft} ngày (ngày ${f.payDay})`)
       : 'Chưa cài ngày';
-    return `<div class="fixed-exp-row">
+    const paidBtn = isPaid
+      ? `<div style="font-size:10px;font-weight:700;color:var(--green);padding:5px 10px;border-radius:var(--radius-full);background:rgba(57,211,83,0.12);border:0.5px solid rgba(57,211,83,0.3);white-space:nowrap">✅ Xong</div>`
+      : `<button onclick="markFixedExpPaid('${f.id}')" style="font-size:10px;font-weight:700;color:var(--green);padding:5px 10px;border-radius:var(--radius-full);background:rgba(57,211,83,0.10);border:0.5px solid rgba(57,211,83,0.25);cursor:pointer;font-family:inherit;white-space:nowrap">Đã xử lý</button>`;
+    return `<div class="fixed-exp-row" style="${isPaid?'opacity:0.55':''}">
       <div class="fixed-exp-left">
         <div class="fixed-exp-name">${escHtml(f.name)}</div>
-        <div class="fixed-exp-due ${urgent?'urgent':''}">${dueText}</div>
+        <div class="fixed-exp-due ${!isPaid&&urgent?'urgent':''}">${dueText}</div>
       </div>
       <div class="fixed-exp-amount">${parseInt(f.amount).toLocaleString('vi-VN')}đ</div>
+      ${paidBtn}
       <div class="fixed-exp-edit" onclick="openEditFixedExp('${f.id}')">✏️</div>
     </div>`;
   }).join('');
@@ -2362,6 +2349,18 @@ async function deleteFixedExp() {
   fixedExps = fixedExps.filter(x => x.id !== _fexpEditId);
   await _sb.from('jika_data').upsert({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) }, { onConflict: 'key' });
   closeSheet('fixed-exp-modal');
+  renderFinance();
+}
+
+async function markFixedExpPaid(id) {
+  const idx = fixedExps.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const now = new Date();
+  const thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  fixedExps[idx].paidThisMonth = thisMonth;
+  fixedExps[idx].lastAlert = 0; // reset để tháng sau nhắc lại bình thường
+  await _sb.from('jika_data').upsert({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) }, { onConflict: 'key' });
+  toast('✅ Đã đánh dấu xong — Telegram sẽ không nhắc lại tháng này', 'rgba(57,211,83,0.9)');
   renderFinance();
 }
 
