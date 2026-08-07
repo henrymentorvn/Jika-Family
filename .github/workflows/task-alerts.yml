@@ -347,51 +347,75 @@ jobs:
             });
             if (!res.ok) { console.log('Supabase error:', res.status); return; }
             const data = await res.json();
-            if (!data || !data.length) { console.log('Không có khoản cố định'); return; }
+            if (!data || !data.length) { console.log('Khong co khoan co dinh'); return; }
             let fixedExps = [];
             try {
               let val = data[0].value;
               if (typeof val === 'string') val = JSON.parse(val);
               if (Array.isArray(val)) fixedExps = val;
-            } catch(e) { return; }
-            console.log('Tổng khoản cố định:', fixedExps.length);
+            } catch(e) { console.log('Parse error:', e.message); return; }
+            console.log('Tong khoan co dinh:', fixedExps.length);
+
             const now = Date.now();
             const nowVN = new Date(now + UTC_OFFSET);
+            const thisMonth = nowVN.getUTCFullYear() + '-' + String(nowVN.getUTCMonth()+1).padStart(2,'0');
             let changed = false;
+
             for (const f of fixedExps) {
               if (!f.payDay || !f.alertBefore) continue;
-              // Bỏ qua nếu đã được đánh dấu "Đã xử lý" trong tháng này
-              const nowVNDate = new Date(now + UTC_OFFSET);
-              const thisMonth = nowVNDate.getUTCFullYear() + '-' + String(nowVNDate.getUTCMonth()+1).padStart(2,'0');
-              if (f.paidThisMonth === thisMonth) { console.log('⏭ Bỏ qua (đã xử lý tháng này):', f.name); continue; }
+
+              // Bo qua neu da nhan Da xu ly thang nay
+              if (f.paidThisMonth === thisMonth) {
+                console.log('Da xu ly thang nay, bo qua:', f.name);
+                continue;
+              }
+
               const alertMs = ((f.alertBefore.d||0)*86400000 + (f.alertBefore.h||0)*3600000 + (f.alertBefore.m||0)*60000);
               if (alertMs <= 0) continue;
-              let payDate = new Date(Date.UTC(nowVN.getUTCFullYear(), nowVN.getUTCMonth(), f.payDay));
-              if (payDate.getTime() < now + UTC_OFFSET) {
-                payDate = new Date(Date.UTC(nowVN.getUTCFullYear(), nowVN.getUTCMonth()+1, f.payDay));
+
+              // FIX: so sanh ngay VN thuan tuy, khong cong UTC_OFFSET vao timestamp
+              const vnYear  = nowVN.getUTCFullYear();
+              const vnMonth = nowVN.getUTCMonth();
+              const vnDay   = nowVN.getUTCDate();
+              const payDay  = parseInt(f.payDay);
+
+              // Ngay thanh toan thang nay theo gio VN
+              let payDate = new Date(Date.UTC(vnYear, vnMonth, payDay));
+              // Neu ngay do da qua (theo ngay VN) thi lay thang sau
+              if (vnDay > payDay) {
+                payDate = new Date(Date.UTC(vnYear, vnMonth + 1, payDay));
               }
+
+              // dl = timestamp UTC cua 00:00 ngay thanh toan theo gio VN
               const dl = payDate.getTime() - UTC_OFFSET;
               const alertTime = dl - alertMs;
               const lastAlert = f.lastAlert || 0;
               const diffMs = dl - now;
+
+              // Da qua han hon 1 ngay -> bo qua
               if (diffMs < -86400000) continue;
+              // Chua den gio nhac
               if (now < alertTime) continue;
+              // Chong spam: nhac toi thieu cach nhau 30 phut
               if ((now - lastAlert) < 1800000) continue;
+
               const diffD = Math.round(diffMs / 86400000);
-              const timeStr = diffD === 0 ? 'HÔM NAY! 🔴' : diffD === 1 ? 'NGÀY MAI ⚠️' : 'Còn ' + diffD + ' ngày';
-              const msg = '💳 NHẮC THANH TOÁN CỐ ĐỊNH\n\n📌 ' + f.name + '\n💰 ' + parseInt(f.amount).toLocaleString('vi') + 'đ\n📅 Ngày ' + f.payDay + ' hàng tháng\n⏳ ' + timeStr + '\n\n👉 Đừng quên thanh toán nhé!';
+              const timeStr = diffD <= 0 ? 'HOM NAY! 🔴' : diffD === 1 ? 'NGAY MAI ⚠️' : 'Con ' + diffD + ' ngay';
+              const msg = '💳 NHAC THANH TOAN CO DINH\n\n📌 ' + f.name + '\n💰 ' + parseInt(f.amount).toLocaleString('vi') + 'đ\n📅 Ngay ' + f.payDay + ' hang thang\n⏳ ' + timeStr + '\n\n👉 Dung quen thanh toan nhe! Vao app bam Da xu ly de tat nhac.';
               const tgRes = await fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&text=' + encodeURIComponent(msg));
               const tgData = await tgRes.json();
-              if (tgData.ok) { console.log('✅ Đã nhắc:', f.name); f.lastAlert = now; changed = true; }
-              else { console.log('❌ Lỗi:', tgData.description); }
+              if (tgData.ok) { console.log('OK Da nhac:', f.name); f.lastAlert = now; changed = true; }
+              else { console.log('FAIL Loi Telegram:', tgData.description); }
             }
+
             if (changed) {
-              await fetch(SB_URL + '/rest/v1/jika_data', {
+              const updateRes = await fetch(SB_URL + '/rest/v1/jika_data', {
                 method: 'POST',
                 headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
                 body: JSON.stringify({ key: 'jika_fixed_exps', value: JSON.stringify(fixedExps) })
               });
-            } else { console.log('Không có khoản nào cần nhắc'); }
+              console.log('Cap nhat Supabase:', updateRes.ok ? 'OK' : 'FAIL ' + updateRes.status);
+            } else { console.log('Khong co khoan nao can nhac'); }
           }
           main().catch(e => { console.error('Error:', e.message); process.exit(1); });
           "
